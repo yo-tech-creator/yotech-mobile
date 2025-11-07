@@ -1,0 +1,188 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branches",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_templates",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "health_reports",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "modules",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "regions",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "rls_enabled": true,
+    "rls_forced": true
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_items",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_lists",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_assignees",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_items",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tasks",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenant_modules",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_module_preferences",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "rls_enabled": true,
+    "rls_forced": false
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "rls_enabled": true,
+    "rls_forced": false
+  }
+]

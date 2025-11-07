@@ -1,0 +1,602 @@
+[
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "constraint_name": "2200_18285_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "constraint_name": "2200_18285_3_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "constraint_name": "2200_18285_2_not_null",
+    "check_clause": "announcement_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "constraint_name": "2200_18265_7_not_null",
+    "check_clause": "published_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "constraint_name": "2200_18265_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "constraint_name": "2200_18265_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "constraint_name": "2200_18265_3_not_null",
+    "check_clause": "title IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "constraint_name": "2200_18265_4_not_null",
+    "check_clause": "content IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "constraint_name": "2200_17788_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "constraint_name": "2200_17788_4_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "constraint_name": "2200_17788_5_not_null",
+    "check_clause": "check_in_time IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "constraint_name": "2200_17788_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "constraint_name": "2200_17788_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "2200_18167_10_not_null",
+    "check_clause": "evaluated_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "branch_scores_score_check",
+    "check_clause": "((score >= 0) AND (score <= 100))"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "2200_18167_5_not_null",
+    "check_clause": "score IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "2200_18167_4_not_null",
+    "check_clause": "evaluation_period IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "2200_18167_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "2200_18167_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "2200_18167_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "constraint_name": "2200_17679_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "constraint_name": "2200_17679_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "constraint_name": "2200_17679_5_not_null",
+    "check_clause": "code IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "constraint_name": "2200_17679_4_not_null",
+    "check_clause": "name IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "constraint_name": "2200_17812_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "constraint_name": "2200_17812_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "constraint_name": "2200_17812_5_not_null",
+    "check_clause": "break_start IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "constraint_name": "2200_17812_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "constraint_name": "2200_17812_4_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
+    "constraint_name": "2200_18142_3_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
+    "constraint_name": "2200_18142_5_not_null",
+    "check_clause": "score IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
+    "constraint_name": "2200_18142_4_not_null",
+    "check_clause": "evaluation_period IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
+    "constraint_name": "2200_18142_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
+    "constraint_name": "2200_18142_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
+    "constraint_name": "2200_18142_10_not_null",
+    "check_clause": "evaluated_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
+    "constraint_name": "employee_scores_score_check",
+    "check_clause": "((score >= 0) AND (score <= 100))"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "constraint_name": "2200_18008_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "constraint_name": "2200_18008_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "constraint_name": "2200_18008_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "constraint_name": "2200_18008_6_not_null",
+    "check_clause": "responses IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "constraint_name": "2200_18008_5_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "constraint_name": "2200_18008_4_not_null",
+    "check_clause": "form_template_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "constraint_name": "2200_17987_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "constraint_name": "2200_17987_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "constraint_name": "2200_17987_3_not_null",
+    "check_clause": "name IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "constraint_name": "2200_17987_5_not_null",
+    "check_clause": "fields IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "constraint_name": "2200_17987_7_not_null",
+    "check_clause": "created_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "constraint_name": "2200_17963_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "constraint_name": "2200_17963_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "constraint_name": "2200_17963_6_not_null",
+    "check_clause": "report_duration_days IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "constraint_name": "2200_17963_5_not_null",
+    "check_clause": "report_date IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "constraint_name": "2200_17963_4_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "constraint_name": "2200_17963_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "constraint_name": "2200_17963_7_not_null",
+    "check_clause": "file_url IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "constraint_name": "2200_18069_8_not_null",
+    "check_clause": "requested_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "constraint_name": "2200_18069_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "constraint_name": "2200_18069_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "constraint_name": "2200_18069_3_not_null",
+    "check_clause": "from_branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "constraint_name": "2200_18069_4_not_null",
+    "check_clause": "to_branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "constraint_name": "2200_18069_5_not_null",
+    "check_clause": "product_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "constraint_name": "2200_18069_6_not_null",
+    "check_clause": "quantity IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "constraint_name": "2200_17932_4_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "constraint_name": "2200_17932_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "constraint_name": "2200_17932_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "constraint_name": "2200_17932_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "constraint_name": "2200_17932_5_not_null",
+    "check_clause": "leave_type IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "constraint_name": "2200_17932_6_not_null",
+    "check_clause": "start_date IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "constraint_name": "2200_17932_7_not_null",
+    "check_clause": "end_date IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "constraint_name": "2200_18037_5_not_null",
+    "check_clause": "category IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "constraint_name": "2200_18037_6_not_null",
+    "check_clause": "title IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "constraint_name": "2200_18037_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "constraint_name": "2200_18037_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "constraint_name": "2200_18037_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "constraint_name": "2200_18037_4_not_null",
+    "check_clause": "reported_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "constraint_name": "2200_26056_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "constraint_name": "2200_26056_4_not_null",
+    "check_clause": "icon IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "constraint_name": "2200_26056_3_not_null",
+    "check_clause": "name IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "constraint_name": "2200_26056_2_not_null",
+    "check_clause": "code IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "constraint_name": "2200_18304_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "constraint_name": "2200_18304_3_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "constraint_name": "2200_18304_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "constraint_name": "2200_18304_6_not_null",
+    "check_clause": "type IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "constraint_name": "2200_18304_4_not_null",
+    "check_clause": "title IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "2200_18238_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "2200_18238_7_not_null",
+    "check_clause": "net_salary IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "2200_18238_5_not_null",
+    "check_clause": "gross_salary IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "2200_18238_4_not_null",
+    "check_clause": "period IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "2200_18238_3_not_null",
+    "check_clause": "user_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "2200_18238_9_not_null",
+    "check_clause": "uploaded_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "2200_18238_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "constraint_name": "2200_18110_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "constraint_name": "2200_18110_3_not_null",
+    "check_clause": "branch_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "constraint_name": "2200_18110_4_not_null",
+    "check_clause": "product_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "constraint_name": "2200_18110_5_not_null",
+    "check_clause": "reported_by IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "constraint_name": "2200_18110_6_not_null",
+    "check_clause": "issue_type IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "constraint_name": "2200_18110_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "constraint_name": "2200_17735_3_not_null",
+    "check_clause": "barcode IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "constraint_name": "2200_17735_4_not_null",
+    "check_clause": "name IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "constraint_name": "2200_17735_2_not_null",
+    "check_clause": "tenant_id IS NOT NULL"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "constraint_name": "2200_17735_1_not_null",
+    "check_clause": "id IS NOT NULL"
+  }
+]

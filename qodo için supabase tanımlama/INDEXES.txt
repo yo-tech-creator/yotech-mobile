@@ -1,0 +1,602 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads",
+    "indexname": "announcement_reads_announcement_id_user_id_key",
+    "indexdef": "CREATE UNIQUE INDEX announcement_reads_announcement_id_user_id_key ON public.announcement_reads USING btree (announcement_id, user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads",
+    "indexname": "announcement_reads_pkey",
+    "indexdef": "CREATE UNIQUE INDEX announcement_reads_pkey ON public.announcement_reads USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads",
+    "indexname": "idx_announcement_reads_user_id",
+    "indexdef": "CREATE INDEX idx_announcement_reads_user_id ON public.announcement_reads USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "indexname": "announcements_pkey",
+    "indexdef": "CREATE UNIQUE INDEX announcements_pkey ON public.announcements USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "indexname": "idx_announcements_published",
+    "indexdef": "CREATE INDEX idx_announcements_published ON public.announcements USING btree (published_at)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "indexname": "idx_announcements_published_by",
+    "indexdef": "CREATE INDEX idx_announcements_published_by ON public.announcements USING btree (published_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "indexname": "idx_announcements_tenant",
+    "indexdef": "CREATE INDEX idx_announcements_tenant ON public.announcements USING btree (tenant_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "indexname": "attendance_pkey",
+    "indexdef": "CREATE UNIQUE INDEX attendance_pkey ON public.attendance USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "indexname": "idx_attendance_branch_id",
+    "indexdef": "CREATE INDEX idx_attendance_branch_id ON public.attendance USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "indexname": "idx_attendance_date",
+    "indexdef": "CREATE INDEX idx_attendance_date ON public.attendance USING btree (check_in_time)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "indexname": "idx_attendance_tenant_branch",
+    "indexdef": "CREATE INDEX idx_attendance_tenant_branch ON public.attendance USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "indexname": "idx_attendance_user",
+    "indexdef": "CREATE INDEX idx_attendance_user ON public.attendance USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "indexname": "branch_scores_pkey",
+    "indexdef": "CREATE UNIQUE INDEX branch_scores_pkey ON public.branch_scores USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "indexname": "branch_scores_tenant_id_branch_id_evaluation_period_key",
+    "indexdef": "CREATE UNIQUE INDEX branch_scores_tenant_id_branch_id_evaluation_period_key ON public.branch_scores USING btree (tenant_id, branch_id, evaluation_period)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "indexname": "idx_branch_score_tenant_branch",
+    "indexdef": "CREATE INDEX idx_branch_score_tenant_branch ON public.branch_scores USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "indexname": "idx_branch_scores_branch_id",
+    "indexdef": "CREATE INDEX idx_branch_scores_branch_id ON public.branch_scores USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "indexname": "idx_branch_scores_evaluated_by",
+    "indexdef": "CREATE INDEX idx_branch_scores_evaluated_by ON public.branch_scores USING btree (evaluated_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branches",
+    "indexname": "branches_pkey",
+    "indexdef": "CREATE UNIQUE INDEX branches_pkey ON public.branches USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branches",
+    "indexname": "branches_tenant_id_code_key",
+    "indexdef": "CREATE UNIQUE INDEX branches_tenant_id_code_key ON public.branches USING btree (tenant_id, code)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branches",
+    "indexname": "idx_branches_region",
+    "indexdef": "CREATE INDEX idx_branches_region ON public.branches USING btree (region_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branches",
+    "indexname": "idx_branches_tenant",
+    "indexdef": "CREATE INDEX idx_branches_tenant ON public.branches USING btree (tenant_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs",
+    "indexname": "break_logs_pkey",
+    "indexdef": "CREATE UNIQUE INDEX break_logs_pkey ON public.break_logs USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs",
+    "indexname": "idx_break_logs_branch_id",
+    "indexdef": "CREATE INDEX idx_break_logs_branch_id ON public.break_logs USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs",
+    "indexname": "idx_break_tenant_branch",
+    "indexdef": "CREATE INDEX idx_break_tenant_branch ON public.break_logs USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs",
+    "indexname": "idx_break_user",
+    "indexdef": "CREATE INDEX idx_break_user ON public.break_logs USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores",
+    "indexname": "employee_scores_pkey",
+    "indexdef": "CREATE UNIQUE INDEX employee_scores_pkey ON public.employee_scores USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores",
+    "indexname": "idx_employee_score_period",
+    "indexdef": "CREATE INDEX idx_employee_score_period ON public.employee_scores USING btree (evaluation_period)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores",
+    "indexname": "idx_employee_score_tenant_user",
+    "indexdef": "CREATE INDEX idx_employee_score_tenant_user ON public.employee_scores USING btree (tenant_id, user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores",
+    "indexname": "idx_employee_scores_evaluated_by",
+    "indexdef": "CREATE INDEX idx_employee_scores_evaluated_by ON public.employee_scores USING btree (evaluated_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores",
+    "indexname": "idx_employee_scores_user_id",
+    "indexdef": "CREATE INDEX idx_employee_scores_user_id ON public.employee_scores USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions",
+    "indexname": "form_submissions_pkey",
+    "indexdef": "CREATE UNIQUE INDEX form_submissions_pkey ON public.form_submissions USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions",
+    "indexname": "idx_form_submissions_branch_id",
+    "indexdef": "CREATE INDEX idx_form_submissions_branch_id ON public.form_submissions USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions",
+    "indexname": "idx_form_submissions_template",
+    "indexdef": "CREATE INDEX idx_form_submissions_template ON public.form_submissions USING btree (form_template_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions",
+    "indexname": "idx_form_submissions_tenant_branch",
+    "indexdef": "CREATE INDEX idx_form_submissions_tenant_branch ON public.form_submissions USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions",
+    "indexname": "idx_form_submissions_user_id",
+    "indexdef": "CREATE INDEX idx_form_submissions_user_id ON public.form_submissions USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_templates",
+    "indexname": "form_templates_pkey",
+    "indexdef": "CREATE UNIQUE INDEX form_templates_pkey ON public.form_templates USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_templates",
+    "indexname": "idx_form_templates_created_by",
+    "indexdef": "CREATE INDEX idx_form_templates_created_by ON public.form_templates USING btree (created_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_templates",
+    "indexname": "idx_form_templates_tenant",
+    "indexdef": "CREATE INDEX idx_form_templates_tenant ON public.form_templates USING btree (tenant_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "health_reports",
+    "indexname": "health_reports_pkey",
+    "indexdef": "CREATE UNIQUE INDEX health_reports_pkey ON public.health_reports USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "health_reports",
+    "indexname": "idx_health_reports_branch_id",
+    "indexdef": "CREATE INDEX idx_health_reports_branch_id ON public.health_reports USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "health_reports",
+    "indexname": "idx_health_reports_tenant_id",
+    "indexdef": "CREATE INDEX idx_health_reports_tenant_id ON public.health_reports USING btree (tenant_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "health_reports",
+    "indexname": "idx_health_reports_user_id",
+    "indexdef": "CREATE INDEX idx_health_reports_user_id ON public.health_reports USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "idx_inventory_transfers_approved_by",
+    "indexdef": "CREATE INDEX idx_inventory_transfers_approved_by ON public.inventory_transfers USING btree (approved_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "idx_inventory_transfers_product_id",
+    "indexdef": "CREATE INDEX idx_inventory_transfers_product_id ON public.inventory_transfers USING btree (product_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "idx_inventory_transfers_requested_by",
+    "indexdef": "CREATE INDEX idx_inventory_transfers_requested_by ON public.inventory_transfers USING btree (requested_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "idx_transfer_from_branch",
+    "indexdef": "CREATE INDEX idx_transfer_from_branch ON public.inventory_transfers USING btree (from_branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "idx_transfer_status",
+    "indexdef": "CREATE INDEX idx_transfer_status ON public.inventory_transfers USING btree (status)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "idx_transfer_tenant",
+    "indexdef": "CREATE INDEX idx_transfer_tenant ON public.inventory_transfers USING btree (tenant_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "idx_transfer_to_branch",
+    "indexdef": "CREATE INDEX idx_transfer_to_branch ON public.inventory_transfers USING btree (to_branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers",
+    "indexname": "inventory_transfers_pkey",
+    "indexdef": "CREATE UNIQUE INDEX inventory_transfers_pkey ON public.inventory_transfers USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "indexname": "idx_leave_dates",
+    "indexdef": "CREATE INDEX idx_leave_dates ON public.leave_requests USING btree (start_date, end_date)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "indexname": "idx_leave_requests_branch_id",
+    "indexdef": "CREATE INDEX idx_leave_requests_branch_id ON public.leave_requests USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "indexname": "idx_leave_requests_reviewed_by",
+    "indexdef": "CREATE INDEX idx_leave_requests_reviewed_by ON public.leave_requests USING btree (reviewed_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "indexname": "idx_leave_status",
+    "indexdef": "CREATE INDEX idx_leave_status ON public.leave_requests USING btree (status)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "indexname": "idx_leave_tenant_branch",
+    "indexdef": "CREATE INDEX idx_leave_tenant_branch ON public.leave_requests USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "indexname": "idx_leave_user",
+    "indexdef": "CREATE INDEX idx_leave_user ON public.leave_requests USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests",
+    "indexname": "leave_requests_pkey",
+    "indexdef": "CREATE UNIQUE INDEX leave_requests_pkey ON public.leave_requests USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports",
+    "indexname": "idx_malfunction_assigned",
+    "indexdef": "CREATE INDEX idx_malfunction_assigned ON public.malfunction_reports USING btree (assigned_to)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports",
+    "indexname": "idx_malfunction_reports_branch_id",
+    "indexdef": "CREATE INDEX idx_malfunction_reports_branch_id ON public.malfunction_reports USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports",
+    "indexname": "idx_malfunction_reports_reported_by",
+    "indexdef": "CREATE INDEX idx_malfunction_reports_reported_by ON public.malfunction_reports USING btree (reported_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports",
+    "indexname": "idx_malfunction_status",
+    "indexdef": "CREATE INDEX idx_malfunction_status ON public.malfunction_reports USING btree (status)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports",
+    "indexname": "idx_malfunction_tenant_branch",
+    "indexdef": "CREATE INDEX idx_malfunction_tenant_branch ON public.malfunction_reports USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports",
+    "indexname": "malfunction_reports_pkey",
+    "indexdef": "CREATE UNIQUE INDEX malfunction_reports_pkey ON public.malfunction_reports USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "modules",
+    "indexname": "modules_code_key",
+    "indexdef": "CREATE UNIQUE INDEX modules_code_key ON public.modules USING btree (code)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "modules",
+    "indexname": "modules_pkey",
+    "indexdef": "CREATE UNIQUE INDEX modules_pkey ON public.modules USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "indexname": "idx_notifications_created",
+    "indexdef": "CREATE INDEX idx_notifications_created ON public.notifications USING btree (created_at)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "indexname": "idx_notifications_read",
+    "indexdef": "CREATE INDEX idx_notifications_read ON public.notifications USING btree (is_read)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "indexname": "idx_notifications_tenant_user",
+    "indexdef": "CREATE INDEX idx_notifications_tenant_user ON public.notifications USING btree (tenant_id, user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "indexname": "idx_notifications_user_id",
+    "indexdef": "CREATE INDEX idx_notifications_user_id ON public.notifications USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "indexname": "notifications_pkey",
+    "indexdef": "CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "indexname": "idx_payroll_period",
+    "indexdef": "CREATE INDEX idx_payroll_period ON public.payrolls USING btree (period)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "indexname": "idx_payroll_tenant_user",
+    "indexdef": "CREATE INDEX idx_payroll_tenant_user ON public.payrolls USING btree (tenant_id, user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "indexname": "idx_payrolls_uploaded_by",
+    "indexdef": "CREATE INDEX idx_payrolls_uploaded_by ON public.payrolls USING btree (uploaded_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "indexname": "idx_payrolls_user_id",
+    "indexdef": "CREATE INDEX idx_payrolls_user_id ON public.payrolls USING btree (user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "indexname": "payrolls_pkey",
+    "indexdef": "CREATE UNIQUE INDEX payrolls_pkey ON public.payrolls USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "indexname": "payrolls_tenant_id_user_id_period_key",
+    "indexdef": "CREATE UNIQUE INDEX payrolls_tenant_id_user_id_period_key ON public.payrolls USING btree (tenant_id, user_id, period)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "indexname": "idx_product_issue_status",
+    "indexdef": "CREATE INDEX idx_product_issue_status ON public.product_issues USING btree (status)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "indexname": "idx_product_issue_tenant_branch",
+    "indexdef": "CREATE INDEX idx_product_issue_tenant_branch ON public.product_issues USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "indexname": "idx_product_issues_branch_id",
+    "indexdef": "CREATE INDEX idx_product_issues_branch_id ON public.product_issues USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "indexname": "idx_product_issues_product_id",
+    "indexdef": "CREATE INDEX idx_product_issues_product_id ON public.product_issues USING btree (product_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "indexname": "idx_product_issues_reported_by",
+    "indexdef": "CREATE INDEX idx_product_issues_reported_by ON public.product_issues USING btree (reported_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "indexname": "product_issues_pkey",
+    "indexdef": "CREATE UNIQUE INDEX product_issues_pkey ON public.product_issues USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "idx_products_barcode",
+    "indexdef": "CREATE INDEX idx_products_barcode ON public.products USING btree (tenant_id, barcode)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "idx_products_name_trgm",
+    "indexdef": "CREATE INDEX idx_products_name_trgm ON public.products USING gin (name gin_trgm_ops)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "idx_products_tenant",
+    "indexdef": "CREATE INDEX idx_products_tenant ON public.products USING btree (tenant_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "products_pkey",
+    "indexdef": "CREATE UNIQUE INDEX products_pkey ON public.products USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "products_tenant_id_barcode_key",
+    "indexdef": "CREATE UNIQUE INDEX products_tenant_id_barcode_key ON public.products USING btree (tenant_id, barcode)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "regions",
+    "indexname": "idx_regions_tenant",
+    "indexdef": "CREATE INDEX idx_regions_tenant ON public.regions USING btree (tenant_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "regions",
+    "indexname": "regions_pkey",
+    "indexdef": "CREATE UNIQUE INDEX regions_pkey ON public.regions USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "regions",
+    "indexname": "regions_tenant_id_code_key",
+    "indexdef": "CREATE UNIQUE INDEX regions_tenant_id_code_key ON public.regions USING btree (tenant_id, code)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts",
+    "indexname": "idx_shifts_branch_id",
+    "indexdef": "CREATE INDEX idx_shifts_branch_id ON public.shifts USING btree (branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts",
+    "indexname": "idx_shifts_created_by",
+    "indexdef": "CREATE INDEX idx_shifts_created_by ON public.shifts USING btree (created_by)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts",
+    "indexname": "idx_shifts_tenant_branch",
+    "indexdef": "CREATE INDEX idx_shifts_tenant_branch ON public.shifts USING btree (tenant_id, branch_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts",
+    "indexname": "idx_shifts_week",
+    "indexdef": "CREATE INDEX idx_shifts_week ON public.shifts USING btree (week_start_date)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts",
+    "indexname": "shifts_pkey",
+    "indexdef": "CREATE UNIQUE INDEX shifts_pkey ON public.shifts USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts",
+    "indexname": "shifts_tenant_id_branch_id_week_start_date_key",
+    "indexdef": "CREATE UNIQUE INDEX shifts_tenant_id_branch_id_week_start_date_key ON public.shifts USING btree (tenant_id, branch_id, week_start_date)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "indexname": "idx_skt_alarm_date",
+    "indexdef": "CREATE INDEX idx_skt_alarm_date ON public.skt_records USING btree (alarm_date) WHERE (alarm_sent = false)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "indexname": "idx_skt_expiry_date",
+    "indexdef": "CREATE INDEX idx_skt_expiry_date ON public.skt_records USING btree (expiry_date)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "indexname": "idx_skt_product",
+    "indexdef": "CREATE INDEX idx_skt_product ON public.skt_records USING btree (product_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "indexname": "idx_skt_records_branch_id",
+    "indexdef": "CREATE INDEX idx_skt_records_branch_id ON public.skt_records USING btree (branch_id)"
+  }
+]

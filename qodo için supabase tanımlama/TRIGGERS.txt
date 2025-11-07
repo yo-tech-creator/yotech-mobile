@@ -1,0 +1,119 @@
+[
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "trigger_schema": "public",
+    "trigger_name": "attendance_minutes_calculation",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_attendance_minutes()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "trigger_schema": "public",
+    "trigger_name": "update_branches_updated_at",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "trigger_schema": "public",
+    "trigger_name": "break_duration_calculation",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_break_duration()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "trigger_schema": "public",
+    "trigger_name": "update_products_updated_at",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "trigger_schema": "public",
+    "trigger_name": "update_regions_updated_at",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "trigger_schema": "public",
+    "trigger_name": "skt_alarm_calculation",
+    "trigger_event": "INSERT",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_skt_alarm_date()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "trigger_schema": "public",
+    "trigger_name": "skt_alarm_calculation",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_skt_alarm_date()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "trigger_schema": "public",
+    "trigger_name": "update_skt_records_updated_at",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "trigger_schema": "public",
+    "trigger_name": "task_item_completion_update",
+    "trigger_event": "UPDATE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "trigger_schema": "public",
+    "trigger_name": "task_item_completion_update",
+    "trigger_event": "INSERT",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "trigger_schema": "public",
+    "trigger_name": "task_item_completion_update",
+    "trigger_event": "DELETE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tenants",
+    "trigger_schema": "public",
+    "trigger_name": "update_tenants_updated_at",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "trigger_schema": "public",
+    "trigger_name": "update_users_updated_at",
+    "trigger_event": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  }
+]

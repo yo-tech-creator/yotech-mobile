@@ -1,0 +1,164 @@
+[
+  {
+    "schema_name": "public",
+    "function_name": "add_personel",
+    "arguments": "p_employee_code text, p_password text, p_tenant_id uuid",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.add_personel(p_employee_code text, p_password text, p_tenant_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_user_id UUID;\r\n  v_email TEXT;\r\n  v_phone TEXT;\r\nBEGIN\r\n  v_user_id := gen_random_uuid();\r\n  v_email := LOWER(p_employee_code) || '@filemarket.com';\r\n  v_phone := '5550000000';\r\n  \r\n  -- Auth kullanıcısı oluştur (basit şifreleme)\r\n  INSERT INTO auth.users (\r\n    instance_id, id, aud, role, email,\r\n    encrypted_password,\r\n    email_confirmed_at, created_at, updated_at,\r\n    confirmation_token, email_change, email_change_token_new, recovery_token\r\n  ) VALUES (\r\n    '00000000-0000-0000-0000-000000000000',\r\n    v_user_id,\r\n    'authenticated',\r\n    'authenticated',\r\n    v_email,\r\n    '$2a$10$' || encode(digest(p_password || v_user_id::text, 'sha256'), 'base64'),\r\n    NOW(), NOW(), NOW(),\r\n    '', '', '', ''\r\n  );\r\n  \r\n  -- Public users tablosuna ekle\r\n  INSERT INTO public.users (\r\n    id, tenant_id, first_name, last_name, email, phone,\r\n    employee_code, role, position, hire_date, active\r\n  ) VALUES (\r\n    v_user_id,\r\n    p_tenant_id,\r\n    'Yeni',\r\n    'Personel',\r\n    v_email,\r\n    v_phone,\r\n    p_employee_code,\r\n    'personel',\r\n    'Mağaza Personeli',\r\n    CURRENT_DATE,\r\n    true\r\n  );\r\n  \r\n  RETURN jsonb_build_object(\r\n    'success', true,\r\n    'user_id', v_user_id,\r\n    'email', v_email\r\n  );\r\n  \r\nEXCEPTION\r\n  WHEN OTHERS THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', SQLERRM\r\n    );\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "batch_update_module_order",
+    "arguments": "p_module_orders jsonb",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.batch_update_module_order(p_module_orders jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_module JSONB;\r\n  v_count INT := 0;\r\nBEGIN\r\n  FOR v_module IN SELECT * FROM jsonb_array_elements(p_module_orders)\r\n  LOOP\r\n    INSERT INTO user_module_preferences (user_id, module_code, display_order)\r\n    VALUES (\r\n      current_user_id(),\r\n      v_module->>'module_code',\r\n      (v_module->>'display_order')::INT\r\n    )\r\n    ON CONFLICT (user_id, module_code)\r\n    DO UPDATE SET \r\n      display_order = (v_module->>'display_order')::INT,\r\n      updated_at = NOW();\r\n    \r\n    v_count := v_count + 1;\r\n  END LOOP;\r\n  \r\n  RETURN jsonb_build_object(\r\n    'success', true,\r\n    'updated_count', v_count\r\n  );\r\n  \r\nEXCEPTION\r\n  WHEN OTHERS THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', SQLERRM\r\n    );\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "calculate_attendance_minutes",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.calculate_attendance_minutes()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\r\nBEGIN\r\n  IF NEW.check_out_time IS NOT NULL THEN\r\n    NEW.total_minutes = EXTRACT(EPOCH FROM (NEW.check_out_time - NEW.check_in_time)) / 60;\r\n  END IF;\r\n  RETURN NEW;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "calculate_break_duration",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.calculate_break_duration()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\r\nBEGIN\r\n  IF NEW.break_end IS NOT NULL THEN\r\n    NEW.duration_minutes = EXTRACT(EPOCH FROM (NEW.break_end - NEW.break_start)) / 60;\r\n  END IF;\r\n  RETURN NEW;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "calculate_skt_alarm_date",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.calculate_skt_alarm_date()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\r\nBEGIN\r\n  NEW.alarm_date = NEW.expiry_date - (NEW.alarm_days_before || ' days')::INTERVAL;\r\n  \r\n  IF NEW.expiry_date < CURRENT_DATE THEN\r\n    NEW.status = 'gecmis';\r\n  ELSIF NEW.expiry_date <= CURRENT_DATE + (NEW.alarm_days_before || ' days')::INTERVAL THEN\r\n    NEW.status = 'yaklasan';\r\n  ELSE\r\n    NEW.status = 'normal';\r\n  END IF;\r\n  \r\n  RETURN NEW;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "current_tenant_id",
+    "arguments": "",
+    "return_type": "uuid",
+    "language": "sql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.current_tenant_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT COALESCE(\r\n    (SELECT tenant_id FROM users WHERE id = auth.uid()),\r\n    '00000000-0000-0000-0000-000000000000'::uuid\r\n  );\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "current_user_id",
+    "arguments": "",
+    "return_type": "uuid",
+    "language": "sql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.current_user_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT COALESCE(\r\n    auth.uid(),\r\n    '00000000-0000-0000-0000-000000000000'::uuid\r\n  );\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "current_user_role",
+    "arguments": "",
+    "return_type": "text",
+    "language": "sql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.current_user_role()\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT COALESCE(\r\n    (SELECT role::text FROM users WHERE id = auth.uid()),\r\n    'anonymous'\r\n  );\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "custom_access_token_hook",
+    "arguments": "event jsonb",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$ BEGIN RETURN event; END; $function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_all_tenants",
+    "arguments": "",
+    "return_type": "TABLE(id uuid, code text, name text, active boolean, total_users bigint, active_modules bigint)",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.get_all_tenants()\n RETURNS TABLE(id uuid, code text, name text, active boolean, total_users bigint, active_modules bigint)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nBEGIN\r\n  -- Sadece grand admin çağırabilir\r\n  IF current_user_role() != 'grand_admin' THEN\r\n    RAISE EXCEPTION 'Bu fonksiyonu sadece Grand Admin çağırabilir';\r\n  END IF;\r\n  \r\n  RETURN QUERY\r\n  SELECT \r\n    t.id,\r\n    t.code,\r\n    t.name,\r\n    t.active,\r\n    COUNT(DISTINCT u.id) as total_users,\r\n    COUNT(DISTINCT tm.module_code) FILTER (WHERE tm.is_enabled = true) as active_modules\r\n  FROM tenants t\r\n  LEFT JOIN users u ON u.tenant_id = t.id AND u.active = true\r\n  LEFT JOIN tenant_modules tm ON tm.tenant_id = t.id\r\n  WHERE t.code != 'SYSTEM' -- Sistem tenant'ını gösterme\r\n  GROUP BY t.id, t.code, t.name, t.active\r\n  ORDER BY t.name;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_tenant_modules",
+    "arguments": "p_tenant_id uuid",
+    "return_type": "TABLE(module_code text, module_name text, module_icon text, module_description text, is_core boolean, is_enabled boolean, enabled_at timestamp with time zone)",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.get_tenant_modules(p_tenant_id uuid)\n RETURNS TABLE(module_code text, module_name text, module_icon text, module_description text, is_core boolean, is_enabled boolean, enabled_at timestamp with time zone)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nBEGIN\r\n  -- Grand admin veya aynı tenant'taki kullanıcı çağırabilir\r\n  IF current_user_role() != 'grand_admin' AND current_tenant_id() != p_tenant_id THEN\r\n    RAISE EXCEPTION 'Bu firmaya erişim yetkiniz yok';\r\n  END IF;\r\n  \r\n  RETURN QUERY\r\n  SELECT \r\n    m.code,\r\n    m.name,\r\n    m.icon,\r\n    m.description,\r\n    m.is_core,\r\n    COALESCE(tm.is_enabled, false) as is_enabled,\r\n    tm.enabled_at\r\n  FROM modules m\r\n  LEFT JOIN tenant_modules tm ON tm.module_code = m.code AND tm.tenant_id = p_tenant_id\r\n  WHERE m.active = true\r\n  ORDER BY m.display_order;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_user_data_by_id",
+    "arguments": "p_user_id text",
+    "return_type": "TABLE(id text, email text, first_name text, last_name text, role text, tenant_id text, branch_id text, employee_code text)",
+    "language": "sql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.get_user_data_by_id(p_user_id text)\n RETURNS TABLE(id text, email text, first_name text, last_name text, role text, tenant_id text, branch_id text, employee_code text)\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT \r\n    id::TEXT, email::TEXT, first_name::TEXT, last_name::TEXT,\r\n    role::TEXT, tenant_id::TEXT, branch_id::TEXT, employee_code::TEXT\r\n  FROM users WHERE id = p_user_id::UUID LIMIT 1;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_user_email_by_sicil",
+    "arguments": "p_sicil_no text",
+    "return_type": "TABLE(email text, active boolean)",
+    "language": "sql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.get_user_email_by_sicil(p_sicil_no text)\n RETURNS TABLE(email text, active boolean)\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT email::TEXT, active FROM users WHERE employee_code = p_sicil_no LIMIT 1;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_user_modules",
+    "arguments": "",
+    "return_type": "TABLE(module_code text, module_name text, module_icon text, is_core boolean, display_order integer, is_visible boolean)",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.get_user_modules()\n RETURNS TABLE(module_code text, module_name text, module_icon text, is_core boolean, display_order integer, is_visible boolean)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_tenant_id UUID;\r\nBEGIN\r\n  v_tenant_id := current_tenant_id();\r\n  \r\n  RETURN QUERY\r\n  SELECT \r\n    m.code,\r\n    m.name,\r\n    m.icon,\r\n    m.is_core,\r\n    COALESCE(ump.display_order, m.display_order) as display_order,\r\n    COALESCE(ump.is_visible, true) as is_visible\r\n  FROM modules m\r\n  INNER JOIN tenant_modules tm ON tm.module_code = m.code AND tm.tenant_id = v_tenant_id\r\n  LEFT JOIN user_module_preferences ump ON ump.module_code = m.code AND ump.user_id = current_user_id()\r\n  WHERE m.active = true AND tm.is_enabled = true\r\n  ORDER BY COALESCE(ump.display_order, m.display_order);\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "toggle_tenant_module",
+    "arguments": "p_tenant_id uuid, p_module_code text, p_is_enabled boolean",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.toggle_tenant_module(p_tenant_id uuid, p_module_code text, p_is_enabled boolean)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_is_core BOOLEAN;\r\nBEGIN\r\n  -- Sadece grand admin çağırabilir\r\n  IF current_user_role() != 'grand_admin' THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', 'Bu işlem için Grand Admin yetkisi gerekli'\r\n    );\r\n  END IF;\r\n  \r\n  -- Core modül mü kontrol et\r\n  SELECT is_core INTO v_is_core FROM modules WHERE code = p_module_code;\r\n  \r\n  IF v_is_core AND NOT p_is_enabled THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', 'Temel modüller kapatılamaz'\r\n    );\r\n  END IF;\r\n  \r\n  -- Modül kaydını ekle veya güncelle\r\n  INSERT INTO tenant_modules (tenant_id, module_code, is_enabled, enabled_by)\r\n  VALUES (p_tenant_id, p_module_code, p_is_enabled, current_user_id())\r\n  ON CONFLICT (tenant_id, module_code)\r\n  DO UPDATE SET \r\n    is_enabled = p_is_enabled,\r\n    enabled_at = NOW(),\r\n    enabled_by = current_user_id();\r\n  \r\n  RETURN jsonb_build_object(\r\n    'success', true,\r\n    'tenant_id', p_tenant_id,\r\n    'module_code', p_module_code,\r\n    'is_enabled', p_is_enabled\r\n  );\r\n  \r\nEXCEPTION\r\n  WHEN OTHERS THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', SQLERRM\r\n    );\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "update_task_completion",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.update_task_completion()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\r\nDECLARE\r\n  total_items INTEGER;\r\n  completed_items INTEGER;\r\n  task_uuid UUID;\r\nBEGIN\r\n  IF TG_OP = 'DELETE' THEN\r\n    task_uuid = OLD.task_id;\r\n  ELSE\r\n    task_uuid = NEW.task_id;\r\n  END IF;\r\n\r\n  SELECT COUNT(*) INTO total_items\r\n  FROM task_items\r\n  WHERE task_id = task_uuid;\r\n\r\n  SELECT COUNT(*) INTO completed_items\r\n  FROM task_items\r\n  WHERE task_id = task_uuid AND completed = true;\r\n\r\n  IF total_items > 0 THEN\r\n    UPDATE tasks\r\n    SET completion_percentage = (completed_items::FLOAT / total_items::FLOAT * 100)::INTEGER\r\n    WHERE id = task_uuid;\r\n  END IF;\r\n\r\n  IF TG_OP = 'DELETE' THEN\r\n    RETURN OLD;\r\n  ELSE\r\n    RETURN NEW;\r\n  END IF;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "update_updated_at_column",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.update_updated_at_column()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\r\nBEGIN\r\n  NEW.updated_at = NOW();\r\n  RETURN NEW;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "update_user_module_order",
+    "arguments": "p_module_code text, p_display_order integer",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "function_type": "FUNCTION",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.update_user_module_order(p_module_code text, p_display_order integer)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nBEGIN\r\n  INSERT INTO user_module_preferences (user_id, module_code, display_order)\r\n  VALUES (current_user_id(), p_module_code, p_display_order)\r\n  ON CONFLICT (user_id, module_code)\r\n  DO UPDATE SET \r\n    display_order = p_display_order,\r\n    updated_at = NOW();\r\n  \r\n  RETURN jsonb_build_object(\r\n    'success', true,\r\n    'module_code', p_module_code,\r\n    'display_order', p_display_order\r\n  );\r\n  \r\nEXCEPTION\r\n  WHEN OTHERS THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', SQLERRM\r\n    );\r\nEND;\r\n$function$\n"
+  }
+]

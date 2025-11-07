@@ -1,0 +1,72 @@
+name: yotech_mobile
+description: Yotech Mobile App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  
+  # Supabase
+  supabase_flutter: ^2.0.0
+  
+  # Local Storage
+  shared_preferences: ^2.2.2
+  
+  # Environment Variables
+  flutter_dotenv: ^5.1.0
+  
+  # Code Generation
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+
+  # UI
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # Code Generation
+  build_runner: ^2.4.6
+  freezed: ^2.4.5
+  json_serializable: ^6.7.1
+  
+  flutter_lints: ^3.0.0
+  
+  # App Icon & Splash
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.5
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - .env
+
+# App Icon Configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo_light.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo_light.png"
+  remove_alpha_ios: true
+
+# Splash Screen Configuration
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/logo_light.png
+  android: true
+  ios: true
+  web: false
+  android_12:
+    image: assets/images/logo_light.png
+    color: "#FFFFFF"

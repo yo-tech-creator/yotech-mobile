@@ -1,0 +1,86 @@
+[
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "constraint_name": "announcement_reads_announcement_id_user_id_key",
+    "columns": "announcement_id, user_id"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "constraint_name": "branch_scores_tenant_id_branch_id_evaluation_period_key",
+    "columns": "tenant_id, branch_id, evaluation_period"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "constraint_name": "branches_tenant_id_code_key",
+    "columns": "tenant_id, code"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "constraint_name": "modules_code_key",
+    "columns": "code"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "constraint_name": "payrolls_tenant_id_user_id_period_key",
+    "columns": "tenant_id, user_id, period"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "constraint_name": "products_tenant_id_barcode_key",
+    "columns": "tenant_id, barcode"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "constraint_name": "regions_tenant_id_code_key",
+    "columns": "tenant_id, code"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "constraint_name": "shifts_tenant_id_branch_id_week_start_date_key",
+    "columns": "tenant_id, branch_id, week_start_date"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "constraint_name": "task_assignees_task_id_user_id_key",
+    "columns": "task_id, user_id"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tenant_modules",
+    "constraint_name": "tenant_modules_tenant_id_module_code_key",
+    "columns": "tenant_id, module_code"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tenants",
+    "constraint_name": "tenants_code_key",
+    "columns": "code"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "user_module_preferences",
+    "constraint_name": "user_module_preferences_user_id_module_code_key",
+    "columns": "user_id, module_code"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "constraint_name": "users_email_key",
+    "columns": "email"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "constraint_name": "users_tenant_id_employee_code_key",
+    "columns": "tenant_id, employee_code"
+  }
+]

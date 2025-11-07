@@ -1,0 +1,92 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "modules",
+    "policyname": "modules_modify_grand_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "using_expression": "(current_user_role() = 'grand_admin'::text)",
+    "with_check_expression": "(current_user_role() = 'grand_admin'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "modules",
+    "policyname": "modules_select_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "using_expression": "true",
+    "with_check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "policyname": "skt_delete_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "using_expression": "((tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text, 'sube_muduru'::text])))",
+    "with_check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "policyname": "skt_insert_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "using_expression": null,
+    "with_check_expression": "((tenant_id = current_tenant_id()) AND ((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text, 'sube_muduru'::text])) OR (branch_id IN ( SELECT users.branch_id\n   FROM users\n  WHERE (users.id = current_user_id())))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "policyname": "skt_select_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "using_expression": "((tenant_id = current_tenant_id()) AND ((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR ((current_user_role() = 'bolge_muduru'::text) AND (branch_id IN ( SELECT b.id\n   FROM branches b\n  WHERE (b.region_id IN ( SELECT r.id\n           FROM regions r\n          WHERE (r.manager_id = current_user_id())))))) OR (branch_id IN ( SELECT users.branch_id\n   FROM users\n  WHERE (users.id = current_user_id())))))",
+    "with_check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records",
+    "policyname": "skt_update_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "using_expression": "((tenant_id = current_tenant_id()) AND ((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text, 'sube_muduru'::text])) OR (branch_id IN ( SELECT users.branch_id\n   FROM users\n  WHERE (users.id = current_user_id())))))",
+    "with_check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenant_modules",
+    "policyname": "tenant_modules_modify",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "using_expression": "(current_user_role() = 'grand_admin'::text)",
+    "with_check_expression": "(current_user_role() = 'grand_admin'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenant_modules",
+    "policyname": "tenant_modules_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "using_expression": "((current_user_role() = 'grand_admin'::text) OR (tenant_id = current_tenant_id()))",
+    "with_check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_module_preferences",
+    "policyname": "user_preferences_own",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "using_expression": "(user_id = current_user_id())",
+    "with_check_expression": "(user_id = current_user_id())"
+  }
+]

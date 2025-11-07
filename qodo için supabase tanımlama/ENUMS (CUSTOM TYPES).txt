@@ -1,0 +1,207 @@
+[
+  {
+    "enum_name": "leave_status",
+    "enum_value": "beklemede",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "leave_status",
+    "enum_value": "onaylandi",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "leave_status",
+    "enum_value": "reddedildi",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "leave_type",
+    "enum_value": "yillik",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "leave_type",
+    "enum_value": "ucretsiz",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "leave_type",
+    "enum_value": "ucretli",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "leave_type",
+    "enum_value": "saglik",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "malfunction_category",
+    "enum_value": "bt_donanim",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "malfunction_category",
+    "enum_value": "sogutma",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "malfunction_category",
+    "enum_value": "bina_tesisat",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "malfunction_category",
+    "enum_value": "depo_lojistik",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "malfunction_category",
+    "enum_value": "guvenlik",
+    "enumsortorder": 5
+  },
+  {
+    "enum_name": "malfunction_category",
+    "enum_value": "diger",
+    "enumsortorder": 6
+  },
+  {
+    "enum_name": "malfunction_priority",
+    "enum_value": "dusuk",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "malfunction_priority",
+    "enum_value": "orta",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "malfunction_priority",
+    "enum_value": "yuksek",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "malfunction_priority",
+    "enum_value": "kritik",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "malfunction_status",
+    "enum_value": "acik",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "malfunction_status",
+    "enum_value": "devam_ediyor",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "malfunction_status",
+    "enum_value": "cozuldu",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "malfunction_status",
+    "enum_value": "iptal",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "product_issue_status",
+    "enum_value": "acik",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "product_issue_status",
+    "enum_value": "inceleniyor",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "product_issue_status",
+    "enum_value": "cozuldu",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "product_issue_status",
+    "enum_value": "kapandi",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "skt_status",
+    "enum_value": "normal",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "skt_status",
+    "enum_value": "yaklasan",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "skt_status",
+    "enum_value": "gecmis",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "task_status",
+    "enum_value": "atandi",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "task_status",
+    "enum_value": "devam_ediyor",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "task_status",
+    "enum_value": "tamamlandi",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "task_status",
+    "enum_value": "iptal",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "transfer_status",
+    "enum_value": "hazirlaniyor",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "transfer_status",
+    "enum_value": "yolda",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "transfer_status",
+    "enum_value": "teslim_edildi",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "transfer_status",
+    "enum_value": "iptal",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "user_role",
+    "enum_value": "grand_admin",
+    "enumsortorder": 1
+  },
+  {
+    "enum_name": "user_role",
+    "enum_value": "firma_admin",
+    "enumsortorder": 2
+  },
+  {
+    "enum_name": "user_role",
+    "enum_value": "bolge_muduru",
+    "enumsortorder": 3
+  },
+  {
+    "enum_name": "user_role",
+    "enum_value": "sube_muduru",
+    "enumsortorder": 4
+  },
+  {
+    "enum_name": "user_role",
+    "enum_value": "personel",
+    "enumsortorder": 5
+  }
+]
