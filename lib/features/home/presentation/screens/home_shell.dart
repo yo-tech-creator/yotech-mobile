@@ -487,6 +487,15 @@ class _BottomSheet extends StatefulWidget {
 class _BottomSheetState extends State<_BottomSheet> {
   bool _isExpanded = false;
   bool _showProfileFooter = false;
+  // Becomes true when the user starts dragging the header handle. Used to
+  // ensure the profile/footer area is only revealed by a handle pull and not
+  // by inner content scrolling.
+  bool _headerDragStarted = false;
+  // Records whether the sheet was already expanded when the header drag
+  // started. We only reveal the profile/footer when the user pulls the
+  // header while already on the expanded features snap (i.e. a second
+  // pull).
+  bool _wasExpandedAtDragStart = false;
 
   @override
   void initState() {
@@ -501,13 +510,23 @@ class _BottomSheetState extends State<_BottomSheet> {
     // shows the horizontal strip (avoids tiny size deltas flipping to
     // expanded view).
     final expanded = size > (widget.minSize + 0.08);
-    final footerVisible = widget.profileSize != null
-        ? size > ((widget.maxSize + widget.profileSize!) / 2)
-        : false;
-    if (expanded != _isExpanded || footerVisible != _showProfileFooter) {
+    // We intentionally do NOT set `_showProfileFooter` to true here. The
+    // profile/footer should only be revealed when the user explicitly pulls
+    // the header handle a second time (handled in the header's
+    // onVerticalDragEnd). However, if the sheet collapses below the hide
+    // threshold, we must hide the footer immediately.
+    var shouldHideFooter = false;
+    if (widget.profileSize != null) {
+      final hideThreshold = (widget.maxSize + widget.profileSize!) / 2;
+      if (size < hideThreshold && _showProfileFooter) {
+        shouldHideFooter = true;
+      }
+    }
+
+    if (expanded != _isExpanded || shouldHideFooter) {
       setState(() {
         _isExpanded = expanded;
-        _showProfileFooter = footerVisible;
+        if (shouldHideFooter) _showProfileFooter = false;
       });
     }
   }
@@ -524,9 +543,17 @@ class _BottomSheetState extends State<_BottomSheet> {
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
 
-    final maxChild = widget.profileSize ?? widget.maxSize;
+    // Only allow the profile snap option once the sheet has reached the
+    // expanded features state. This prevents jumping straight from the
+    // collapsed state into the profile area and enforces the "second
+    // pull" behaviour.
+    final maxChild = (_isExpanded && widget.profileSize != null)
+        ? widget.profileSize!
+        : widget.maxSize;
     final snapList = <double>[widget.minSize, widget.maxSize];
-    if (widget.profileSize != null && widget.profileSize! > widget.maxSize) {
+    if (widget.profileSize != null &&
+        _isExpanded &&
+        widget.profileSize! > widget.maxSize) {
       snapList.add(widget.profileSize!);
     }
 
@@ -551,6 +578,17 @@ class _BottomSheetState extends State<_BottomSheet> {
               children: [
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
+                  onVerticalDragStart: (_) {
+                    // Mark that a header drag began. Capture whether the
+                    // sheet was already in the expanded state when the drag
+                    // started — we only want a second pull (from expanded)
+                    // to reveal the profile/footer.
+                    _headerDragStarted = true;
+                    _wasExpandedAtDragStart = _isExpanded;
+                    developer.log(
+                        'header drag started expanded=$_wasExpandedAtDragStart',
+                        name: 'home_shell');
+                  },
                   onVerticalDragUpdate: (details) {
                     final screenH = MediaQuery.of(context).size.height;
                     final dy = details.delta.dy;
@@ -567,13 +605,15 @@ class _BottomSheetState extends State<_BottomSheet> {
                       widget.controller.jumpTo(newSize);
                     } catch (_) {}
                   },
-                  onVerticalDragEnd: (details) {
+                  onVerticalDragEnd: (details) async {
                     final current = widget.controller.size;
-                    final snapList = [
-                      widget.minSize,
-                      maxChild,
-                      widget.profileSize
-                    ].where((e) => e != null).map((e) => e!).toList();
+                    // Use the same snap sizes configured for the sheet so we
+                    // pick the correct target (min, features max, optional
+                    // profile snap).
+                    final snapList = <double>[widget.minSize, widget.maxSize];
+                    if (widget.profileSize != null) {
+                      snapList.add(widget.profileSize!);
+                    }
                     double closest = snapList.first;
                     for (final s in snapList) {
                       if ((s - current).abs() < (closest - current).abs()) {
@@ -585,12 +625,34 @@ class _BottomSheetState extends State<_BottomSheet> {
                       name: 'home_shell.drag',
                     );
                     try {
-                      widget.controller.animateTo(
+                      await widget.controller.animateTo(
                         closest,
                         duration: const Duration(milliseconds: 250),
                         curve: Curves.easeOutCubic,
                       );
-                    } catch (_) {}
+
+                      // Only reveal the profile/footer if we landed on the
+                      // profile snap AND the drag began from the header while
+                      // already expanded (this enforces the "second pull"
+                      // behaviour).
+                      if (widget.profileSize != null &&
+                          (closest - widget.profileSize!).abs() < 0.001 &&
+                          _headerDragStarted &&
+                          _wasExpandedAtDragStart) {
+                        setState(() => _showProfileFooter = true);
+                      } else if (_showProfileFooter) {
+                        // If we didn't land on the profile snap, hide the
+                        // footer.
+                        setState(() => _showProfileFooter = false);
+                      }
+                    } catch (_) {
+                      // ignore animation errors
+                    } finally {
+                      // Reset the header drag flag regardless of outcome so
+                      // inner scrolling cannot reuse it.
+                      _headerDragStarted = false;
+                      _wasExpandedAtDragStart = false;
+                    }
                   },
                   child: SizedBox(
                     width: double.infinity,
@@ -631,127 +693,74 @@ class _BottomSheetState extends State<_BottomSheet> {
                       // dragged to the profile snap (second snap). Use
                       // _showProfileFooter which is updated by controller
                       // listener.
-                      if (_showProfileFooter)
-                        SliverToBoxAdapter(
-                          child: LayoutBuilder(builder: (context, constraints) {
-                            // Place the profile row at the bottom of the sheet's
-                            // content area so its lower edge sits close to the
-                            // screen bottom when the sheet snaps to the profile
-                            // size.
-                            return SizedBox(
-                              height: constraints.maxHeight,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Divider(
-                                          color: color.onPrimaryContainer
-                                              .withAlpha((0.2 * 255).round()),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        // Row with profile tile on left and a separate
-                                        // settings button on the right (visually separated)
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Material(
-                                                color: color.surface,
-                                                elevation: 1,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: InkWell(
-                                                  onTap: widget.onProfileTap,
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 12,
-                                                        vertical: 8),
-                                                    child: Row(
-                                                      children: [
-                                                        CircleAvatar(
-                                                          backgroundColor:
-                                                              color.primary,
-                                                          radius: 18,
-                                                          child: Icon(
-                                                            Icons.person,
-                                                            color:
-                                                                color.onPrimary,
-                                                            size: 20,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 10),
-                                                        Expanded(
-                                                          child: Text(
-                                                            widget.displayName
-                                                                    .isEmpty
-                                                                ? 'Kullanıcı'
-                                                                : widget
-                                                                    .displayName,
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                              fontSize: 12,
-                                                              color: color
-                                                                  .onSurface,
-                                                            ),
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Material(
-                                              color: color.surface,
-                                              elevation: 1,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: IconButton(
-                                                onPressed: widget.onSettingsTap,
-                                                icon: Icon(
-                                                  Icons.settings,
-                                                  color: color.primary,
-                                                  size: 20,
-                                                ),
-                                                tooltip: 'Ayarlar',
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Respect system bottom inset so the tile isn't
-                                  // obscured by system UI (nav bar).
-                                  SizedBox(
-                                    height: MediaQuery.of(context)
-                                        .viewPadding
-                                        .bottom,
-                                  ),
-                                ],
-                              ),
-                            );
-                          }),
-                        ),
+                      // profile/footer removed from slivers to prevent inner
+                      // scrolling from revealing it. The footer will be
+                      // rendered below the scroll area as a sibling widget.
                     ],
                   ),
                 ),
+                // Render the profile/footer area as a sibling below the
+                // scroll area. It should not be part of the scrollable
+                // slivers so inner content scrolling cannot reveal it.
+                if (widget.profileSize != null)
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: _showProfileFooter
+                        ? Container(
+                            // Provide enough height for the profile row and
+                            // include bottom safe area padding so the footer
+                            // sits above system UI.
+                            height:
+                                64 + MediaQuery.of(context).viewPadding.bottom,
+                            padding: EdgeInsets.only(
+                              left: 16,
+                              right: 16,
+                              bottom: MediaQuery.of(context).viewPadding.bottom,
+                            ),
+                            child: Material(
+                              // Keep the footer visually attached to the
+                              // parent sheet by using a transparent material
+                              // (parent already supplies the background and
+                              // rounded corners) and no elevation.
+                              color: Colors.transparent,
+                              elevation: 0,
+                              child: InkWell(
+                                onTap: widget.onProfileTap,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: color.primaryContainer,
+                                        child: Icon(Icons.person,
+                                            color: color.onPrimaryContainer),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          widget.displayName,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: color.onSurface,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: widget.onSettingsTap,
+                                        icon: Icon(Icons.settings,
+                                            color: color.onSurface),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
               ],
             ),
           ),
