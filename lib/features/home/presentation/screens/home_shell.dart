@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,19 +85,19 @@ FeatureEntry _entryFor(String key) {
 }
 
 class HomeShell extends ConsumerStatefulWidget {
-  const HomeShell({super.key});
+  const HomeShell({Key? key}) : super(key: key);
+
   @override
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends ConsumerState<HomeShell> {
-  final _sheetCtrl = DraggableScrollableController();
-  List<String> _order = [];
-  String? _activePageKey;
+const double kMinSheetSize = 0.18;
 
-  // Tek kaynaktan kontrol
-  static const double kMinSheetSize = 0.12;
-  static const double kMaxSheetSize = 0.45;
+class _HomeShellState extends ConsumerState<HomeShell> {
+  final DraggableScrollableController _sheetCtrl =
+      DraggableScrollableController();
+  List<String> _order = <String>[];
+  String? _activePageKey;
 
   @override
   void initState() {
@@ -160,10 +161,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     if (ok == true) {
       await ref.read(authProvider.notifier).logout();
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+      });
     }
   }
 
@@ -270,56 +273,89 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     ),
                     Align(
                       alignment: Alignment.bottomCenter,
-                      child: _BottomSheet(
-                        controller: _sheetCtrl,
-                        entries: entries,
-                        displayName: '${user.name} ${user.surname}',
-                        minSize: kMinSheetSize,
-                        maxSize: kMaxSheetSize,
-                        onReorder: (oldIndex, newIndex) {
-                          setState(() {
-                            final item = _order.removeAt(oldIndex);
-                            _order.insert(newIndex, item);
-                          });
-                          _persistOrder();
-                        },
-                        onTap: (key) async {
-                          try {
-                            if (_sheetCtrl.size > kMinSheetSize + 0.01) {
-                              await _sheetCtrl.animateTo(
-                                kMinSheetSize,
-                                duration: const Duration(milliseconds: 140),
-                                curve: Curves.easeOut,
-                              );
-                            }
-                          } catch (_) {}
-                          _openFeature(key);
-                        },
-                        onProfileTap: () async {
-                          try {
-                            await _sheetCtrl.animateTo(
-                              kMinSheetSize,
-                              duration: const Duration(milliseconds: 140),
-                              curve: Curves.easeOut,
-                            );
-                          } catch (_) {}
-                          _openFeature(FeatureKeys.profile);
-                        },
-                        onSettingsTap: () async {
-                          try {
-                            if (_sheetCtrl.size > kMinSheetSize + 0.01) {
-                              await _sheetCtrl.animateTo(
-                                kMinSheetSize,
-                                duration: const Duration(milliseconds: 140),
-                                curve: Curves.easeOut,
-                              );
-                            }
-                          } catch (_) {}
-                          if (!mounted) return;
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SettingsPage(),
-                            ),
+                      child: Builder(
+                        builder: (context) {
+                          final screenH = MediaQuery.of(context).size.height;
+                          final screenW = MediaQuery.of(context).size.width;
+                          final crossAxisCount = screenW > 420 ? 5 : 4;
+                          final rows = ((entries.length + crossAxisCount - 1) ~/
+                                  crossAxisCount)
+                              .clamp(1, 10);
+                          const headerHeight = 56.0;
+                          const itemHeight = 88.0;
+                          // height reserved for the profile row area
+                          const profileAreaHeight = 64.0;
+                          // minimal extra padding so profile sits near screen bottom
+                          const otherPadding = 8.0;
+                          final desiredPixels = headerHeight +
+                              rows * itemHeight +
+                              profileAreaHeight +
+                              otherPadding;
+                          // Limit how tall the sheet can grow on small devices.
+                          // Keep feature-area visible but ensure profile snap is a
+                          // small additional increment above it.
+                          var computedMax = (desiredPixels / screenH)
+                              .clamp(kMinSheetSize + 0.05, 0.45);
+                          if (computedMax < kMinSheetSize + 0.05) {
+                            computedMax = kMinSheetSize + 0.05;
+                          }
+                          final computedProfile = (desiredPixels / screenH)
+                              .clamp(computedMax + 0.01, 0.60);
+
+                          return _BottomSheet(
+                            controller: _sheetCtrl,
+                            entries: entries,
+                            displayName: '${user.name} ${user.surname}',
+                            minSize: kMinSheetSize,
+                            maxSize: computedMax,
+                            profileSize: computedProfile,
+                            onReorder: (oldIndex, newIndex) {
+                              setState(() {
+                                final item = _order.removeAt(oldIndex);
+                                _order.insert(newIndex, item);
+                              });
+                              _persistOrder();
+                            },
+                            onTap: (key) async {
+                              try {
+                                if (_sheetCtrl.size > kMinSheetSize + 0.01) {
+                                  await _sheetCtrl.animateTo(
+                                    kMinSheetSize,
+                                    duration: const Duration(milliseconds: 140),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                              } catch (_) {}
+                              _openFeature(key);
+                            },
+                            onProfileTap: () async {
+                              try {
+                                await _sheetCtrl.animateTo(
+                                  kMinSheetSize,
+                                  duration: const Duration(milliseconds: 140),
+                                  curve: Curves.easeOut,
+                                );
+                              } catch (_) {}
+                              _openFeature(FeatureKeys.profile);
+                            },
+                            onSettingsTap: () async {
+                              try {
+                                final navigator = Navigator.of(context);
+                                if (_sheetCtrl.size > kMinSheetSize + 0.01) {
+                                  await _sheetCtrl.animateTo(
+                                    kMinSheetSize,
+                                    duration: const Duration(milliseconds: 140),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                                if (!mounted) return;
+                                await navigator.push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const SettingsPage(),
+                                  ),
+                                );
+                              } catch (_) {}
+                            },
                           );
                         },
                       ),
@@ -426,6 +462,7 @@ class _BottomSheet extends StatefulWidget {
     required this.displayName,
     required this.minSize,
     required this.maxSize,
+    this.profileSize,
     required this.onReorder,
     required this.onTap,
     required this.onProfileTap,
@@ -437,6 +474,7 @@ class _BottomSheet extends StatefulWidget {
   final String displayName;
   final double minSize;
   final double maxSize;
+  final double? profileSize;
   final void Function(int oldIndex, int newIndex) onReorder;
   final void Function(String key) onTap;
   final VoidCallback onProfileTap;
@@ -448,6 +486,7 @@ class _BottomSheet extends StatefulWidget {
 
 class _BottomSheetState extends State<_BottomSheet> {
   bool _isExpanded = false;
+  bool _showProfileFooter = false;
 
   @override
   void initState() {
@@ -456,24 +495,24 @@ class _BottomSheetState extends State<_BottomSheet> {
   }
 
   void _onSheetChanged() {
-    final expanded = widget.controller.size > (widget.minSize + 0.05);
-    if (expanded != _isExpanded) {
-      setState(() => _isExpanded = expanded);
+    final size = widget.controller.size;
+    developer.log('BottomSheet size changed: $size', name: 'home_shell');
+    // Raise expanded threshold slightly so the closed state reliably
+    // shows the horizontal strip (avoids tiny size deltas flipping to
+    // expanded view).
+    final expanded = size > (widget.minSize + 0.08);
+    final footerVisible = widget.profileSize != null
+        ? size > ((widget.maxSize + widget.profileSize!) / 2)
+        : false;
+    if (expanded != _isExpanded || footerVisible != _showProfileFooter) {
+      setState(() {
+        _isExpanded = expanded;
+        _showProfileFooter = footerVisible;
+      });
     }
   }
 
-  Future<void> _toggleSnap() async {
-    final target = widget.controller.size < (widget.minSize + 0.02)
-        ? widget.maxSize
-        : widget.minSize;
-    try {
-      await widget.controller.animateTo(
-        target,
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-      );
-    } catch (_) {}
-  }
+  // _toggleSnap removed — not used. Keep method removed to silence unused warnings.
 
   @override
   void dispose() {
@@ -485,37 +524,85 @@ class _BottomSheetState extends State<_BottomSheet> {
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
 
+    final maxChild = widget.profileSize ?? widget.maxSize;
+    final snapList = <double>[widget.minSize, widget.maxSize];
+    if (widget.profileSize != null && widget.profileSize! > widget.maxSize) {
+      snapList.add(widget.profileSize!);
+    }
+
     return DraggableScrollableSheet(
       controller: widget.controller,
       expand: false,
       initialChildSize: widget.minSize,
       minChildSize: widget.minSize,
-      maxChildSize: widget.maxSize,
+      maxChildSize: maxChild,
       snap: true,
-      snapSizes: [widget.minSize, widget.maxSize],
+      snapSizes: snapList,
       builder: (context, scrollCtrl) {
+        const double headerHeight = 56.0;
         return SafeArea(
           top: false,
           child: Material(
             elevation: 16,
-            shadowColor: Colors.black.withOpacity(0.3),
-            color: color.primaryContainer.withOpacity(0.95),
+            shadowColor: Colors.black.withAlpha((0.3 * 255).round()),
+            color: color.primaryContainer.withAlpha((0.95 * 255).round()),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             child: Column(
               children: [
-                InkWell(
-                  onTap: _toggleSnap,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(24)),
-                  child: Container(
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onVerticalDragUpdate: (details) {
+                    final screenH = MediaQuery.of(context).size.height;
+                    final dy = details.delta.dy;
+                    // Use a larger scale so sheet moves responsively again.
+                    const deltaScale = 0.8;
+                    final deltaFraction = -dy / screenH * deltaScale;
+                    final newSize = (widget.controller.size + deltaFraction)
+                        .clamp(widget.minSize, maxChild);
+                    developer.log(
+                      'drag update dy=$dy cur=${widget.controller.size} new=$newSize',
+                      name: 'home_shell.drag',
+                    );
+                    try {
+                      widget.controller.jumpTo(newSize);
+                    } catch (_) {}
+                  },
+                  onVerticalDragEnd: (details) {
+                    final current = widget.controller.size;
+                    final snapList = [
+                      widget.minSize,
+                      maxChild,
+                      widget.profileSize
+                    ].where((e) => e != null).map((e) => e!).toList();
+                    double closest = snapList.first;
+                    for (final s in snapList) {
+                      if ((s - current).abs() < (closest - current).abs()) {
+                        closest = s;
+                      }
+                    }
+                    developer.log(
+                      'drag end velocity=${details.velocity.pixelsPerSecond.dy} current=$current target=$closest',
+                      name: 'home_shell.drag',
+                    );
+                    try {
+                      widget.controller.animateTo(
+                        closest,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                      );
+                    } catch (_) {}
+                  },
+                  child: SizedBox(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Center(
+                    height: headerHeight,
+                    child: Align(
+                      alignment: Alignment.center,
                       child: Container(
                         width: 44,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: color.onPrimaryContainer.withOpacity(0.4),
+                          color: color.onPrimaryContainer
+                              .withAlpha((0.4 * 255).round()),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
@@ -534,94 +621,133 @@ class _BottomSheetState extends State<_BottomSheet> {
                           onTap: widget.onTap,
                         )
                       else
+                        // When collapsed, show the full list in a horizontally
+                        // scrolling strip so users can access all shortcuts.
                         _HorizontalIconList(
-                          entries: widget.entries.take(5).toList(),
+                          entries: widget.entries,
                           onTap: widget.onTap,
                         ),
-                      if (_isExpanded)
+                      // Profile/footer area is shown only when the sheet is
+                      // dragged to the profile snap (second snap). Use
+                      // _showProfileFooter which is updated by controller
+                      // listener.
+                      if (_showProfileFooter)
                         SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              children: [
-                                Divider(
-                                  color:
-                                      color.onPrimaryContainer.withOpacity(0.2),
-                                ),
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: color.surface,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: color.outline.withOpacity(0.2),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      InkWell(
-                                        onTap: widget.onProfileTap,
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
+                          child: LayoutBuilder(builder: (context, constraints) {
+                            // Place the profile row at the bottom of the sheet's
+                            // content area so its lower edge sits close to the
+                            // screen bottom when the sheet snaps to the profile
+                            // size.
+                            return SizedBox(
+                              height: constraints.maxHeight,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Divider(
+                                          color: color.onPrimaryContainer
+                                              .withAlpha((0.2 * 255).round()),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // Row with profile tile on left and a separate
+                                        // settings button on the right (visually separated)
+                                        Row(
                                           children: [
-                                            CircleAvatar(
-                                              backgroundColor: color.primary,
-                                              radius: 20,
-                                              child: Icon(
-                                                Icons.person,
-                                                color: color.onPrimary,
-                                                size: 22,
+                                            Expanded(
+                                              child: Material(
+                                                color: color.surface,
+                                                elevation: 1,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                child: InkWell(
+                                                  onTap: widget.onProfileTap,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 8),
+                                                    child: Row(
+                                                      children: [
+                                                        CircleAvatar(
+                                                          backgroundColor:
+                                                              color.primary,
+                                                          radius: 18,
+                                                          child: Icon(
+                                                            Icons.person,
+                                                            color:
+                                                                color.onPrimary,
+                                                            size: 20,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 10),
+                                                        Expanded(
+                                                          child: Text(
+                                                            widget.displayName
+                                                                    .isEmpty
+                                                                ? 'Kullanıcı'
+                                                                : widget
+                                                                    .displayName,
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              fontSize: 12,
+                                                              color: color
+                                                                  .onSurface,
+                                                            ),
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                            const SizedBox(width: 12),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  widget.displayName.isEmpty
-                                                      ? 'Kullanıcı'
-                                                      : widget.displayName,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 15,
-                                                    color: color.onSurface,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                            const SizedBox(width: 8),
+                                            Material(
+                                              color: color.surface,
+                                              elevation: 1,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: IconButton(
+                                                onPressed: widget.onSettingsTap,
+                                                icon: Icon(
+                                                  Icons.settings,
+                                                  color: color.primary,
+                                                  size: 20,
                                                 ),
-                                                Text(
-                                                  'Profili Görüntüle',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color:
-                                                        color.onSurfaceVariant,
-                                                  ),
-                                                ),
-                                              ],
+                                                tooltip: 'Ayarlar',
+                                              ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      const Spacer(),
-                                      IconButton(
-                                        onPressed: widget.onSettingsTap,
-                                        icon: Icon(
-                                          Icons.settings,
-                                          color: color.primary,
-                                          size: 28,
-                                        ),
-                                        tooltip: 'Ayarlar',
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
+                                  // Respect system bottom inset so the tile isn't
+                                  // obscured by system UI (nav bar).
+                                  SizedBox(
+                                    height: MediaQuery.of(context)
+                                        .viewPadding
+                                        .bottom,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                         ),
                     ],
                   ),
@@ -648,16 +774,18 @@ class _HorizontalIconList extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 80,
-        child: ListView.builder(
+        height: 86,
+        child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           itemCount: entries.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, i) {
             final e = entries[i];
-            return _CompactIcon(
-              entry: e,
-              onTap: () => onTap(e.key),
+            return SizedBox(
+              width: 88,
+              child: _CompactFlexible(entry: e, onTap: () => onTap(e.key)),
             );
           },
         ),
@@ -666,11 +794,11 @@ class _HorizontalIconList extends StatelessWidget {
   }
 }
 
-class _CompactIcon extends StatelessWidget {
-  const _CompactIcon({
-    required this.entry,
-    required this.onTap,
-  });
+// kept for compatibility if used elsewhere; prefer _CompactFlexible for horizontal strip
+// _CompactIcon removed — use _CompactFlexible for the collapsed horizontal strip.
+
+class _CompactFlexible extends StatelessWidget {
+  const _CompactFlexible({required this.entry, required this.onTap});
 
   final FeatureEntry entry;
   final VoidCallback onTap;
@@ -678,37 +806,32 @@ class _CompactIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(right: 12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          width: 64,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: c.outline.withOpacity(0.2)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(entry.icon, color: c.primary, size: 26),
-              const SizedBox(height: 4),
-              Text(
-                entry.title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: c.onSurface,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(entry.icon, color: c.primary, size: 24),
+            const SizedBox(height: 6),
+            Text(
+              entry.title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: c.onSurface,
               ),
-            ],
-          ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
@@ -781,18 +904,23 @@ class _ReorderableGridSliverState extends State<_ReorderableGridSliver> {
                     ),
                   ),
                   child: DragTarget<int>(
-                    onWillAccept: (from) => from != i,
-                    onAccept: (from) {
+                    onWillAcceptWithDetails: (details) => details.data != i,
+                    onAcceptWithDetails: (details) {
+                      final from = details.data;
                       widget.onReorder(from, i);
                       setState(() => _dragIndex = null);
                     },
-                    builder: (context, _, __) => _GridTile(
-                      entry: e,
-                      width: itemWidth,
-                      height: itemHeight,
-                      dragging: isDragging,
-                      onTap: () => widget.onTap(e.key),
-                    ),
+                    builder: (context, candidateData, rejectedData) {
+                      final willAccept = candidateData.isNotEmpty;
+                      return _GridTile(
+                        entry: e,
+                        width: itemWidth,
+                        height: itemHeight,
+                        dragging: isDragging,
+                        highlight: willAccept,
+                        onTap: () => widget.onTap(e.key),
+                      );
+                    },
                   ),
                 );
               },
@@ -811,6 +939,7 @@ class _GridTile extends StatelessWidget {
     required this.width,
     required this.height,
     this.dragging = false,
+    this.highlight = false,
     this.onTap,
   });
 
@@ -818,6 +947,7 @@ class _GridTile extends StatelessWidget {
   final double width;
   final double height;
   final bool dragging;
+  final bool highlight;
   final VoidCallback? onTap;
 
   @override
@@ -828,16 +958,18 @@ class _GridTile extends StatelessWidget {
       width: width,
       height: height,
       child: Material(
-        color: c.surface,
+        color: highlight ? c.primaryContainer : c.surface,
         borderRadius: BorderRadius.circular(12),
-        elevation: dragging ? 6 : 0,
+        elevation: dragging || highlight ? 6 : 0,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: c.outline.withOpacity(0.2),
+                color: highlight
+                    ? c.primary
+                    : c.outline.withAlpha((0.2 * 255).round()),
               ),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -845,13 +977,13 @@ class _GridTile extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(entry.icon, color: c.primary, size: 28),
+                Icon(entry.icon, color: c.primary, size: 26),
                 const SizedBox(height: 6),
                 Text(
                   entry.title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: c.onSurface,
                   ),

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 /// DRY prensibine uygun merkezi geri butonu yönetimi
-/// 
+///
 /// Kullanım:
 /// ```dart
 /// CustomBackButton(
@@ -15,10 +15,10 @@ class CustomBackButton extends StatelessWidget {
   final VoidCallback? onBackPressed;
 
   const CustomBackButton({
-    Key? key,
+    super.key,
     required this.child,
     this.onBackPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +39,9 @@ class LoginBackButton extends StatelessWidget {
   final Widget child;
 
   const LoginBackButton({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
 
   Future<void> _showExitDialog(BuildContext context) async {
     final result = await showDialog<bool>(

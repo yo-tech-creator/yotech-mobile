@@ -1,23 +1,23 @@
+import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final effectiveFeaturesProvider = FutureProvider<Map<String, bool>>((ref) async {
+final effectiveFeaturesProvider =
+    FutureProvider<Map<String, bool>>((ref) async {
   try {
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
-    
-    print('📱 DEBUG: userId = $userId');
-    
+    developer.log('📱 DEBUG: userId = $userId', name: 'feature_repo');
+
     if (userId == null) {
       throw Exception('Kullanıcı oturumu bulunamadı');
     }
 
     // RPC fonksiyonu ile kullanıcı verisi al (RLS bypass)
-    final userData = await supabase
-        .rpc('get_user_data_by_id', params: {'p_user_id': userId})
-        .maybeSingle();
+    final userData = await supabase.rpc('get_user_data_by_id',
+        params: {'p_user_id': userId}).maybeSingle();
 
-    print('📱 DEBUG: userData = $userData');
+    developer.log('📱 DEBUG: userData = $userData', name: 'feature_repo');
 
     if (userData == null) {
       throw Exception('Kullanıcı verisi bulunamadı - RPC fonksiyonu başarısız');
@@ -28,7 +28,7 @@ final effectiveFeaturesProvider = FutureProvider<Map<String, bool>>((ref) async 
       throw Exception('Tenant ID bulunamadı');
     }
 
-    print('📱 DEBUG: tenantId = $tenantId');
+    developer.log('📱 DEBUG: tenantId = $tenantId', name: 'feature_repo');
 
     // Tenant'ın modül erişimlerini al
     final tenantData = await supabase
@@ -38,10 +38,11 @@ final effectiveFeaturesProvider = FutureProvider<Map<String, bool>>((ref) async 
         .eq('id', tenantId)
         .maybeSingle();
 
-    print('📱 DEBUG: tenantData = $tenantData');
+    developer.log('📱 DEBUG: tenantData = $tenantData', name: 'feature_repo');
 
     if (tenantData == null) {
-      throw Exception('Tenant modül ayarları bulunamadı - tenants tablosunda kayıt yok');
+      throw Exception(
+          'Tenant modül ayarları bulunamadı - tenants tablosunda kayıt yok');
     }
 
     return {
@@ -61,12 +62,14 @@ final effectiveFeaturesProvider = FutureProvider<Map<String, bool>>((ref) async 
       'requests': true, // Her zaman aktif
     };
   } on PostgrestException catch (e) {
-    print('❌ DEBUG: PostgrestException - ${e.message}');
+    developer.log('❌ DEBUG: PostgrestException - ${e.message}',
+        name: 'feature_repo');
     throw Exception('Veritabanı hatası: ${e.message}');
   } catch (e) {
-    print('❌ DEBUG: Exception - $e');
+    developer.log('❌ DEBUG: Exception - $e', name: 'feature_repo');
     // Geliştirme sırasında fallback - tüm özellikleri aktif et
-    print('⚠️ FALLBACK: Tüm özellikler aktif edildi (geliştirme modu)');
+    developer.log('⚠️ FALLBACK: Tüm özellikler aktif edildi (geliştirme modu)',
+        name: 'feature_repo');
     return {
       'skt': true,
       'forms': true,

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 
 class GrandAdminPanelScreen extends ConsumerWidget {
-  const GrandAdminPanelScreen({Key? key}) : super(key: key);
+  const GrandAdminPanelScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

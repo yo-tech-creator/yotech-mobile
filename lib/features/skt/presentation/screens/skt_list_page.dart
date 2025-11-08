@@ -14,7 +14,9 @@ class SktListPage extends StatelessWidget {
             onPressed: () {
               // Yeni SKT kaydı ekleme özelliği gelecek
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Yeni SKT kaydı ekleme özelliği yakında gelecek')),
+                const SnackBar(
+                    content:
+                        Text('Yeni SKT kaydı ekleme özelliği yakında gelecek')),
               );
             },
           ),
@@ -27,13 +29,19 @@ class SktListPage extends StatelessWidget {
             Icon(
               Icons.calendar_month,
               size: 80,
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withAlpha((0.3 * 255).round()),
             ),
             const SizedBox(height: 16),
             Text(
               'SKT kayıtları burada görüntülenecek',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withAlpha((0.6 * 255).round()),
                   ),
             ),
           ],

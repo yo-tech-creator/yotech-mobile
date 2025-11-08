@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
 
@@ -13,9 +14,8 @@ class AuthRepository {
   }) async {
     try {
       // 1. RPC ile employee_code'dan email ve aktiflik bilgisini al (RLS bypass)
-      final emailResponse = await _supabase
-          .rpc('get_user_email_by_sicil', params: {'p_sicil_no': sicilNo})
-          .maybeSingle();
+      final emailResponse = await _supabase.rpc('get_user_email_by_sicil',
+          params: {'p_sicil_no': sicilNo}).maybeSingle();
 
       if (emailResponse == null) {
         throw Exception('Kullanıcı bulunamadı');
@@ -40,9 +40,14 @@ class AuthRepository {
       }
 
       // 3. Login başarılı - RPC ile kullanıcı bilgilerini al (enum-safe)
-      final userResponse = await _supabase
-          .rpc('get_user_data_by_id', params: {'p_user_id': authResponse.user!.id})
-          .single();
+      final userResponse = await _supabase.rpc('get_user_data_by_id',
+          params: {'p_user_id': authResponse.user!.id}).maybeSingle();
+
+      if (userResponse == null) {
+        // RPC döndü ancak kayıt bulunamadı
+        throw Exception(
+            'Kullanıcı verisi bulunamadı (get_user_data_by_id returned no rows)');
+      }
 
       // 4. UserModel oluştur
       return UserModel(
@@ -53,7 +58,7 @@ class AuthRepository {
         role: userResponse['role'] as String,
         tenantId: userResponse['tenant_id'] as String,
         branchId: userResponse['branch_id'] as String?,
-        regionId: null,  // Users tablosunda region_id yok
+        regionId: null, // Users tablosunda region_id yok
         sicilNo: userResponse['employee_code'] as String?,
       );
     } on AuthException catch (e) {
@@ -79,13 +84,13 @@ class AuthRepository {
       final currentUser = _supabase.auth.currentUser;
       if (currentUser == null) return null;
 
-      final response = await _supabase
-          .rpc('get_user_data_by_id', params: {'p_user_id': currentUser.id})
-          .maybeSingle();
+      final response = await _supabase.rpc('get_user_data_by_id',
+          params: {'p_user_id': currentUser.id}).maybeSingle();
 
       if (response == null) {
         // RPC fonksiyonu bulunamadı veya veri yok
-        print('⚠️ DEBUG: get_user_data_by_id RPC response null');
+        developer.log('⚠️ DEBUG: get_user_data_by_id RPC response null',
+            name: 'auth_repository');
         return null;
       }
 
@@ -101,10 +106,11 @@ class AuthRepository {
         sicilNo: response['employee_code'] as String?,
       );
     } on PostgrestException catch (e) {
-      print('⚠️ DEBUG: PostgrestException - ${e.message}');
+      developer.log('⚠️ DEBUG: PostgrestException - ${e.message}',
+          name: 'auth_repository');
       return null;
     } catch (e) {
-      print('⚠️ DEBUG: Exception - $e');
+      developer.log('⚠️ DEBUG: Exception - $e', name: 'auth_repository');
       return null;
     }
   }
@@ -120,9 +126,8 @@ class AuthRepository {
       if (data.session?.user == null) return null;
 
       try {
-        final userData = await _supabase
-            .rpc('get_user_data_by_id', params: {'p_user_id': data.session!.user.id})
-            .maybeSingle();
+        final userData = await _supabase.rpc('get_user_data_by_id',
+            params: {'p_user_id': data.session!.user.id}).maybeSingle();
 
         if (userData == null) return null;
 
