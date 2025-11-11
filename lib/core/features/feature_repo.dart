@@ -30,36 +30,56 @@ final effectiveFeaturesProvider =
 
     developer.log('📱 DEBUG: tenantId = $tenantId', name: 'feature_repo');
 
-    // Tenant'ın modül erişimlerini al
-    final tenantData = await supabase
-        .from('tenants')
-        .select('module_skt, module_tasks, module_attendance, module_shifts, '
-            'module_forms, module_malfunctions, module_transfers, module_performance, module_payroll')
-        .eq('id', tenantId)
-        .maybeSingle();
+    final modulesRes =
+        await supabase.from('modules').select('code, active, is_core');
 
-    developer.log('📱 DEBUG: tenantData = $tenantData', name: 'feature_repo');
+    developer.log('📱 DEBUG: modules = $modulesRes', name: 'feature_repo');
 
-    if (tenantData == null) {
-      throw Exception(
-          'Tenant modül ayarları bulunamadı - tenants tablosunda kayıt yok');
+    final tenantModulesRes = await supabase
+        .from('tenant_modules')
+        .select('module_code, is_enabled')
+        .eq('tenant_id', tenantId);
+
+    developer.log('📱 DEBUG: tenantModules = $tenantModulesRes',
+        name: 'feature_repo');
+
+    final overrides = <String, bool>{};
+    for (final item in (tenantModulesRes as List? ?? [])) {
+      final map = (item as Map<String, dynamic>);
+      final code = map['module_code'] as String?;
+      if (code == null) continue;
+      final value = map['is_enabled'];
+      overrides[code] = value == true;
     }
 
+    final moduleStates = <String, bool>{};
+    for (final item in (modulesRes as List)) {
+      final map = item as Map<String, dynamic>;
+      final code = map['code'] as String;
+      final isCore = map['is_core'] == true;
+      final globallyActive = map['active'] != false;
+      final override = overrides[code];
+      var enabled = override ?? globallyActive;
+      if (isCore) enabled = true;
+      moduleStates[code] = enabled;
+    }
+
+    bool enabled(String code) => moduleStates[code] ?? false;
+
     return {
-      'skt': tenantData['module_skt'] == true,
-      'forms': tenantData['module_forms'] == true,
-      'shifts': tenantData['module_shifts'] == true,
-      'announcements': true, // Her zaman aktif (ayrı modül yok)
-      'tasks': tenantData['module_tasks'] == true,
-      'interbranch_transfer': tenantData['module_transfers'] == true,
-      'leave_request': true, // Her zaman aktif (ayrı modül yok)
-      'break_tracking': true, // Her zaman aktif (ayrı modül yok)
-      'it_ticket': tenantData['module_malfunctions'] == true,
-      'instore_shortage': true, // Her zaman aktif (ayrı modül yok)
-      'time_attendance': tenantData['module_attendance'] == true,
-      'merchandising': true, // Her zaman aktif (ayrı modül yok)
-      'profile': true, // Her zaman aktif
-      'requests': true, // Her zaman aktif
+      'skt': enabled('skt'),
+      'forms': enabled('form_management'),
+      'shifts': enabled('shift_management') || enabled('takvim'),
+      'announcements': enabled('announcements'),
+      'tasks': enabled('task_management'),
+      'interbranch_transfer': enabled('inventory_transfers'),
+      'leave_request': enabled('talep'),
+      'break_tracking': enabled('break_tracking'),
+      'it_ticket': enabled('malfunction_reports'),
+      'instore_shortage': enabled('stoksuz'),
+      'time_attendance': enabled('puantaj'),
+      'merchandising': enabled('merchandising'),
+      'profile': true,
     };
   } on PostgrestException catch (e) {
     developer.log('❌ DEBUG: PostgrestException - ${e.message}',
@@ -84,7 +104,6 @@ final effectiveFeaturesProvider =
       'time_attendance': true,
       'merchandising': true,
       'profile': true,
-      'requests': true,
     };
   }
 });

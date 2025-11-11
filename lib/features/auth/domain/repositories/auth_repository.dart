@@ -72,9 +72,17 @@ class AuthRepository {
       }
     } on PostgrestException catch (e) {
       // Database hataları
+      if (e.code == 'PGRST116') {
+        throw Exception('Kullanıcı bulunamadı');
+      }
       throw Exception('Veritabanı hatası: ${e.message}');
     } catch (e) {
-      throw Exception('Giriş hatası: ${e.toString()}');
+      // Eğer Exception içindeyse mesajını çıkar
+      final msg = e.toString();
+      if (msg.startsWith('Exception: ')) {
+        throw Exception(msg.substring(11));
+      }
+      throw Exception(msg);
     }
   }
 

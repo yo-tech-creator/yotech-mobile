@@ -54,10 +54,10 @@ flutter:
 # App Icon Configuration
 flutter_launcher_icons:
   android: true
-  ios: true
-  image_path: "assets/images/logo_light.png"
+  ios: false
+  image_path: "assets/images/splash_logo.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo_light.png"
+  adaptive_icon_foreground: "assets/images/splash_logo.png"
   remove_alpha_ios: true
 
 # Splash Screen Configuration

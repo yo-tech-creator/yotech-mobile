@@ -85,13 +85,13 @@ FeatureEntry _entryFor(String key) {
 }
 
 class HomeShell extends ConsumerStatefulWidget {
-  const HomeShell({Key? key}) : super(key: key);
+  const HomeShell({super.key});
 
   @override
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-const double kMinSheetSize = 0.18;
+const double kMinSheetSize = 0.12;
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   final DraggableScrollableController _sheetCtrl =
@@ -487,15 +487,6 @@ class _BottomSheet extends StatefulWidget {
 class _BottomSheetState extends State<_BottomSheet> {
   bool _isExpanded = false;
   bool _showProfileFooter = false;
-  // Becomes true when the user starts dragging the header handle. Used to
-  // ensure the profile/footer area is only revealed by a handle pull and not
-  // by inner content scrolling.
-  bool _headerDragStarted = false;
-  // Records whether the sheet was already expanded when the header drag
-  // started. We only reveal the profile/footer when the user pulls the
-  // header while already on the expanded features snap (i.e. a second
-  // pull).
-  bool _wasExpandedAtDragStart = false;
 
   @override
   void initState() {
@@ -510,23 +501,13 @@ class _BottomSheetState extends State<_BottomSheet> {
     // shows the horizontal strip (avoids tiny size deltas flipping to
     // expanded view).
     final expanded = size > (widget.minSize + 0.08);
-    // We intentionally do NOT set `_showProfileFooter` to true here. The
-    // profile/footer should only be revealed when the user explicitly pulls
-    // the header handle a second time (handled in the header's
-    // onVerticalDragEnd). However, if the sheet collapses below the hide
-    // threshold, we must hide the footer immediately.
-    var shouldHideFooter = false;
-    if (widget.profileSize != null) {
-      final hideThreshold = (widget.maxSize + widget.profileSize!) / 2;
-      if (size < hideThreshold && _showProfileFooter) {
-        shouldHideFooter = true;
-      }
-    }
+    final profileSnap = widget.profileSize ?? widget.maxSize;
+    final showProfileFooter = size >= (profileSnap - 0.01);
 
-    if (expanded != _isExpanded || shouldHideFooter) {
+    if (expanded != _isExpanded || showProfileFooter != _showProfileFooter) {
       setState(() {
         _isExpanded = expanded;
-        if (shouldHideFooter) _showProfileFooter = false;
+        _showProfileFooter = showProfileFooter;
       });
     }
   }
@@ -543,18 +524,13 @@ class _BottomSheetState extends State<_BottomSheet> {
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
 
-    // Only allow the profile snap option once the sheet has reached the
-    // expanded features state. This prevents jumping straight from the
-    // collapsed state into the profile area and enforces the "second
-    // pull" behaviour.
-    final maxChild = (_isExpanded && widget.profileSize != null)
-        ? widget.profileSize!
-        : widget.maxSize;
-    final snapList = <double>[widget.minSize, widget.maxSize];
-    if (widget.profileSize != null &&
-        _isExpanded &&
-        widget.profileSize! > widget.maxSize) {
-      snapList.add(widget.profileSize!);
+    // Allow dragging straight to the profile snap so the footer can appear
+    // on the first pull.
+    final maxChild = widget.profileSize ?? widget.maxSize;
+    final snapList = <double>[widget.minSize];
+    final profileSnap = widget.profileSize ?? widget.maxSize;
+    if ((profileSnap - widget.minSize).abs() > 0.001) {
+      snapList.add(profileSnap);
     }
 
     return DraggableScrollableSheet(
@@ -566,28 +542,22 @@ class _BottomSheetState extends State<_BottomSheet> {
       snap: true,
       snapSizes: snapList,
       builder: (context, scrollCtrl) {
-        const double headerHeight = 56.0;
+        const double headerHeight = 15.0;
+        final snapTargets = snapList;
         return SafeArea(
           top: false,
           child: Material(
             elevation: 16,
             shadowColor: Colors.black.withAlpha((0.3 * 255).round()),
             color: color.primaryContainer.withAlpha((0.95 * 255).round()),
+            clipBehavior: Clip.antiAlias,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             child: Column(
               children: [
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onVerticalDragStart: (_) {
-                    // Mark that a header drag began. Capture whether the
-                    // sheet was already in the expanded state when the drag
-                    // started — we only want a second pull (from expanded)
-                    // to reveal the profile/footer.
-                    _headerDragStarted = true;
-                    _wasExpandedAtDragStart = _isExpanded;
-                    developer.log(
-                        'header drag started expanded=$_wasExpandedAtDragStart',
-                        name: 'home_shell');
+                    developer.log('header drag started', name: 'home_shell');
                   },
                   onVerticalDragUpdate: (details) {
                     final screenH = MediaQuery.of(context).size.height;
@@ -607,15 +577,8 @@ class _BottomSheetState extends State<_BottomSheet> {
                   },
                   onVerticalDragEnd: (details) async {
                     final current = widget.controller.size;
-                    // Use the same snap sizes configured for the sheet so we
-                    // pick the correct target (min, features max, optional
-                    // profile snap).
-                    final snapList = <double>[widget.minSize, widget.maxSize];
-                    if (widget.profileSize != null) {
-                      snapList.add(widget.profileSize!);
-                    }
-                    double closest = snapList.first;
-                    for (final s in snapList) {
+                    double closest = snapTargets.first;
+                    for (final s in snapTargets) {
                       if ((s - current).abs() < (closest - current).abs()) {
                         closest = s;
                       }
@@ -630,28 +593,8 @@ class _BottomSheetState extends State<_BottomSheet> {
                         duration: const Duration(milliseconds: 250),
                         curve: Curves.easeOutCubic,
                       );
-
-                      // Only reveal the profile/footer if we landed on the
-                      // profile snap AND the drag began from the header while
-                      // already expanded (this enforces the "second pull"
-                      // behaviour).
-                      if (widget.profileSize != null &&
-                          (closest - widget.profileSize!).abs() < 0.001 &&
-                          _headerDragStarted &&
-                          _wasExpandedAtDragStart) {
-                        setState(() => _showProfileFooter = true);
-                      } else if (_showProfileFooter) {
-                        // If we didn't land on the profile snap, hide the
-                        // footer.
-                        setState(() => _showProfileFooter = false);
-                      }
                     } catch (_) {
                       // ignore animation errors
-                    } finally {
-                      // Reset the header drag flag regardless of outcome so
-                      // inner scrolling cannot reuse it.
-                      _headerDragStarted = false;
-                      _wasExpandedAtDragStart = false;
                     }
                   },
                   child: SizedBox(
@@ -689,10 +632,9 @@ class _BottomSheetState extends State<_BottomSheet> {
                           entries: widget.entries,
                           onTap: widget.onTap,
                         ),
-                      // Profile/footer area is shown only when the sheet is
-                      // dragged to the profile snap (second snap). Use
-                      // _showProfileFooter which is updated by controller
-                      // listener.
+                      // Profile/footer area is shown once the sheet reaches
+                      // the full snap (profileSnap). Visibility is tracked by
+                      // _showProfileFooter.
                       // profile/footer removed from slivers to prevent inner
                       // scrolling from revealing it. The footer will be
                       // rendered below the scroll area as a sibling widget.
@@ -706,58 +648,71 @@ class _BottomSheetState extends State<_BottomSheet> {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 180),
                     child: _showProfileFooter
-                        ? Container(
-                            // Provide enough height for the profile row and
-                            // include bottom safe area padding so the footer
-                            // sits above system UI.
-                            height:
-                                64 + MediaQuery.of(context).viewPadding.bottom,
-                            padding: EdgeInsets.only(
-                              left: 16,
-                              right: 16,
-                              bottom: MediaQuery.of(context).viewPadding.bottom,
-                            ),
-                            child: Material(
-                              // Keep the footer visually attached to the
-                              // parent sheet by using a transparent material
-                              // (parent already supplies the background and
-                              // rounded corners) and no elevation.
-                              color: Colors.transparent,
-                              elevation: 0,
-                              child: InkWell(
-                                onTap: widget.onProfileTap,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor: color.primaryContainer,
-                                        child: Icon(Icons.person,
-                                            color: color.onPrimaryContainer),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          widget.displayName,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: color.onSurface,
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                height: 1,
+                                color: color.onPrimaryContainer
+                                    .withAlpha((0.1 * 255).round()),
+                              ),
+                              Container(
+                                // Provide enough height for the profile row and
+                                // include bottom safe area padding so the footer
+                                // sits above system UI.
+                                height: 64 +
+                                    MediaQuery.of(context).viewPadding.bottom,
+                                padding: EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
+                                  bottom:
+                                      MediaQuery.of(context).viewPadding.bottom,
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  elevation: 0,
+                                  child: InkWell(
+                                    onTap: widget.onProfileTap,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12),
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            backgroundColor:
+                                                color.primaryContainer,
+                                            child: Icon(
+                                              Icons.person,
+                                              color: color.onPrimaryContainer,
+                                            ),
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              widget.displayName,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: color.onSurface,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            onPressed: widget.onSettingsTap,
+                                            icon: Icon(
+                                              Icons.settings,
+                                              color: color.onSurface,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      IconButton(
-                                        onPressed: widget.onSettingsTap,
-                                        icon: Icon(Icons.settings,
-                                            color: color.onSurface),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                            ],
                           )
                         : const SizedBox.shrink(),
                   ),
@@ -783,17 +738,17 @@ class _HorizontalIconList extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 86,
+        height: 72,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
           itemCount: entries.length,
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, i) {
             final e = entries[i];
             return SizedBox(
-              width: 88,
+              width: 84,
               child: _CompactFlexible(entry: e, onTap: () => onTap(e.key)),
             );
           },
@@ -819,7 +774,7 @@ class _CompactFlexible extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         decoration: BoxDecoration(
           color: c.surface,
           borderRadius: BorderRadius.circular(12),
@@ -827,8 +782,8 @@ class _CompactFlexible extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(entry.icon, color: c.primary, size: 24),
-            const SizedBox(height: 6),
+            Icon(entry.icon, color: c.primary, size: 22),
+            const SizedBox(height: 4),
             Text(
               entry.title,
               textAlign: TextAlign.center,

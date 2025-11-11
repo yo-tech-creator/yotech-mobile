@@ -1,0 +1,48 @@
+create table public.skt_records (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  tenant_id uuid not null,
+  branch_id uuid not null,
+  product_id uuid not null,
+  user_id uuid not null,
+  expiry_date date not null,
+  quantity integer not null default 1,
+  alarm_days_before integer null default 7,
+  alarm_date date null,
+  alarm_sent boolean null default false,
+  status public.skt_status null default 'normal'::skt_status,
+  product_status text null,
+  photo_url text null,
+  notes text null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint skt_records_pkey primary key (id),
+  constraint skt_records_branch_id_fkey foreign KEY (branch_id) references branches (id) on delete CASCADE,
+  constraint skt_records_product_id_fkey foreign KEY (product_id) references products (id) on delete CASCADE,
+  constraint skt_records_tenant_id_fkey foreign KEY (tenant_id) references tenants (id) on delete CASCADE,
+  constraint skt_records_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_skt_tenant_branch on public.skt_records using btree (tenant_id, branch_id) TABLESPACE pg_default;
+
+create index IF not exists idx_skt_product on public.skt_records using btree (product_id) TABLESPACE pg_default;
+
+create index IF not exists idx_skt_expiry_date on public.skt_records using btree (expiry_date) TABLESPACE pg_default;
+
+create index IF not exists idx_skt_alarm_date on public.skt_records using btree (alarm_date) TABLESPACE pg_default
+where
+  (alarm_sent = false);
+
+create index IF not exists idx_skt_status on public.skt_records using btree (status) TABLESPACE pg_default;
+
+create index IF not exists idx_skt_records_branch_id on public.skt_records using btree (branch_id) TABLESPACE pg_default;
+
+create index IF not exists idx_skt_records_user_id on public.skt_records using btree (user_id) TABLESPACE pg_default;
+
+create trigger skt_alarm_calculation BEFORE INSERT
+or
+update on skt_records for EACH row
+execute FUNCTION calculate_skt_alarm_date ();
+
+create trigger update_skt_records_updated_at BEFORE
+update on skt_records for EACH row
+execute FUNCTION update_updated_at_column ();

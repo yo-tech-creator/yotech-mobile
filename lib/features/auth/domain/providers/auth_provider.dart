@@ -36,7 +36,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String sicilNo,
     required String password,
   }) async {
-    state = const AuthState.loading();
     try {
       final user = await _repository.login(
         sicilNo: sicilNo,
@@ -44,7 +43,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       state = AuthState.authenticated(user);
     } catch (e) {
-      state = AuthState.error(e.toString());
+      // Login başarısız olduğunda kullanıcıyı tekrar giriş ekranına döndür.
+      state = const AuthState.unauthenticated();
       rethrow;
     }
   }
@@ -64,7 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         state = const AuthState.unauthenticated();
       }
     } catch (e) {
-      state = AuthState.error(e.toString());
+      state = const AuthState.unauthenticated();
     }
   }
 }

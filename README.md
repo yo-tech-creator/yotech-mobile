@@ -5,17 +5,36 @@ Yotech, market/mağaza yönetim sistemi için geliştirilmiş bir Flutter mobil 
 ## 🎯 Özellikler
 
 ### Temel Modüller
-- **SKT Takibi** - Ürün takip sistemi
-- **Vardiya Yönetimi** - Vardiya planlama ve takibi
-- **Form Yönetimi** - Dinamik form doldurma
-- **Görev Yönetimi** - Görev atama ve takibi
-- **Puantaj** - Giriş/Çıkış takibi (GPS konum ile)
-- **Depo Transferi** - Stok transferi yönetimi
-- **Arıza Raporları** - Arıza bildirimi ve takibi
-- **Duyurular** - Firma duyuruları
-- **İzin Talepleri** - İzin yönetimi
-- **Mola Takibi** - Mola kayıtları
+     - **SKT Takibi** - Ürün takip sistemi
+    - **Vardiya Yönetimi** - Vardiya planlama ve takibi
+     - **Form Yönetimi** - Dinamik form doldurma
+     - **Görev Yönetimi** - Görev atama ve takibi
+    - **Puantaj** - Giriş/Çıkış takibi (GPS konum ile)
+    - **Depo Transferi** - Stok transferi yönetimi
+    - **Arıza Raporları** - Arıza bildirimi ve takibi
+    - **Duyurular** - Firma duyuruları
+    - **Merch/plasiyer** - Mörş destek
+- **Mola takip** - Mola takip
+- **izin talep** izin talebinde bulunma
+- **Mağaza içi eksik** - Kullanıcı kendine hazırladığı eksik listesi
 
+
+
+
+
+## Not - README ↔ modules mapping
+Bazı kısa başlıkların arka plandaki veritabanı tabloları / modül kodlarıyla eşleşmesi için örnek eşlemeler:
+
+- `Depo Transferi` => `inventory_transfers`
+- `Arıza Raporları` => `malfunction_reports`  
+- `İzin Talepleri` => `leave_requests`
+
+Eğer `modules.code` ile birebir eşleşme istersen, sabitleri (ör. `FeatureKeys`) bu değerlerle güncelleyebilirim.
+
+
+
+
+  
 ### Teknik Özellikler
 - ✅ Multi-tenant mimarisi
 - ✅ Role-based access control (RBAC)
@@ -33,73 +52,8 @@ Yotech, market/mağaza yönetim sistemi için geliştirilmiş bir Flutter mobil 
 - Android Studio / Xcode
 - Supabase hesabı
 
-## 🚀 Kurulum
 
-### 1. Repository'yi klonla
-```bash
-git clone https://github.com/[USERNAME]/yotech-mobile.git
-cd yotech-mobile
-```
 
-### 2. Environment variables ayarla
-```bash
-cp .env.example .env
-```
-
-`.env` dosyasını düzenle ve Supabase credentials'ını ekle:
-```
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key-here
-```
-
-### 3. Dependencies yükle
-```bash
-flutter pub get
-```
-
-### 4. Code generation çalıştır
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-### 5. Uygulamayı çalıştır
-```bash
-flutter run
-```
-
-## 📁 Proje Yapısı
-
-```
-lib/
-├── core/
-│   ├── features/          # Feature management (tenant-based)
-│   └── routing/           # App routing
-├── features/
-│   ├── auth/              # Authentication
-│   ├── home/              # Home shell & bottom navigation
-│   ├── skt/               # SKT tracking
-│   ├── settings/          # Settings page
-│   └── grand_admin/       # Admin panel
-├── shared/
-│   └── widgets/           # Shared widgets
-└── main.dart              # Entry point
-```
-
-## 🔐 Güvenlik
-
-- Supabase credentials `.env` dosyasında saklanır
-- `.env` dosyası `.gitignore`'da listelenmiştir
-- RLS (Row Level Security) ile veri koruması
-- Role-based access control (RBAC)
-- Tenant isolation
-
-## 📚 Dokumentasyon
-
-- [SETUP.md](./SETUP.md) - Detaylı kurulum rehberi
-- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Sorun giderme
-- [DEBUG_GUIDE.md](./DEBUG_GUIDE.md) - Debug rehberi
-- [SUPABASE_SCHEMA_ANALYSIS.md](./SUPABASE_SCHEMA_ANALYSIS.md) - Veritabanı şeması
-- [IMPROVEMENTS.md](./IMPROVEMENTS.md) - Yapılan iyileştirmeler
 
 ## 🛠️ Teknoloji Stack
 

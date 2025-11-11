@@ -35,10 +35,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Giriş başarısız: ${e.toString()}'),
-            backgroundColor: Colors.red,
+        final errorMsg = e.toString().replaceFirst('Exception: ', '');
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            icon: const Icon(Icons.error_outline, color: Colors.red),
+            title: const Text('Giriş Başarısız'),
+            content: Text(errorMsg),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Tamam'),
+              ),
+            ],
           ),
         );
       }
