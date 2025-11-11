@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../data/skt_repository.dart';
+import '../models/branch_summary_model.dart';
+import '../models/product_summary_model.dart';
 import '../models/skt_record_model.dart';
 
 enum SktTimelineFilter {
@@ -58,6 +60,37 @@ final sktRecordsProvider =
     orElse: () async => <SktRecordModel>[],
   );
 });
+
+final sktBranchesProvider =
+    FutureProvider.autoDispose<List<BranchSummaryModel>>((ref) async {
+  final authState = ref.watch(authProvider);
+  final repository = ref.watch(sktRepositoryProvider);
+
+  return await authState.maybeWhen(
+    authenticated: (user) => repository.fetchBranches(user.tenantId),
+    orElse: () async => <BranchSummaryModel>[],
+  );
+});
+
+final sktProductSearchProvider =
+    FutureProvider.autoDispose.family<List<ProductSummaryModel>, String>(
+  (ref, query) async {
+    final trimmed = query.trim();
+    if (trimmed.length < 3) {
+      return <ProductSummaryModel>[];
+    }
+    final authState = ref.watch(authProvider);
+    final repository = ref.watch(sktRepositoryProvider);
+
+    return await authState.maybeWhen(
+      authenticated: (user) => repository.searchProducts(
+        tenantId: user.tenantId,
+        query: trimmed,
+      ),
+      orElse: () async => <ProductSummaryModel>[],
+    );
+  },
+);
 
 final sktFilteredRecordsProvider =
     Provider<AsyncValue<List<SktRecordModel>>>((ref) {

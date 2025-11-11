@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/domain/providers/auth_provider.dart';
+import '../../domain/models/branch_summary_model.dart';
+import '../../domain/models/product_summary_model.dart';
 import '../../domain/models/skt_record_model.dart';
 import '../../domain/providers/skt_providers.dart';
 
@@ -218,36 +221,21 @@ class _SktListPageState extends ConsumerState<SktListPage> {
   }
 
   void _showCreateRecordSheet(BuildContext context) {
-    showModalBottomSheet<void>(
+    final messenger = ScaffoldMessenger.of(context);
+    showModalBottomSheet<bool>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Yeni SKT Kaydı',
-                style: Theme.of(ctx).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Barkodu arama alanına yazarak veya okutma entegrasyonu ile '
-                'Supabase üzerinde yeni kayıt oluşturacağız. Bu adım için '
-                'gerekli servisler hazırlanıyor.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Tamam'),
-              ),
-            ],
-          ),
-        );
+        return const _SktCreateSheet();
       },
-    );
+    ).then((created) {
+      if (created == true && mounted) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('SKT kaydı oluşturuldu.')),
+        );
+      }
+    });
   }
 }
 
@@ -409,6 +397,495 @@ class _RecordCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SktCreateSheet extends ConsumerStatefulWidget {
+  const _SktCreateSheet();
+
+  @override
+  ConsumerState<_SktCreateSheet> createState() => _SktCreateSheetState();
+}
+
+class _SktCreateSheetState extends ConsumerState<_SktCreateSheet> {
+  late final TextEditingController _searchCtrl;
+  late final TextEditingController _quantityCtrl;
+  late final TextEditingController _statusCtrl;
+  late final TextEditingController _notesCtrl;
+  String _searchQuery = '';
+  ProductSummaryModel? _selectedProduct;
+  BranchSummaryModel? _selectedBranch;
+  DateTime? _expiryDate;
+  bool _isSubmitting = false;
+  String? _errorMessage;
+  final int _defaultAlarmDays = 7;
+  final FocusNode _searchFocus = FocusNode();
+  String? _lockedBranchId;
+  String? _lockedBranchName;
+
+  @override
+  void initState() {
+    super.initState();
+    final authState = ref.read(authProvider);
+    _lockedBranchId = authState.maybeWhen(
+      authenticated: (user) => user.branchId,
+      orElse: () => null,
+    );
+    _searchCtrl = TextEditingController();
+    _quantityCtrl = TextEditingController();
+    _statusCtrl = TextEditingController();
+    _notesCtrl = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _quantityCtrl.dispose();
+    _statusCtrl.dispose();
+    _notesCtrl.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final branchesAsync = ref.watch(sktBranchesProvider);
+    final searchTerm = _searchQuery.trim();
+    final searching = searchTerm.length >= 3;
+    final AsyncValue<List<ProductSummaryModel>> searchAsync = searching
+        ? ref.watch(sktProductSearchProvider(searchTerm))
+        : const AsyncData<List<ProductSummaryModel>>(<ProductSummaryModel>[]);
+
+    branchesAsync.whenData(_syncLockedBranch);
+
+    final quantityValue = int.tryParse(_quantityCtrl.text.trim());
+    final resolvedBranchId = _selectedBranch?.id ?? _lockedBranchId;
+    final canSubmit = !_isSubmitting &&
+        _selectedProduct != null &&
+        resolvedBranchId != null &&
+        _expiryDate != null &&
+        quantityValue != null &&
+        quantityValue > 0;
+
+    return SafeArea(
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + viewInsets),
+        curve: Curves.decelerate,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Yeni SKT Kaydı',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const Spacer(),
+                  if (_isSubmitting)
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Barkodu veya ürün adını arayın, kaydı tamamlayın.',
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _searchCtrl,
+                focusNode: _searchFocus,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  labelText: 'Barkod veya ürün adı',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  suffixIcon: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'Temizle',
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = '';
+                              _searchCtrl.clear();
+                              _selectedProduct = null;
+                            });
+                            _searchFocus.requestFocus();
+                          },
+                        ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+              if (_selectedProduct != null)
+                Card(
+                  margin: EdgeInsets.zero,
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: ListTile(
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    dense: true,
+                    title: Text(_selectedProduct!.name),
+                    subtitle: Text('Barkod: ${_selectedProduct!.barcode}'),
+                    trailing: IconButton(
+                      tooltip: 'Seçimi kaldır',
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        setState(() => _selectedProduct = null);
+                        _searchFocus.requestFocus();
+                      },
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              _ProductSearchResults(
+                searchAsync: searchAsync,
+                searching: searching,
+                onSelect: (product) {
+                  setState(() {
+                    _selectedProduct = product;
+                    _searchCtrl.text = product.barcode;
+                    _searchQuery = product.barcode;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              branchesAsync.when(
+                data: (branches) {
+                  final items = branches
+                      .map((b) => DropdownMenuItem<String>(
+                            value: b.id,
+                            child: Text(b.name),
+                          ))
+                      .toList();
+                  if (_lockedBranchId != null) {
+                    final display = _lockedBranchName ?? 'Şubeniz (yükleniyor)';
+                    return InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Şube',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      child: Text(display),
+                    );
+                  }
+                  return DropdownButtonFormField<String>(
+                    initialValue: _selectedBranch?.id,
+                    decoration: const InputDecoration(
+                      labelText: 'Şube',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: items,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedBranch =
+                            branches.firstWhere((b) => b.id == value);
+                      });
+                    },
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (error, _) => InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Şube',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  child: Text(
+                    'Şubeler alınamadı: $error',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.error),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: _pickExpiryDate,
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Son kullanma tarihi',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_month,
+                          color: theme.colorScheme.primary, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        _expiryDate == null
+                            ? 'Tarih seçin'
+                            : _formatDate(_expiryDate!),
+                      ),
+                      const Spacer(),
+                      const Icon(Icons.edit_calendar, size: 18),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _quantityCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Adet',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _statusCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Ürün durumu (opsiyonel)',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _notesCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Not (opsiyonel)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                minLines: 3,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Alarm $_defaultAlarmDays gün önce tetiklenecek.',
+                style: theme.textTheme.bodySmall,
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _errorMessage!,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.error),
+                ),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    child: const Text('Kapat'),
+                  ),
+                  const Spacer(),
+                  FilledButton.icon(
+                    onPressed: canSubmit ? _submit : null,
+                    icon: _isSubmitting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.check),
+                    label: const Text('Kaydet'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _syncLockedBranch(List<BranchSummaryModel> branches) {
+    if (_lockedBranchId == null) {
+      return;
+    }
+    if (_lockedBranchName != null) {
+      return;
+    }
+    final match = branches.where((b) => b.id == _lockedBranchId).toList();
+    if (match.isEmpty) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _lockedBranchName = match.first.name;
+      });
+    });
+  }
+
+  Future<void> _pickExpiryDate() async {
+    final now = DateTime.now();
+    final initial = _expiryDate ?? now.add(const Duration(days: 1));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: now.subtract(const Duration(days: 1)),
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (picked == null) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(
+        () => _expiryDate = DateTime(picked.year, picked.month, picked.day));
+  }
+
+  Future<void> _submit() async {
+    final authState = ref.read(authProvider);
+    final user = authState.maybeWhen(
+      authenticated: (value) => value,
+      orElse: () => null,
+    );
+    if (user == null) {
+      setState(() {
+        _errorMessage = 'Oturum bilgisi bulunamadı.';
+      });
+      return;
+    }
+
+    final product = _selectedProduct;
+    final branchId = _selectedBranch?.id ?? _lockedBranchId;
+    final expiry = _expiryDate;
+    final quantity = int.tryParse(_quantityCtrl.text.trim());
+
+    if (product == null ||
+        branchId == null ||
+        expiry == null ||
+        quantity == null ||
+        quantity <= 0) {
+      setState(() {
+        _errorMessage = 'Gerekli alanları doldurun.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
+    final statusText =
+        _statusCtrl.text.trim().isEmpty ? null : _statusCtrl.text.trim();
+    final notesText =
+        _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim();
+
+    try {
+      await ref.read(sktRepositoryProvider).createRecord(
+            tenantId: user.tenantId,
+            branchId: branchId,
+            productId: product.id,
+            userId: user.id,
+            expiryDate: expiry,
+            quantity: quantity,
+            productStatus: statusText,
+            notes: notesText,
+            alarmDaysBefore: _defaultAlarmDays,
+          );
+      ref.invalidate(sktRecordsProvider);
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+}
+
+class _ProductSearchResults extends StatelessWidget {
+  const _ProductSearchResults({
+    required this.searchAsync,
+    required this.searching,
+    required this.onSelect,
+  });
+
+  final AsyncValue<List<ProductSummaryModel>> searchAsync;
+  final bool searching;
+  final ValueChanged<ProductSummaryModel> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!searching) {
+      return Text(
+        'En az 3 karakter girerek arama yapın.',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+
+    return searchAsync.when(
+      data: (products) {
+        if (products.isEmpty) {
+          return Text(
+            'Eşleşme bulunamadı.',
+            style: Theme.of(context).textTheme.bodySmall,
+          );
+        }
+        return SizedBox(
+          height: 180,
+          child: ListView.separated(
+            itemCount: products.length,
+            separatorBuilder: (_, __) => const Divider(height: 0),
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return ListTile(
+                title: Text(product.name),
+                subtitle: Text('Barkod: ${product.barcode}'),
+                leading: const Icon(Icons.inventory_2_outlined),
+                onTap: () => onSelect(product),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (error, _) => Text(
+        'Arama sırasında hata oluştu: $error',
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: Theme.of(context).colorScheme.error),
       ),
     );
   }
