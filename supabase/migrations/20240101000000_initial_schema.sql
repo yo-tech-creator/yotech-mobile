@@ -1,0 +1,2 @@
+﻿-- 20240101000000_initial_schema.sql (Ã¶rnek)
+-- Buraya ilk ÅŸema dosyalarÄ±nÄ±zÄ± koyacaksÄ±nÄ±z.

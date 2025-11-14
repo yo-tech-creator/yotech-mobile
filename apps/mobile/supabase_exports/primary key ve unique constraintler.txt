@@ -1,0 +1,338 @@
+[
+  {
+    "table_name": "announcement_reads",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "announcement_reads_pkey"
+  },
+  {
+    "table_name": "announcement_reads",
+    "column_name": "announcement_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "announcement_reads_announcement_id_user_id_key"
+  },
+  {
+    "table_name": "announcement_reads",
+    "column_name": "user_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "announcement_reads_announcement_id_user_id_key"
+  },
+  {
+    "table_name": "announcements",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "announcements_pkey"
+  },
+  {
+    "table_name": "attendance",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "attendance_pkey"
+  },
+  {
+    "table_name": "branch_scores",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "branch_scores_tenant_id_branch_id_evaluation_period_key"
+  },
+  {
+    "table_name": "branch_scores",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "branch_scores_pkey"
+  },
+  {
+    "table_name": "branch_scores",
+    "column_name": "branch_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "branch_scores_tenant_id_branch_id_evaluation_period_key"
+  },
+  {
+    "table_name": "branch_scores",
+    "column_name": "evaluation_period",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "branch_scores_tenant_id_branch_id_evaluation_period_key"
+  },
+  {
+    "table_name": "branches",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "branches_pkey"
+  },
+  {
+    "table_name": "branches",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "branches_tenant_id_code_key"
+  },
+  {
+    "table_name": "branches",
+    "column_name": "code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "branches_tenant_id_code_key"
+  },
+  {
+    "table_name": "break_logs",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "break_logs_pkey"
+  },
+  {
+    "table_name": "employee_scores",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "employee_scores_pkey"
+  },
+  {
+    "table_name": "form_submissions",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "form_submissions_pkey"
+  },
+  {
+    "table_name": "form_templates",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "form_templates_pkey"
+  },
+  {
+    "table_name": "health_reports",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "health_reports_pkey"
+  },
+  {
+    "table_name": "inventory_transfers",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "inventory_transfers_pkey"
+  },
+  {
+    "table_name": "leave_requests",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "leave_requests_pkey"
+  },
+  {
+    "table_name": "malfunction_reports",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "malfunction_reports_pkey"
+  },
+  {
+    "table_name": "modules",
+    "column_name": "code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "modules_code_key"
+  },
+  {
+    "table_name": "modules",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "modules_pkey"
+  },
+  {
+    "table_name": "notifications",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "notifications_pkey"
+  },
+  {
+    "table_name": "payrolls",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "payrolls_pkey"
+  },
+  {
+    "table_name": "payrolls",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "payrolls_tenant_id_user_id_period_key"
+  },
+  {
+    "table_name": "payrolls",
+    "column_name": "user_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "payrolls_tenant_id_user_id_period_key"
+  },
+  {
+    "table_name": "payrolls",
+    "column_name": "period",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "payrolls_tenant_id_user_id_period_key"
+  },
+  {
+    "table_name": "product_issues",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "product_issues_pkey"
+  },
+  {
+    "table_name": "products",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "products_tenant_id_barcode_key"
+  },
+  {
+    "table_name": "products",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "products_pkey"
+  },
+  {
+    "table_name": "products",
+    "column_name": "barcode",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "products_tenant_id_barcode_key"
+  },
+  {
+    "table_name": "regions",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "regions_tenant_id_code_key"
+  },
+  {
+    "table_name": "regions",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "regions_pkey"
+  },
+  {
+    "table_name": "regions",
+    "column_name": "code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "regions_tenant_id_code_key"
+  },
+  {
+    "table_name": "shifts",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "shifts_tenant_id_branch_id_week_start_date_key"
+  },
+  {
+    "table_name": "shifts",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "shifts_pkey"
+  },
+  {
+    "table_name": "shifts",
+    "column_name": "branch_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "shifts_tenant_id_branch_id_week_start_date_key"
+  },
+  {
+    "table_name": "shifts",
+    "column_name": "week_start_date",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "shifts_tenant_id_branch_id_week_start_date_key"
+  },
+  {
+    "table_name": "skt_records",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "skt_records_pkey"
+  },
+  {
+    "table_name": "stockout_items",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "stockout_items_pkey"
+  },
+  {
+    "table_name": "stockout_lists",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "stockout_lists_pkey"
+  },
+  {
+    "table_name": "task_assignees",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "task_assignees_pkey"
+  },
+  {
+    "table_name": "task_assignees",
+    "column_name": "task_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "task_assignees_task_id_user_id_key"
+  },
+  {
+    "table_name": "task_assignees",
+    "column_name": "user_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "task_assignees_task_id_user_id_key"
+  },
+  {
+    "table_name": "task_items",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "task_items_pkey"
+  },
+  {
+    "table_name": "tasks",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "tasks_pkey"
+  },
+  {
+    "table_name": "tenant_modules",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "tenant_modules_tenant_id_module_code_key"
+  },
+  {
+    "table_name": "tenant_modules",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "tenant_modules_pkey"
+  },
+  {
+    "table_name": "tenant_modules",
+    "column_name": "module_code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "tenant_modules_tenant_id_module_code_key"
+  },
+  {
+    "table_name": "tenants",
+    "column_name": "code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "tenants_code_key"
+  },
+  {
+    "table_name": "tenants",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "tenants_pkey"
+  },
+  {
+    "table_name": "users",
+    "column_name": "email",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "users_email_key"
+  },
+  {
+    "table_name": "users",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "users_pkey"
+  },
+  {
+    "table_name": "users",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "users_tenant_id_employee_code_key"
+  },
+  {
+    "table_name": "users",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "users_pkey"
+  },
+  {
+    "table_name": "users",
+    "column_name": "employee_code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "users_tenant_id_employee_code_key"
+  }
+]

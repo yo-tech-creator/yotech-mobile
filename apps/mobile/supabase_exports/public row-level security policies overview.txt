@@ -1,0 +1,32 @@
+[
+  {
+    "tablename": "branches",
+    "policyname": "branches_select",
+    "roles": "{public}",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "products",
+    "policyname": "products_select",
+    "roles": "{public}",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "skt_records",
+    "policyname": "skt_insert_branch_staff",
+    "roles": "{public}",
+    "cmd": "INSERT"
+  },
+  {
+    "tablename": "skt_records",
+    "policyname": "skt_select_core",
+    "roles": "{public}",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "skt_records",
+    "policyname": "skt_update_branch_staff",
+    "roles": "{public}",
+    "cmd": "UPDATE"
+  }
+]

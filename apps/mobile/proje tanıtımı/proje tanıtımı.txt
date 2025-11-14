@@ -1,0 +1,113 @@
+Yotech Uygulama Modülleri Detay Dokümanı
+ 1. Giriş
+ Yotech, perakende zincirleri için geliştirilen modüler bir yönetim sistemidir. Her modül belirli bir
+ operasyonel süreci dijitalleştirir ve otomatikleştirir. Firmalar yalnızca ihtiyaç duydukları modülleri aktif
+ hale getirip kullanabilir. Bu yapı hem ölçeklenebilirlik hem de bakım kolaylığı sağlar.
+ 2. Modül Tanımları ve İş Akışları
+ 2.1 SKT Takip Modülü
+ Amaç: Ürünlerin son kullanma tarihlerini izlemek, yaklaşan veya geçmiş ürünleri önceden tespit ederek
+ kayıpları önlemek.
+ İş Akışı: 1. Personel, kamerayla barkodu okutur veya barkod bilgisini manuel girer. 2. Sistem, ürünün
+ f
+ irmanın stok kayıtlarında olup olmadığını kontrol eder. 3. Ürüne SKT tarihi, adet ve isteğe bağlı alarm
+ süresi eklenir. 4. Alarm tarihi geldiğinde sistem otomatik olarak mağaza çalışanlarına bildirim gönderir.
+ 5. Ürün durumu (örneğin teşhir, fiyat kontrol, iletişim talebi) seçilerek işlem tamamlanır.
+ Yetkiler: - Personel: Ürün ekleme, düzenleme, silme, alarm kurma. - Şube Müdürü: Havuzdaki ürünleri
+ görüntüleme, filtreleme, düzenleme. - Firma Admini: Web panel üzerinden tüm mağazaların SKT
+ kayıtlarını izleme.
+ Veri Kaynağı:
+ skt_records , 
+products , 
+notifications
+ 2.2 Görev Yönetimi Modülü
+ Amaç: Şube, bölge veya merkez düzeyinde görev atama, takip etme ve tamamlama süreçlerini
+ dijitalleştirmek.
+ İş Akışı: 1. Yönetici (örneğin şube müdürü), bir görev oluşturur: başlık, açıklama, öncelik ve bitiş tarihi
+ girilir. 2. Görev, bir veya birden fazla personele atanabilir. 3. Atanan personeller görevleri tamamladıkça
+ alt görevleri işaretler (checklist). 4. Görev durumu dinamik olarak güncellenir: Atandı → Devam ediyor →
+ Tamamlandı.
+ Özellikler: - Görev alt başlıkları (task items) - Gerçek zamanlı bildirimler - Görev oranı (% tamamlanma) 
+Yönetici onaylı kapatma
+ Yetkiler: - Üst Rol (örn. Şube Müdürü): Görev oluşturma ve atama. - Alt Rol (örn. Personel): Görevi
+ tamamlama, not ekleme.
+ Veri Kaynağı:
+ tasks , 
+task_items , 
+task_assignees , 
+notifications
+ 1
+2.3 Vardiya, İzin ve Rapor Modülü
+ Amaç: Çalışma saatleri, vardiyalar, izinler ve rapor süreçlerini tek platformda toplamak.
+ Vardiya Yönetimi
+ • 
+• 
+• 
+• 
+Şube yöneticisi, haftalık vardiya planı oluşturur.
+ Personeller vardiyalarını uygulama üzerinden görüntüler.
+ Vardiya çizelgesi sürükle-bırak veya manuel giriş yöntemiyle hazırlanabilir.
+ Vardiya JSON formatında saklanır (
+ İzin Talepleri
+ • 
+• 
+• 
+shifts.shift_data ).
+ Personel, takvim üzerinden izin talebi oluşturur.
+ Talep türü: Ücretli, Ücretsiz, Yıllık.
+ Onay süreci: Beklemede → Onaylandı / Reddedildi.
+ • 
+Yıllık izin hesaplaması otomatik yapılır (
+ hesapla_yillik_izin() fonksiyonu).
+ Sağlık Raporları
+ • 
+• 
+Personel, aldığı sağlık raporunu dosya olarak yükler.
+ Yönetici bu raporu panelden görüntüleyebilir veya indirebilir.
+ Veri Kaynağı:
+ shifts , 
+leave_requests , 
+health_reports
+ 2.4 Form Yönetimi Modülü
+ Amaç: Mağaza içi operasyonlarda (temizlik kontrolü, personel kontrolü, ürün dönüşüm formu vb.) dijital
+ formlar oluşturmak ve kayıt altına almak.
+ İş Akışı: 1. Firma admini veya şube müdürü form kategorisi ve alanlarını tanımlar. 2. Personel uygulama
+ üzerinden ilgili formu seçip doldurur. 3. Doldurulan form JSON formatında saklanır. 4. Gerekirse PDF
+ çıktısı alınabilir.
+ Yetkiler: - Yönetici: Form şablonu oluşturma. - Personel: Form doldurma.
+ Veri Kaynağı:
+ form_templates , 
+form_submissions
+ 2.5 Arıza Kayıt Modülü
+ Amaç: Mağaza içi teknik arızaların hızlı şekilde raporlanması ve çözüm sürecinin takibi.
+ Kategoriler: 1. BT & Donanım: Bilgisayar, terminal, kasa, yazıcı, POS cihazı. 2. Soğutma Sistemleri:
+ Derin dondurucu, soğuk hava deposu, vitrin, klima. 3. Bina & Tesisat: Musluk, elektrik, aydınlatma, kapı.
+ 4. Depo & Lojistik: Transpalet, el arabası, raf sistemi. 5. Güvenlik: Kamera, alarm, yangın söndürme. 6.
+ Diğer: Yukarıdaki kategorilere girmeyen durumlar.
+ Detay Alanları: - Fotoğraf yükleme (opsiyonel) - Aciliyet (Düşük/Orta/Yüksek/Kritik) - Durum (Açık/
+ Devam Ediyor/Çözüldü/İptal) - Atanan kişi/ekip - Hedef çözüm tarihi - Çözüm notu
+ 2
+Veri Kaynağı:
+ malfunction_reports , 
+notifications
+ 3. Kullanıcı Rollerine Göre Modül Erişimleri
+ Rol
+ Erişebildiği Modüller
+ Grand Admin
+ Tüm modüller ve tüm firmalar
+ Firma Admini
+ Kendi firmasına ait tüm modüller
+ Bölge Müdürü Bağlı olduğu bölgedeki şubeler ve personeller
+ Şube Müdürü
+ Şube yönetimi, vardiya, izin, görev ve SKT işlemleri
+ Personel
+ SKT, görev, izin, mola, form ve rapor modülleri
+ 4. Genel Entegrasyon Notları
+ • 
+• 
+• 
+• 
+Tüm modüller Supabase üzerinde tenant_id ile izole edilmiştir.
+ Mobil uygulama çevrimdışı çalışma desteğine sahiptir (Drift veritabanı).
+ Bildirimler Socket.io ve Redis Queue aracılığıyla anlık iletilir.
+ Her modül için API endpointleri NestJS servislerinde bağımsız modüller olarak
+ konumlandırılmıştır

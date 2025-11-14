@@ -1,0 +1,2 @@
+﻿-- storage-policies.sql (Ã¶rnek)
+-- RLS/policy Ã¶rnekleri buraya.

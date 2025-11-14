@@ -1,0 +1,15 @@
+﻿# Node
+node_modules/
+pnpm-lock.yaml
+
+# Flutter
+build/
+.dart_tool/
+
+# Env
+.env*
+!.env.example
+
+# Logs
+logs/
+*.log

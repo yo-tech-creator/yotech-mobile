@@ -1,0 +1,93 @@
+[
+  {
+    "table_name": "attendance",
+    "trigger_name": "attendance_minutes_calculation",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_attendance_minutes()"
+  },
+  {
+    "table_name": "branches",
+    "trigger_name": "update_branches_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_name": "break_logs",
+    "trigger_name": "break_duration_calculation",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_break_duration()"
+  },
+  {
+    "table_name": "products",
+    "trigger_name": "update_products_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_name": "regions",
+    "trigger_name": "update_regions_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_name": "skt_records",
+    "trigger_name": "update_skt_records_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_name": "skt_records",
+    "trigger_name": "skt_alarm_calculation",
+    "event_manipulation": "INSERT",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_skt_alarm_date()"
+  },
+  {
+    "table_name": "skt_records",
+    "trigger_name": "skt_alarm_calculation",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_skt_alarm_date()"
+  },
+  {
+    "table_name": "task_items",
+    "trigger_name": "task_item_completion_update",
+    "event_manipulation": "UPDATE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
+  },
+  {
+    "table_name": "task_items",
+    "trigger_name": "task_item_completion_update",
+    "event_manipulation": "INSERT",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
+  },
+  {
+    "table_name": "task_items",
+    "trigger_name": "task_item_completion_update",
+    "event_manipulation": "DELETE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
+  },
+  {
+    "table_name": "tenants",
+    "trigger_name": "update_tenants_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_name": "users",
+    "trigger_name": "update_users_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  }
+]

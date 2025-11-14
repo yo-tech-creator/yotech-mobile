@@ -1,0 +1,146 @@
+[
+  {
+    "schemaname": "storage",
+    "tablename": "buckets"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "migrations"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "buckets_analytics"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "s3_multipart_uploads_parts"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "s3_multipart_uploads"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "prefixes"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "regions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tasks"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_assignees"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_items"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "health_reports"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_templates"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "inventory_transfers"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_lists"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_items"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branches"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "modules"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenant_modules"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants"
+  }
+]

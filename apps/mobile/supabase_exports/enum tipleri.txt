@@ -1,0 +1,52 @@
+[
+  {
+    "schema_name": "public",
+    "enum_name": "leave_status",
+    "values": "{beklemede,onaylandi,reddedildi}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "leave_type",
+    "values": "{yillik,ucretsiz,ucretli,saglik}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "malfunction_category",
+    "values": "{bt_donanim,sogutma,bina_tesisat,depo_lojistik,guvenlik,diger}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "malfunction_priority",
+    "values": "{dusuk,orta,yuksek,kritik}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "malfunction_status",
+    "values": "{acik,devam_ediyor,cozuldu,iptal}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "product_issue_status",
+    "values": "{acik,inceleniyor,cozuldu,kapandi}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "skt_status",
+    "values": "{normal,yaklasan,gecmis}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "task_status",
+    "values": "{atandi,devam_ediyor,tamamlandi,iptal}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "transfer_status",
+    "values": "{hazirlaniyor,yolda,teslim_edildi,iptal}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "user_role",
+    "values": "{grand_admin,firma_admin,bolge_muduru,sube_muduru,personel}"
+  }
+]

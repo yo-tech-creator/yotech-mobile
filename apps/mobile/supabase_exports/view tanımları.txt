@@ -1,0 +1,12 @@
+[
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "view_definition": " SELECT lr.id,\n    lr.tenant_id,\n    lr.branch_id,\n    lr.user_id,\n    lr.leave_type,\n    lr.start_date,\n    lr.end_date,\n    lr.reason,\n    lr.status,\n    lr.reviewed_by,\n    lr.reviewed_at,\n    lr.review_notes,\n    lr.created_at,\n    lr.updated_at,\n    ((u.first_name || ' '::text) || u.last_name) AS user_name,\n    b.name AS branch_name\n   FROM ((leave_requests lr\n     JOIN users u ON ((lr.user_id = u.id)))\n     JOIN branches b ON ((lr.branch_id = b.id)))\n  WHERE (lr.status = 'beklemede'::leave_status);"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "view_definition": " SELECT s.id,\n    s.tenant_id,\n    s.branch_id,\n    s.product_id,\n    s.user_id,\n    s.expiry_date,\n    s.quantity,\n    s.alarm_days_before,\n    s.alarm_date,\n    s.alarm_sent,\n    s.status,\n    s.product_status,\n    s.photo_url,\n    s.notes,\n    s.created_at,\n    s.updated_at,\n    p.name AS product_name,\n    p.barcode,\n    b.name AS branch_name,\n    ((u.first_name || ' '::text) || u.last_name) AS user_name\n   FROM (((skt_records s\n     JOIN products p ON ((s.product_id = p.id)))\n     JOIN branches b ON ((s.branch_id = b.id)))\n     JOIN users u ON ((s.user_id = u.id)))\n  WHERE ((s.alarm_date <= CURRENT_DATE) AND (s.alarm_sent = false) AND (s.status = ANY (ARRAY['yaklasan'::skt_status, 'gecmis'::skt_status])));"
+  }
+]
