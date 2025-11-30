@@ -234,4 +234,76 @@ SELECT * FROM get_user_data_by_id('[USER_ID]');
 
 ---
 
-**Son Güncelleme**: 2024
+## 🆕 Depo Transfer Modülü Tasarımı
+
+### 1. Tablolar
+
+| Tablo | Amaç | Kritik Alanlar |
+|-------|------|----------------|
+| `depot_notices` | Eksik/fazla duyurusu | id (uuid), tenant_id, branch_id, created_by, product_name, quantity, unit, type (enum), status (enum), note, expires_at, created_at, updated_at |
+| `depot_notice_offers` | Şubeler arası teklif | id, notice_id, tenant_id, branch_id, offered_by, quantity, status (enum), decision_by, decision_at, message, created_at |
+
+Opsiyonel ekler: `depot_notice_events` (tarihçe), `depot_notice_files` (fotoğraf), `depot_notice_matches` (otomatik eşleşme).
+
+### 2. ENUM Taslakları
+
+```sql
+CREATE TYPE depot_notice_type AS ENUM ('shortage', 'surplus');
+CREATE TYPE depot_notice_status AS ENUM ('open', 'in_transfer', 'fulfilled', 'cancelled');
+CREATE TYPE depot_offer_status AS ENUM ('pending', 'accepted', 'rejected', 'expired');
+```
+
+### 3. Index / Constraint Önerileri
+
+- `CREATE INDEX ON depot_notices (tenant_id, branch_id, status);`
+- `CREATE INDEX ON depot_notice_offers (notice_id, status);`
+- Aynı şubenin aynı notice için tek bekleyen teklifi: `UNIQUE (notice_id, branch_id) WHERE status = 'pending';`
+
+### 4. RLS Politikaları
+
+**depot_notices**
+- SELECT: `tenant_id = current_tenant_id()`.
+- INSERT: `tenant_id = current_tenant_id()` VE `branch_id = auth_branch_id()`.
+- UPDATE/DELETE: `created_by = auth.uid()` VEYA rol `IN ('sube_muduru','firma_admin','grand_admin')`.
+
+**depot_notice_offers**
+- SELECT: `tenant_id = current_tenant_id()` VE (`branch_id = auth_branch_id()` OR notice owner).
+- INSERT: `tenant_id = current_tenant_id()` + notice tenant kontrolü.
+- UPDATE: yalnız notice sahibi `EXISTS (SELECT 1 FROM depot_notices n WHERE n.id = notice_id AND n.created_by = auth.uid())`.
+
+### 5. Trigger/Fonksiyonlar
+
+- `set_tenant_id()` → branch üzerinden tenant auto-fill.
+- `update_updated_at_column()` → notice güncelleme.
+- `close_notice_expire_pending_offers()` → notice kapanınca bekleyen teklifleri `expired` yap.
+- Realtime notification (opsiyon): `NOTIFY depot_offer_events`.
+
+### 6. API & Flutter Eşleşmesi
+
+| İşlem | Supabase Çağrısı | Not |
+|-------|------------------|-----|
+| Listeleme | `.from('depot_notices').select('*, offers:depot_notice_offers(*)')` | Tenant/branch filtreli |
+| Notice ekle | `.insert({...})` | Formdaki alanlar |
+| Teklif gönder | `.from('depot_notice_offers').insert({...})` | Şube bazlı |
+| Teklif onay/red | `.update({ status: 'accepted' | 'rejected', decision_by, decision_at }).eq('id', offerId)` | RLS owner kontrolü |
+| Sayaç | View: `depot_notice_offer_counts` (pending, accepted) | AppBar badge |
+
+### 7. Migration Adımları
+
+1. Enum tiplerini oluştur.
+2. `depot_notices` tablosu + trigger.
+3. `depot_notice_offers` tablosu + unique + trigger.
+4. RLS enable + policy setleri.
+5. İçgörü view/RPC (örn. `my_depot_notice_summary`).
+6. Demo seed (gerekirse).
+
+### 8. Flutter Data Layer Adımları
+
+1. `DepotStockNotice` ve `NoticeOffer` modellerini Supabase kolonlarıyla hizala.
+2. `DepotRepository` (fetch/create/respond) ve Riverpod provider’larını ekle.
+3. UI’da `offers` ve `pendingCounts` alanlarını Supabase sonuçları ile doldur.
+4. Realtime kanal (opsiyon) ile teklif güncellemelerini dinle.
+
+---
+
+**Son Güncelleme**: 2025-11-26

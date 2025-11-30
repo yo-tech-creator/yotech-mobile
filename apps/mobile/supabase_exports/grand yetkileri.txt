@@ -20,6 +20,12 @@
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
     "privilege_type": "DELETE",
     "grantee": "anon"
   },
@@ -38,37 +44,19 @@
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
     "privilege_type": "TRIGGER",
-    "grantee": "anon"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
     "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcement_reads",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcement_reads",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcement_reads",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcement_reads",
-    "privilege_type": "DELETE",
     "grantee": "authenticated"
   },
   {
@@ -80,7 +68,19 @@
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
@@ -128,31 +128,19 @@
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
-    "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcement_reads",
     "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
-    "privilege_type": "UPDATE",
+    "privilege_type": "REFERENCES",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcement_reads",
-    "privilege_type": "INSERT",
+    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
   {
@@ -164,37 +152,31 @@
   {
     "table_schema": "public",
     "table_name": "announcement_reads",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcement_reads",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "announcements",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
     "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcements",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcements",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcements",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcements",
-    "privilege_type": "UPDATE",
     "grantee": "anon"
   },
   {
@@ -206,13 +188,31 @@
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "UPDATE",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "announcements",
     "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "privilege_type": "SELECT",
     "grantee": "authenticated"
   },
   {
@@ -224,13 +224,13 @@
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "privilege_type": "SELECT",
+    "privilege_type": "UPDATE",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "privilege_type": "UPDATE",
+    "privilege_type": "DELETE",
     "grantee": "authenticated"
   },
   {
@@ -254,7 +254,7 @@
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -266,19 +266,13 @@
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "privilege_type": "INSERT",
+    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "privilege_type": "SELECT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "announcements",
-    "privilege_type": "UPDATE",
+    "privilege_type": "TRUNCATE",
     "grantee": "postgres"
   },
   {
@@ -290,7 +284,13 @@
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "privilege_type": "SELECT",
     "grantee": "postgres"
   },
   {
@@ -338,37 +338,7 @@
   {
     "table_schema": "public",
     "table_name": "attendance",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "attendance",
     "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "attendance",
-    "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "attendance",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "attendance",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "attendance",
-    "privilege_type": "TRUNCATE",
     "grantee": "anon"
   },
   {
@@ -380,13 +350,37 @@
   {
     "table_schema": "public",
     "table_name": "attendance",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "attendance",
     "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -410,20 +404,20 @@
   {
     "table_schema": "public",
     "table_name": "attendance",
-    "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "attendance",
     "privilege_type": "UPDATE",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "attendance",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -464,8 +458,8 @@
   {
     "table_schema": "public",
     "table_name": "attendance",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -476,6 +470,12 @@
   {
     "table_schema": "public",
     "table_name": "attendance",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "attendance",
     "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
@@ -512,6 +512,12 @@
   {
     "table_schema": "public",
     "table_name": "branch_scores",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
     "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
@@ -543,42 +549,6 @@
     "table_schema": "public",
     "table_name": "branch_scores",
     "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "DELETE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "UPDATE",
     "grantee": "authenticated"
   },
   {
@@ -590,38 +560,32 @@
   {
     "table_schema": "public",
     "table_name": "branch_scores",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
+    "privilege_type": "TRIGGER",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "branch_scores",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "branch_scores",
     "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "branch_scores",
     "privilege_type": "DELETE",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "branch_scores",
     "privilege_type": "UPDATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "SELECT",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -632,7 +596,43 @@
   {
     "table_schema": "public",
     "table_name": "branch_scores",
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
     "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "privilege_type": "DELETE",
     "grantee": "service_role"
   },
   {
@@ -644,25 +644,19 @@
   {
     "table_schema": "public",
     "table_name": "branch_scores",
-    "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branch_scores",
     "privilege_type": "UPDATE",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "branch_scores",
-    "privilege_type": "DELETE",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branch_scores",
+    "privilege_type": "REFERENCES",
     "grantee": "service_role"
   },
   {
@@ -673,33 +667,9 @@
   },
   {
     "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
+    "table_name": "branch_scores",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -716,6 +686,36 @@
   {
     "table_schema": "public",
     "table_name": "branches",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
     "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
@@ -758,7 +758,19 @@
   {
     "table_schema": "public",
     "table_name": "branches",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
     "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -770,19 +782,7 @@
   {
     "table_schema": "public",
     "table_name": "branches",
-    "privilege_type": "INSERT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
     "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -800,25 +800,13 @@
   {
     "table_schema": "public",
     "table_name": "branches",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
     "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "branches",
-    "privilege_type": "UPDATE",
     "grantee": "service_role"
   },
   {
@@ -830,7 +818,19 @@
   {
     "table_schema": "public",
     "table_name": "branches",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "branches",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
@@ -842,19 +842,7 @@
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "TRIGGER",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "break_logs",
     "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "break_logs",
-    "privilege_type": "SELECT",
     "grantee": "anon"
   },
   {
@@ -866,13 +854,13 @@
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "DELETE",
+    "privilege_type": "SELECT",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
   {
@@ -884,14 +872,14 @@
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
+    "privilege_type": "DELETE",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -926,25 +914,19 @@
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "INSERT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "break_logs",
     "privilege_type": "SELECT",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "UPDATE",
-    "grantee": "postgres"
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "DELETE",
+    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -956,7 +938,25 @@
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -974,18 +974,6 @@
   {
     "table_schema": "public",
     "table_name": "break_logs",
-    "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "break_logs",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "break_logs",
     "privilege_type": "DELETE",
     "grantee": "service_role"
   },
@@ -1009,9 +997,183 @@
   },
   {
     "table_schema": "public",
-    "table_name": "employee_scores",
+    "table_name": "break_logs",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "break_logs",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
     "privilege_type": "SELECT",
     "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "INSERT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRIGGER",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "device_tokens",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -1052,6 +1214,12 @@
   {
     "table_schema": "public",
     "table_name": "employee_scores",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
     "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
@@ -1100,6 +1268,12 @@
   {
     "table_schema": "public",
     "table_name": "employee_scores",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "employee_scores",
     "privilege_type": "TRIGGER",
     "grantee": "postgres"
   },
@@ -1130,8 +1304,8 @@
   {
     "table_schema": "public",
     "table_name": "employee_scores",
-    "privilege_type": "INSERT",
-    "grantee": "postgres"
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -1161,12 +1335,6 @@
     "table_schema": "public",
     "table_name": "employee_scores",
     "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "employee_scores",
-    "privilege_type": "UPDATE",
     "grantee": "service_role"
   },
   {
@@ -1178,13 +1346,7 @@
   {
     "table_schema": "public",
     "table_name": "form_submissions",
-    "privilege_type": "TRIGGER",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_submissions",
-    "privilege_type": "SELECT",
+    "privilege_type": "DELETE",
     "grantee": "anon"
   },
   {
@@ -1196,19 +1358,7 @@
   {
     "table_schema": "public",
     "table_name": "form_submissions",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_submissions",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_submissions",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "SELECT",
     "grantee": "anon"
   },
   {
@@ -1220,19 +1370,37 @@
   {
     "table_schema": "public",
     "table_name": "form_submissions",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "form_submissions",
     "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "form_submissions",
     "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_submissions",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -1256,19 +1424,13 @@
   {
     "table_schema": "public",
     "table_name": "form_submissions",
-    "privilege_type": "INSERT",
+    "privilege_type": "SELECT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "form_submissions",
     "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_submissions",
-    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -1304,8 +1466,8 @@
   {
     "table_schema": "public",
     "table_name": "form_submissions",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -1345,6 +1507,18 @@
   },
   {
     "table_schema": "public",
+    "table_name": "form_submissions",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
     "table_name": "form_templates",
     "privilege_type": "INSERT",
     "grantee": "anon"
@@ -1352,25 +1526,7 @@
   {
     "table_schema": "public",
     "table_name": "form_templates",
-    "privilege_type": "TRIGGER",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "DELETE",
+    "privilege_type": "SELECT",
     "grantee": "anon"
   },
   {
@@ -1382,26 +1538,20 @@
   {
     "table_schema": "public",
     "table_name": "form_templates",
-    "privilege_type": "SELECT",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "TRUNCATE",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "form_templates",
     "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -1412,13 +1562,7 @@
   {
     "table_schema": "public",
     "table_name": "form_templates",
-    "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "SELECT",
     "grantee": "authenticated"
   },
   {
@@ -1431,7 +1575,25 @@
     "table_schema": "public",
     "table_name": "form_templates",
     "privilege_type": "TRIGGER",
-    "grantee": "postgres"
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -1442,25 +1604,7 @@
   {
     "table_schema": "public",
     "table_name": "form_templates",
-    "privilege_type": "SELECT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "UPDATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "form_templates",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "postgres"
   },
   {
@@ -1472,7 +1616,31 @@
   {
     "table_schema": "public",
     "table_name": "form_templates",
-    "privilege_type": "INSERT",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "form_templates",
+    "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
@@ -1508,37 +1676,13 @@
   {
     "table_schema": "public",
     "table_name": "form_templates",
-    "privilege_type": "SELECT",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
   {
@@ -1550,14 +1694,32 @@
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "SELECT",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "health_reports",
     "privilege_type": "INSERT",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -1568,19 +1730,7 @@
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "DELETE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -1592,13 +1742,37 @@
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "health_reports",
     "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -1634,37 +1808,19 @@
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "INSERT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
     "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "UPDATE",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "health_reports",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
   {
@@ -1676,19 +1832,25 @@
   {
     "table_schema": "public",
     "table_name": "health_reports",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "health_reports",
+    "privilege_type": "UPDATE",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "inventory_transfers",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
     "grantee": "anon"
   },
   {
@@ -1700,7 +1862,25 @@
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "privilege_type": "INSERT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "privilege_type": "UPDATE",
     "grantee": "anon"
   },
   {
@@ -1713,30 +1893,12 @@
     "table_schema": "public",
     "table_name": "inventory_transfers",
     "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "inventory_transfers",
-    "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "inventory_transfers",
-    "privilege_type": "SELECT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
     "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "inventory_transfers",
-    "privilege_type": "UPDATE",
     "grantee": "authenticated"
   },
   {
@@ -1767,18 +1929,12 @@
     "table_schema": "public",
     "table_name": "inventory_transfers",
     "privilege_type": "SELECT",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
     "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "inventory_transfers",
-    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -1790,13 +1946,13 @@
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
-    "privilege_type": "DELETE",
+    "privilege_type": "SELECT",
     "grantee": "postgres"
   },
   {
@@ -1808,7 +1964,19 @@
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
     "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "inventory_transfers",
+    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
   {
@@ -1838,13 +2006,13 @@
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "TRUNCATE",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "inventory_transfers",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "REFERENCES",
     "grantee": "service_role"
   },
   {
@@ -1892,25 +2060,13 @@
   {
     "table_schema": "public",
     "table_name": "leave_requests",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
     "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "DELETE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "TRUNCATE",
     "grantee": "authenticated"
   },
   {
@@ -1922,6 +2078,24 @@
   {
     "table_schema": "public",
     "table_name": "leave_requests",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
     "privilege_type": "SELECT",
     "grantee": "authenticated"
   },
@@ -1929,42 +2103,6 @@
     "table_schema": "public",
     "table_name": "leave_requests",
     "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "INSERT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "UPDATE",
     "grantee": "postgres"
   },
   {
@@ -1976,7 +2114,43 @@
   {
     "table_schema": "public",
     "table_name": "leave_requests",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
     "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "leave_requests",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
@@ -2011,12 +2185,6 @@
   },
   {
     "table_schema": "public",
-    "table_name": "leave_requests",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
     "table_name": "malfunction_reports",
     "privilege_type": "INSERT",
     "grantee": "anon"
@@ -2060,37 +2228,13 @@
   {
     "table_schema": "public",
     "table_name": "malfunction_reports",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
     "privilege_type": "DELETE",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "malfunction_reports",
-    "privilege_type": "UPDATE",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
@@ -2102,38 +2246,26 @@
   {
     "table_schema": "public",
     "table_name": "malfunction_reports",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "SELECT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
     "privilege_type": "UPDATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "malfunction_reports",
     "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "malfunction_reports",
     "privilege_type": "REFERENCES",
-    "grantee": "postgres"
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "TRIGGER",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -2144,7 +2276,73 @@
   {
     "table_schema": "public",
     "table_name": "malfunction_reports",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
     "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "malfunction_reports",
+    "privilege_type": "REFERENCES",
     "grantee": "service_role"
   },
   {
@@ -2155,42 +2353,6 @@
   },
   {
     "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "UPDATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "malfunction_reports",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "modules",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
     "table_name": "modules",
     "privilege_type": "TRIGGER",
     "grantee": "anon"
@@ -2198,25 +2360,7 @@
   {
     "table_schema": "public",
     "table_name": "modules",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "modules",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "modules",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "modules",
-    "privilege_type": "SELECT",
+    "privilege_type": "REFERENCES",
     "grantee": "anon"
   },
   {
@@ -2228,7 +2372,31 @@
   {
     "table_schema": "public",
     "table_name": "modules",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
   {
@@ -2264,20 +2432,8 @@
   {
     "table_schema": "public",
     "table_name": "modules",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "modules",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "modules",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -2306,13 +2462,25 @@
   {
     "table_schema": "public",
     "table_name": "modules",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
     "privilege_type": "TRUNCATE",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "modules",
-    "privilege_type": "SELECT",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "modules",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
@@ -2348,37 +2516,13 @@
   {
     "table_schema": "public",
     "table_name": "modules",
-    "privilege_type": "INSERT",
+    "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "notifications",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
     "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
-    "privilege_type": "TRUNCATE",
     "grantee": "anon"
   },
   {
@@ -2396,31 +2540,31 @@
   {
     "table_schema": "public",
     "table_name": "notifications",
-    "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
-    "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
     "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "notifications",
     "privilege_type": "DELETE",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "notifications",
     "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "INSERT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -2432,25 +2576,37 @@
   {
     "table_schema": "public",
     "table_name": "notifications",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
     "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "notifications",
-    "privilege_type": "UPDATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -2468,7 +2624,19 @@
   {
     "table_schema": "public",
     "table_name": "notifications",
-    "privilege_type": "INSERT",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "UPDATE",
     "grantee": "postgres"
   },
   {
@@ -2480,13 +2648,25 @@
   {
     "table_schema": "public",
     "table_name": "notifications",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "notifications",
-    "privilege_type": "SELECT",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "privilege_type": "TRUNCATE",
     "grantee": "service_role"
   },
   {
@@ -2504,43 +2684,19 @@
   {
     "table_schema": "public",
     "table_name": "notifications",
-    "privilege_type": "INSERT",
+    "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
-    "table_name": "notifications",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "notifications",
+    "table_name": "payrolls",
     "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "payrolls",
-    "privilege_type": "DELETE",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "payrolls",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "payrolls",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "payrolls",
-    "privilege_type": "UPDATE",
+    "privilege_type": "INSERT",
     "grantee": "anon"
   },
   {
@@ -2552,20 +2708,26 @@
   {
     "table_schema": "public",
     "table_name": "payrolls",
-    "privilege_type": "INSERT",
+    "privilege_type": "UPDATE",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "payrolls",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "DELETE",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "payrolls",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -2606,8 +2768,8 @@
   {
     "table_schema": "public",
     "table_name": "payrolls",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -2649,13 +2811,7 @@
     "table_schema": "public",
     "table_name": "payrolls",
     "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "payrolls",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -2666,7 +2822,25 @@
   {
     "table_schema": "public",
     "table_name": "payrolls",
-    "privilege_type": "UPDATE",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "payrolls",
+    "privilege_type": "TRUNCATE",
     "grantee": "service_role"
   },
   {
@@ -2678,19 +2852,19 @@
   {
     "table_schema": "public",
     "table_name": "payrolls",
-    "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "payrolls",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "UPDATE",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "product_issues",
     "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "privilege_type": "REFERENCES",
     "grantee": "anon"
   },
   {
@@ -2726,37 +2900,19 @@
   {
     "table_schema": "public",
     "table_name": "product_issues",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "product_issues",
-    "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "product_issues",
     "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "product_issues",
-    "privilege_type": "SELECT",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "product_issues",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "product_issues",
-    "privilege_type": "DELETE",
+    "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
   {
@@ -2768,13 +2924,37 @@
   {
     "table_schema": "public",
     "table_name": "product_issues",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "DELETE",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "product_issues",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
     "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "product_issues",
+    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -2805,18 +2985,12 @@
     "table_schema": "public",
     "table_name": "product_issues",
     "privilege_type": "INSERT",
-    "grantee": "postgres"
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "product_issues",
     "privilege_type": "REFERENCES",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "product_issues",
-    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
   {
@@ -2846,26 +3020,8 @@
   {
     "table_schema": "public",
     "table_name": "product_issues",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "product_issues",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "products",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "products",
     "privilege_type": "TRIGGER",
-    "grantee": "anon"
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -2876,13 +3032,13 @@
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "INSERT",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "DELETE",
+    "privilege_type": "SELECT",
     "grantee": "anon"
   },
   {
@@ -2894,13 +3050,25 @@
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "SELECT",
+    "privilege_type": "DELETE",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
@@ -2912,25 +3080,7 @@
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "products",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "products",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "products",
-    "privilege_type": "DELETE",
+    "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
   {
@@ -2942,14 +3092,20 @@
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -2960,7 +3116,13 @@
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "DELETE",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "privilege_type": "SELECT",
     "grantee": "postgres"
   },
   {
@@ -2972,31 +3134,31 @@
   {
     "table_schema": "public",
     "table_name": "products",
-    "privilege_type": "SELECT",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "products",
+    "privilege_type": "TRIGGER",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "products",
     "privilege_type": "INSERT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "products",
-    "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "products",
     "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "products",
-    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
@@ -3025,38 +3187,14 @@
   },
   {
     "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
+    "table_name": "products",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "regions",
     "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "REFERENCES",
     "grantee": "anon"
   },
   {
@@ -3068,6 +3206,42 @@
   {
     "table_schema": "public",
     "table_name": "regions",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "INSERT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
     "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
@@ -3075,6 +3249,12 @@
     "table_schema": "public",
     "table_name": "regions",
     "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
@@ -3092,20 +3272,14 @@
   {
     "table_schema": "public",
     "table_name": "regions",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
     "privilege_type": "SELECT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "regions",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -3117,12 +3291,6 @@
     "table_schema": "public",
     "table_name": "regions",
     "privilege_type": "SELECT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "UPDATE",
     "grantee": "postgres"
   },
   {
@@ -3158,25 +3326,7 @@
   {
     "table_schema": "public",
     "table_name": "regions",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "UPDATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "regions",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
   {
@@ -3188,14 +3338,26 @@
   {
     "table_schema": "public",
     "table_name": "regions",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
+    "table_name": "regions",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "regions",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -3206,19 +3368,7 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
   {
@@ -3230,14 +3380,26 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "UPDATE",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "shifts",
     "privilege_type": "INSERT",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -3248,19 +3410,7 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "DELETE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -3272,8 +3422,38 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
     "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -3284,25 +3464,7 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "SELECT",
     "grantee": "postgres"
   },
   {
@@ -3314,26 +3476,14 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "SELECT",
+    "privilege_type": "DELETE",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "shifts",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -3344,7 +3494,19 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "DELETE",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shifts",
+    "privilege_type": "REFERENCES",
     "grantee": "service_role"
   },
   {
@@ -3356,19 +3518,193 @@
   {
     "table_schema": "public",
     "table_name": "shifts",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "DELETE",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
-    "table_name": "skt_records",
+    "table_name": "shifts",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
     "privilege_type": "INSERT",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
-    "table_name": "skt_records",
+    "table_name": "skt_alarm_notifications",
     "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRIGGER",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_alarm_notifications",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "INSERT",
     "grantee": "anon"
   },
   {
@@ -3392,19 +3728,43 @@
   {
     "table_schema": "public",
     "table_name": "skt_records",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "skt_records",
     "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "skt_records",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "TRIGGER",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
     "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "UPDATE",
     "grantee": "authenticated"
   },
   {
@@ -3422,43 +3782,13 @@
   {
     "table_schema": "public",
     "table_name": "skt_records",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "skt_records",
     "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "skt_records",
-    "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "skt_records",
-    "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "skt_records",
-    "privilege_type": "SELECT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "skt_records",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "skt_records",
-    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -3470,7 +3800,19 @@
   {
     "table_schema": "public",
     "table_name": "skt_records",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -3483,7 +3825,13 @@
     "table_schema": "public",
     "table_name": "skt_records",
     "privilege_type": "UPDATE",
-    "grantee": "postgres"
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "skt_records",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -3512,55 +3860,13 @@
   {
     "table_schema": "public",
     "table_name": "skt_records",
-    "privilege_type": "UPDATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "skt_records",
     "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
-    "table_name": "skt_records",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
     "table_name": "stockout_items",
     "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "REFERENCES",
     "grantee": "anon"
   },
   {
@@ -3572,31 +3878,37 @@
   {
     "table_schema": "public",
     "table_name": "stockout_items",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "DELETE",
-    "grantee": "authenticated"
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "stockout_items",
     "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "INSERT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -3608,13 +3920,37 @@
   {
     "table_schema": "public",
     "table_name": "stockout_items",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "DELETE",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "stockout_items",
     "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -3644,6 +3980,12 @@
   {
     "table_schema": "public",
     "table_name": "stockout_items",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_items",
     "privilege_type": "SELECT",
     "grantee": "postgres"
   },
@@ -3651,12 +3993,6 @@
     "table_schema": "public",
     "table_name": "stockout_items",
     "privilege_type": "INSERT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_items",
-    "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
@@ -3692,20 +4028,8 @@
   {
     "table_schema": "public",
     "table_name": "stockout_items",
-    "privilege_type": "INSERT",
+    "privilege_type": "SELECT",
     "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "TRIGGER",
-    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -3740,134 +4064,140 @@
   {
     "table_schema": "public",
     "table_name": "stockout_lists",
-    "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
     "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "DELETE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "INSERT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "SELECT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "UPDATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "UPDATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "stockout_lists",
-    "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_assignees",
-    "privilege_type": "INSERT",
     "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "TRIGGER",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "TRIGGER",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "stockout_lists",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -3909,36 +4239,12 @@
     "table_schema": "public",
     "table_name": "task_assignees",
     "privilege_type": "INSERT",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "task_assignees",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_assignees",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_assignees",
-    "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_assignees",
-    "privilege_type": "DELETE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_assignees",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
@@ -3950,14 +4256,32 @@
   {
     "table_schema": "public",
     "table_name": "task_assignees",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
+    "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "task_assignees",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
+    "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -3968,19 +4292,7 @@
   {
     "table_schema": "public",
     "table_name": "task_assignees",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_assignees",
-    "privilege_type": "UPDATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_assignees",
-    "privilege_type": "SELECT",
+    "privilege_type": "TRIGGER",
     "grantee": "postgres"
   },
   {
@@ -3992,13 +4304,31 @@
   {
     "table_schema": "public",
     "table_name": "task_assignees",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "task_assignees",
-    "privilege_type": "SELECT",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
@@ -4030,6 +4360,24 @@
     "table_name": "task_assignees",
     "privilege_type": "UPDATE",
     "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_assignees",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "INSERT",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -4058,12 +4406,6 @@
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
     "privilege_type": "SELECT",
     "grantee": "anon"
   },
@@ -4071,18 +4413,18 @@
     "table_schema": "public",
     "table_name": "task_items",
     "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "UPDATE",
     "grantee": "authenticated"
   },
   {
@@ -4094,19 +4436,13 @@
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "UPDATE",
+    "privilege_type": "TRUNCATE",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "INSERT",
+    "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
   {
@@ -4118,25 +4454,7 @@
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "UPDATE",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -4148,7 +4466,25 @@
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "INSERT",
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
@@ -4166,25 +4502,7 @@
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "task_items",
-    "privilege_type": "UPDATE",
+    "privilege_type": "INSERT",
     "grantee": "service_role"
   },
   {
@@ -4196,8 +4514,62 @@
   {
     "table_schema": "public",
     "table_name": "task_items",
-    "privilege_type": "INSERT",
+    "privilege_type": "UPDATE",
     "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_items",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "INSERT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "TRUNCATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -4208,67 +4580,13 @@
   {
     "table_schema": "public",
     "table_name": "tasks",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
     "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "tasks",
-    "privilege_type": "INSERT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "DELETE",
+    "privilege_type": "REFERENCES",
     "grantee": "authenticated"
   },
   {
@@ -4280,8 +4598,32 @@
   {
     "table_schema": "public",
     "table_name": "tasks",
-    "privilege_type": "REFERENCES",
+    "privilege_type": "DELETE",
     "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "INSERT",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "DELETE",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -4292,7 +4634,13 @@
   {
     "table_schema": "public",
     "table_name": "tasks",
-    "privilege_type": "INSERT",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "TRUNCATE",
     "grantee": "postgres"
   },
   {
@@ -4310,67 +4658,55 @@
   {
     "table_schema": "public",
     "table_name": "tasks",
-    "privilege_type": "DELETE",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "tasks",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "tasks",
     "privilege_type": "REFERENCES",
-    "grantee": "postgres"
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "tasks",
     "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "INSERT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "UPDATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tasks",
-    "privilege_type": "REFERENCES",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "tenant_modules",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "UPDATE",
     "grantee": "anon"
   },
   {
@@ -4383,12 +4719,6 @@
     "table_schema": "public",
     "table_name": "tenant_modules",
     "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tenant_modules",
-    "privilege_type": "UPDATE",
     "grantee": "anon"
   },
   {
@@ -4407,6 +4737,12 @@
     "table_schema": "public",
     "table_name": "tenant_modules",
     "privilege_type": "REFERENCES",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tenant_modules",
+    "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
   {
@@ -4442,25 +4778,19 @@
   {
     "table_schema": "public",
     "table_name": "tenant_modules",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tenant_modules",
     "privilege_type": "SELECT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "tenant_modules",
-    "privilege_type": "INSERT",
-    "grantee": "postgres"
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "tenant_modules",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -4496,8 +4826,8 @@
   {
     "table_schema": "public",
     "table_name": "tenant_modules",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
@@ -4537,15 +4867,9 @@
   },
   {
     "table_schema": "public",
-    "table_name": "tenants",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tenants",
-    "privilege_type": "TRIGGER",
-    "grantee": "anon"
+    "table_name": "tenant_modules",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -4580,14 +4904,14 @@
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "UPDATE",
-    "grantee": "authenticated"
+    "privilege_type": "REFERENCES",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "SELECT",
-    "grantee": "authenticated"
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -4622,25 +4946,19 @@
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
+    "privilege_type": "SELECT",
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "tenants",
     "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tenants",
-    "privilege_type": "INSERT",
     "grantee": "postgres"
   },
   {
@@ -4664,7 +4982,25 @@
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "UPDATE",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tenants",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tenants",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tenants",
+    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
   {
@@ -4676,19 +5012,13 @@
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "tenants",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "UPDATE",
     "grantee": "service_role"
   },
   {
@@ -4700,20 +5030,14 @@
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "privilege_type": "SELECT",
+    "privilege_type": "TRUNCATE",
     "grantee": "service_role"
   },
   {
     "table_schema": "public",
-    "table_name": "users",
+    "table_name": "tenants",
     "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "users",
-    "privilege_type": "TRIGGER",
-    "grantee": "anon"
+    "grantee": "service_role"
   },
   {
     "table_schema": "public",
@@ -4724,56 +5048,38 @@
   {
     "table_schema": "public",
     "table_name": "users",
-    "privilege_type": "SELECT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "users",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "users",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "users",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "REFERENCES",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "users",
-    "privilege_type": "TRIGGER",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "DELETE",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "UPDATE",
-    "grantee": "authenticated"
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "SELECT",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -4791,18 +5097,48 @@
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "TRIGGER",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "REFERENCES",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "TRUNCATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "DELETE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "UPDATE",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "SELECT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "INSERT",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "UPDATE",
     "grantee": "postgres"
   },
   {
@@ -4814,19 +5150,19 @@
   {
     "table_schema": "public",
     "table_name": "users",
-    "privilege_type": "UPDATE",
+    "privilege_type": "TRUNCATE",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "users",
-    "privilege_type": "SELECT",
+    "privilege_type": "REFERENCES",
     "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "users",
-    "privilege_type": "INSERT",
+    "privilege_type": "TRIGGER",
     "grantee": "postgres"
   },
   {
@@ -4845,6 +5181,24 @@
     "table_schema": "public",
     "table_name": "users",
     "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "privilege_type": "REFERENCES",
     "grantee": "service_role"
   },
   {
@@ -4855,56 +5209,14 @@
   },
   {
     "table_schema": "public",
-    "table_name": "users",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "users",
-    "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "users",
+    "table_name": "v_active_skt_alarms",
     "privilege_type": "REFERENCES",
-    "grantee": "service_role"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
     "privilege_type": "INSERT",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "UPDATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "DELETE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "TRUNCATE",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "REFERENCES",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "TRIGGER",
     "grantee": "anon"
   },
   {
@@ -4916,8 +5228,26 @@
   {
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
+    "privilege_type": "UPDATE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "privilege_type": "DELETE",
+    "grantee": "anon"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
     "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -4929,6 +5259,12 @@
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
     "privilege_type": "REFERENCES",
+    "grantee": "authenticated"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "privilege_type": "TRUNCATE",
     "grantee": "authenticated"
   },
   {
@@ -4958,7 +5294,7 @@
   {
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
-    "privilege_type": "INSERT",
+    "privilege_type": "DELETE",
     "grantee": "postgres"
   },
   {
@@ -4982,12 +5318,6 @@
   {
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
     "privilege_type": "UPDATE",
     "grantee": "postgres"
   },
@@ -5001,30 +5331,12 @@
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
     "privilege_type": "INSERT",
-    "grantee": "service_role"
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
-    "privilege_type": "SELECT",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "UPDATE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "DELETE",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_active_skt_alarms",
-    "privilege_type": "TRUNCATE",
+    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   },
   {
@@ -5036,8 +5348,38 @@
   {
     "table_schema": "public",
     "table_name": "v_active_skt_alarms",
-    "privilege_type": "TRIGGER",
+    "privilege_type": "TRUNCATE",
     "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "privilege_type": "UPDATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "privilege_type": "SELECT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_active_skt_alarms",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "TRIGGER",
+    "grantee": "anon"
   },
   {
     "table_schema": "public",
@@ -5078,19 +5420,13 @@
   {
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
-    "privilege_type": "TRIGGER",
-    "grantee": "anon"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "SELECT",
+    "privilege_type": "INSERT",
     "grantee": "authenticated"
   },
   {
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
-    "privilege_type": "INSERT",
+    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -5103,12 +5439,6 @@
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
     "privilege_type": "TRUNCATE",
-    "grantee": "authenticated"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "TRIGGER",
     "grantee": "authenticated"
   },
   {
@@ -5127,37 +5457,7 @@
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
     "privilege_type": "SELECT",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "TRIGGER",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "REFERENCES",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "TRUNCATE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "DELETE",
-    "grantee": "postgres"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "UPDATE",
-    "grantee": "postgres"
+    "grantee": "authenticated"
   },
   {
     "table_schema": "public",
@@ -5169,30 +5469,48 @@
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
     "privilege_type": "SELECT",
-    "grantee": "service_role"
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
-    "privilege_type": "TRIGGER",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "REFERENCES",
-    "grantee": "service_role"
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_pending_leave_requests",
-    "privilege_type": "TRUNCATE",
-    "grantee": "service_role"
+    "privilege_type": "UPDATE",
+    "grantee": "postgres"
   },
   {
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
     "privilege_type": "DELETE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "TRUNCATE",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "REFERENCES",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "TRIGGER",
+    "grantee": "postgres"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "INSERT",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "SELECT",
     "grantee": "service_role"
   },
   {
@@ -5204,7 +5522,25 @@
   {
     "table_schema": "public",
     "table_name": "v_pending_leave_requests",
-    "privilege_type": "INSERT",
+    "privilege_type": "DELETE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "TRUNCATE",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "REFERENCES",
+    "grantee": "service_role"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_pending_leave_requests",
+    "privilege_type": "TRIGGER",
     "grantee": "service_role"
   }
 ]

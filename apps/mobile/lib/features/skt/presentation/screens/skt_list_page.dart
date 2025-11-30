@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../domain/models/product_summary_model.dart';
 import '../../domain/models/skt_record_model.dart';
 import '../../domain/providers/skt_providers.dart';
+import 'package:yotech_mobile/shared/widgets/barcode_scanner_page.dart';
 
 const List<int> _alarmDayOptions = [1, 2, 3, 5, 7, 14];
 const List<String> _requestTypeOptions = <String>[
@@ -256,9 +256,7 @@ class _SktListPageState extends ConsumerState<SktListPage> {
                   title: const Text('Alarm ayarları'),
                   onTap: () {
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Alarm yönetimi yakında.')),
-                    );
+                    _showAlarmSettingsSheet(context, record);
                   },
                 ),
                 ListTile(
@@ -324,6 +322,53 @@ class _SktListPageState extends ConsumerState<SktListPage> {
       messenger.showSnackBar(
         SnackBar(content: Text('${record.productName} güncellendi.')),
       );
+    }
+  }
+
+  Future<void> _showAlarmSettingsSheet(
+      BuildContext context, SktRecordModel record) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final updatedDays = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => _AlarmSettingsSheet(record: record),
+    );
+
+    if (updatedDays == null || !mounted) {
+      return;
+    }
+
+    ref.invalidate(sktRecordsProvider);
+    await ref.read(sktRecordsProvider.future);
+    if (!mounted) {
+      return;
+    }
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          'Alarm ${_alarmLabelForDays(updatedDays)} önce tetiklenecek.',
+        ),
+      ),
+    );
+  }
+
+  String _alarmLabelForDays(int days) {
+    switch (days) {
+      case 1:
+        return '1 gün';
+      case 2:
+        return '2 gün';
+      case 3:
+        return '3 gün';
+      case 5:
+        return '5 gün';
+      case 7:
+        return '1 hafta';
+      case 14:
+        return '2 hafta';
+      default:
+        return '$days gün';
     }
   }
 
@@ -981,7 +1026,7 @@ class _SktCreateSheetState extends ConsumerState<_SktCreateSheet> {
 
   Future<void> _scanBarcode() async {
     final scanned = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const _BarcodeScannerPage()),
+      MaterialPageRoute(builder: (_) => const BarcodeScannerPage()),
     );
 
     if (!mounted || scanned == null || scanned.isEmpty) {
@@ -1122,6 +1167,178 @@ class _SktEditSheet extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<_SktEditSheet> createState() => _SktEditSheetState();
+}
+
+class _AlarmSettingsSheet extends ConsumerStatefulWidget {
+  const _AlarmSettingsSheet({required this.record});
+
+  final SktRecordModel record;
+
+  @override
+  ConsumerState<_AlarmSettingsSheet> createState() =>
+      _AlarmSettingsSheetState();
+}
+
+class _AlarmSettingsSheetState extends ConsumerState<_AlarmSettingsSheet> {
+  late final List<int> _options;
+  late int _selectedDays;
+  bool _isSaving = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    final optionSet = <int>{..._alarmDayOptions};
+    if (widget.record.alarmDaysBefore > 0) {
+      optionSet.add(widget.record.alarmDaysBefore);
+    }
+    _options = optionSet.toList()..sort();
+    _selectedDays = widget.record.alarmDaysBefore > 0
+        ? widget.record.alarmDaysBefore
+        : _options.first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final alarmDate =
+        widget.record.expiryDate.subtract(Duration(days: _selectedDays));
+
+    return SafeArea(
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + viewInsets),
+        curve: Curves.decelerate,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.record.productName,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed:
+                        _isSaving ? null : () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              Text(
+                'Alarm kaç gün önce hatırlatsın?',
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _options
+                    .map(
+                      (days) => ChoiceChip(
+                        label: Text(_alarmLabel(days)),
+                        selected: _selectedDays == days,
+                        onSelected: _isSaving
+                            ? null
+                            : (_) {
+                                setState(() => _selectedDays = days);
+                              },
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Alarm ${_alarmLabel(_selectedDays)} önce (${_formatDate(alarmDate)}) tetiklenecek.',
+                style: theme.textTheme.bodySmall,
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed:
+                        _isSaving ? null : () => Navigator.of(context).pop(),
+                    child: const Text('Vazgeç'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _isSaving ? null : _save,
+                    child: _isSaving
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Kaydet'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    setState(() {
+      _isSaving = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await ref.read(sktRepositoryProvider).updateAlarmSettings(
+            recordId: widget.record.id,
+            expiryDate: widget.record.expiryDate,
+            alarmDaysBefore: _selectedDays,
+          );
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop(_selectedDays);
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _errorMessage = e.toString();
+        _isSaving = false;
+      });
+    }
+  }
+
+  String _alarmLabel(int days) {
+    switch (days) {
+      case 1:
+        return '1 gün';
+      case 2:
+        return '2 gün';
+      case 3:
+        return '3 gün';
+      case 5:
+        return '5 gün';
+      case 7:
+        return '1 hafta';
+      case 14:
+        return '2 hafta';
+      default:
+        return '$days gün';
+    }
+  }
 }
 
 class _SktEditSheetState extends ConsumerState<_SktEditSheet> {
@@ -1537,111 +1754,6 @@ class _ProductSearchResults extends StatelessWidget {
             .textTheme
             .bodySmall
             ?.copyWith(color: Theme.of(context).colorScheme.error),
-      ),
-    );
-  }
-}
-
-class _BarcodeScannerPage extends StatefulWidget {
-  const _BarcodeScannerPage();
-
-  @override
-  State<_BarcodeScannerPage> createState() => _BarcodeScannerPageState();
-}
-
-class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
-  late final MobileScannerController _controller;
-  bool _isProcessing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = MobileScannerController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onDetect(BarcodeCapture capture) {
-    if (_isProcessing) {
-      return;
-    }
-    for (final barcode in capture.barcodes) {
-      final value = barcode.rawValue;
-      if (value != null && value.isNotEmpty) {
-        _isProcessing = true;
-        Navigator.of(context).pop(value);
-        break;
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: const Text('Barkod Tara'),
-      ),
-      body: Stack(
-        children: [
-          MobileScanner(
-            controller: _controller,
-            onDetect: _onDetect,
-          ),
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              width: 260,
-              height: 180,
-              decoration: BoxDecoration(
-                border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.7), width: 2),
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FloatingActionButton.small(
-                    heroTag: 'torch',
-                    backgroundColor: colors.primary,
-                    onPressed: () => _controller.toggleTorch(),
-                    child: ValueListenableBuilder<TorchState>(
-                      valueListenable: _controller.torchState,
-                      builder: (context, state, _) {
-                        switch (state) {
-                          case TorchState.off:
-                            return const Icon(Icons.flash_off);
-                          case TorchState.on:
-                            return const Icon(Icons.flash_on);
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  FloatingActionButton.small(
-                    heroTag: 'switch-camera',
-                    backgroundColor: colors.primary,
-                    onPressed: () => _controller.switchCamera(),
-                    child: const Icon(Icons.cameraswitch),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

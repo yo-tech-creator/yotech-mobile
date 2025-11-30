@@ -240,6 +240,39 @@ class SktRepository {
     }
   }
 
+  Future<void> updateAlarmSettings({
+    required String recordId,
+    required DateTime expiryDate,
+    required int alarmDaysBefore,
+  }) async {
+    final normalizedExpiry = expiryDate.toUtc();
+    final alarmDate =
+        normalizedExpiry.subtract(Duration(days: alarmDaysBefore));
+
+    final payload = <String, dynamic>{
+      'alarm_days_before': alarmDaysBefore,
+      'alarm_date': alarmDate.toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    try {
+      await _client
+          .from('skt_records')
+          .update(payload)
+          .eq('id', recordId)
+          .select('id')
+          .single();
+    } on PostgrestException catch (e, stackTrace) {
+      log('SKT alarm guncelleme hatasi: ${e.message}',
+          name: 'SktRepository', error: e, stackTrace: stackTrace);
+      rethrow;
+    } catch (e, stackTrace) {
+      log('SKT alarm guncelleme beklenmeyen hata: $e',
+          name: 'SktRepository', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
   Future<bool> deleteRecord({required String recordId}) async {
     try {
       final response = await _client
@@ -248,13 +281,37 @@ class SktRepository {
           .eq('id', recordId)
           .select('id');
 
-      final data = (response as List?)?.cast<Map<String, dynamic>>();
-      if (data == null) {
-        return false;
+      final data = (response as List).cast<Map<String, dynamic>>();
+      if (data.isNotEmpty) {
+        return true;
       }
 
-      return data.isNotEmpty;
+      // Bazı PostgREST sürümleri silinen satırları döndürmeyebiliyor. Silme
+      // başarısını teyit etmek için kaydın halen mevcut olup olmadığını kontrol
+      // ediyoruz.
+      final remaining = await _client
+          .from('skt_records')
+          .select('id')
+          .eq('id', recordId)
+          .maybeSingle();
+
+      final deleted = remaining == null;
+      if (!deleted) {
+        log('SKT delete verification failed for $recordId: record still exists',
+            name: 'SktRepository');
+      }
+      return deleted;
     } on PostgrestException catch (e, stackTrace) {
+      if (e.code == 'PGRST116' ||
+          e.message.contains('0 rows') ||
+          e.message.contains('single JSON object')) {
+        final remaining = await _client
+            .from('skt_records')
+            .select('id')
+            .eq('id', recordId)
+            .maybeSingle();
+        return remaining == null;
+      }
       log('SKT kaydi silme hatasi: ${e.message}',
           name: 'SktRepository', error: e, stackTrace: stackTrace);
       rethrow;

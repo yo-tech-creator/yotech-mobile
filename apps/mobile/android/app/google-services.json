@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "696186125604",
+    "project_id": "yotech-b542d",
+    "storage_bucket": "yotech-b542d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:696186125604:android:eecf69e4db8f0d93fb47b1",
+        "android_client_info": {
+          "package_name": "com.example.yotech_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnT8Mwr4MzLNrdM6e01o9Nxc6utO45NxU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

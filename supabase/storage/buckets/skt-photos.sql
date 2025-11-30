@@ -1,2 +1,0 @@
-﻿-- skt-photos.sql (Ã¶rnek)
--- create bucket komutlarÄ±nÄ±zÄ± buraya ekleyebilirsiniz.

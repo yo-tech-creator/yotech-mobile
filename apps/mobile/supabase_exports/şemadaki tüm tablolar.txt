@@ -1,7 +1,19 @@
 [
   {
     "schemaname": "storage",
+    "tablename": "buckets_vectors"
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "vector_indexes"
+  },
+  {
+    "schemaname": "storage",
     "tablename": "buckets"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "device_tokens"
   },
   {
     "schemaname": "storage",
@@ -9,7 +21,7 @@
   },
   {
     "schemaname": "storage",
-    "tablename": "buckets_analytics"
+    "tablename": "objects"
   },
   {
     "schemaname": "storage",
@@ -21,11 +33,11 @@
   },
   {
     "schemaname": "storage",
-    "tablename": "objects"
+    "tablename": "prefixes"
   },
   {
     "schemaname": "storage",
-    "tablename": "prefixes"
+    "tablename": "buckets_analytics"
   },
   {
     "schemaname": "public",
@@ -45,39 +57,7 @@
   },
   {
     "schemaname": "public",
-    "tablename": "tasks"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "task_assignees"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "task_items"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "shifts"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "leave_requests"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "health_reports"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "form_templates"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "form_submissions"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "malfunction_reports"
+    "tablename": "skt_alarm_notifications"
   },
   {
     "schemaname": "public",
@@ -109,11 +89,19 @@
   },
   {
     "schemaname": "public",
-    "tablename": "products"
+    "tablename": "tasks"
   },
   {
     "schemaname": "public",
     "tablename": "branches"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_items"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products"
   },
   {
     "schemaname": "public",
@@ -133,7 +121,27 @@
   },
   {
     "schemaname": "public",
+    "tablename": "health_reports"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_templates"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports"
+  },
+  {
+    "schemaname": "public",
     "tablename": "modules"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants"
   },
   {
     "schemaname": "public",
@@ -141,6 +149,14 @@
   },
   {
     "schemaname": "public",
-    "tablename": "tenants"
+    "tablename": "task_assignees"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests"
   }
 ]

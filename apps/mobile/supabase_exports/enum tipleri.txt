@@ -31,6 +31,11 @@
   },
   {
     "schema_name": "public",
+    "enum_name": "skt_alarm_type",
+    "values": "{day_before,due_day}"
+  },
+  {
+    "schema_name": "public",
     "enum_name": "skt_status",
     "values": "{normal,yaklasan,gecmis}"
   },

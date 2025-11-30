@@ -7,12 +7,12 @@
   {
     "schema_name": "extensions",
     "function_name": "armor",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.armor(bytea, text[], text[])\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_armor$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION extensions.armor(bytea)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_armor$function$\n"
   },
   {
     "schema_name": "extensions",
     "function_name": "armor",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.armor(bytea)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_armor$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION extensions.armor(bytea, text[], text[])\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_armor$function$\n"
   },
   {
     "schema_name": "public",
@@ -57,7 +57,7 @@
   {
     "schema_name": "public",
     "function_name": "custom_access_token_hook",
-    "definition": "CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$ BEGIN RETURN event; END; $function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\r\nbegin\r\n  return event;\r\nend;\r\n$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -85,6 +85,11 @@
     "definition": "CREATE OR REPLACE FUNCTION extensions.digest(text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_digest$function$\n"
   },
   {
+    "schema_name": "public",
+    "function_name": "dispatch_skt_alarm_notifications",
+    "definition": "CREATE OR REPLACE FUNCTION public.dispatch_skt_alarm_notifications()\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  v_now timestamptz := now();\r\n  v_warn_cutoff timestamptz := v_now + interval '1 day';\r\n  rec record;\r\n  tok record;\r\n  notif_id uuid;\r\nbegin\r\n  -- 1 gün kala uyarıları\r\n  for rec in\r\n    select sr.id as record_id,\r\n           sr.user_id,\r\n           sr.tenant_id,\r\n           sr.expiry_date,\r\n           sr.alarm_date,\r\n           p.name as product_name,\r\n           b.name as branch_name\r\n    from skt_records sr\r\n      join products p on p.id = sr.product_id\r\n      left join branches b on b.id = sr.branch_id\r\n    where sr.alarm_warn_sent = false\r\n      and sr.alarm_date <= v_warn_cutoff\r\n      and sr.alarm_date >= v_now - interval '12 hour'\r\n  loop\r\n    insert into skt_alarm_notifications(\r\n      record_id, user_id, tenant_id, type, scheduled_for, payload\r\n    ) values (\r\n      rec.record_id,\r\n      rec.user_id,\r\n      rec.tenant_id,\r\n      'day_before',\r\n      rec.alarm_date,\r\n      jsonb_build_object(\r\n        'productName', rec.product_name,\r\n        'branchName', rec.branch_name,\r\n        'expiryDate', rec.expiry_date\r\n      )\r\n    ) returning id into notif_id;\r\n\r\n    for tok in select token from device_tokens where user_id = rec.user_id loop\r\n      perform net.http_post(\r\n        url := 'https://YOUR_FUNCTION_URL/skt-alarm-dispatcher',\r\n        headers := jsonb_build_object('Content-Type','application/json'),\r\n        body := jsonb_build_object(\r\n          'notificationId', notif_id,\r\n          'recordId', rec.record_id,\r\n          'type', 'day_before',\r\n          'token', tok.token,\r\n          'title', rec.product_name,\r\n          'body', format('%s ürünü için SKT yaklaşıyor.', rec.product_name)\r\n        )\r\n      );\r\n    end loop;\r\n\r\n    update skt_records\r\n      set alarm_warn_sent = true, alarm_warn_sent_at = now()\r\n      where id = rec.record_id;\r\n  end loop;\r\n\r\n  -- Günü gelen uyarılar\r\n  for rec in\r\n    select sr.id as record_id,\r\n           sr.user_id,\r\n           sr.tenant_id,\r\n           sr.expiry_date,\r\n           p.name as product_name,\r\n           b.name as branch_name\r\n    from skt_records sr\r\n      join products p on p.id = sr.product_id\r\n      left join branches b on b.id = sr.branch_id\r\n    where sr.expiry_date <= v_now\r\n      and sr.alarm_due_sent = false\r\n  loop\r\n    insert into skt_alarm_notifications(\r\n      record_id, user_id, tenant_id, type, scheduled_for, payload\r\n    ) values (\r\n      rec.record_id,\r\n      rec.user_id,\r\n      rec.tenant_id,\r\n      'due_day',\r\n      rec.expiry_date,\r\n      jsonb_build_object(\r\n        'productName', rec.product_name,\r\n        'branchName', rec.branch_name,\r\n        'expiryDate', rec.expiry_date\r\n      )\r\n    ) returning id into notif_id;\r\n\r\n    for tok in select token from device_tokens where user_id = rec.user_id loop\r\n      perform net.http_post(\r\n        url := 'https://YOUR_FUNCTION_URL/skt-alarm-dispatcher',\r\n        headers := jsonb_build_object('Content-Type','application/json'),\r\n        body := jsonb_build_object(\r\n          'notificationId', notif_id,\r\n          'recordId', rec.record_id,\r\n          'type', 'due_day',\r\n          'token', tok.token,\r\n          'title', rec.product_name,\r\n          'body', format('%s ürünü bugün son kullanma tarihinde.', rec.product_name)\r\n        )\r\n      );\r\n    end loop;\r\n\r\n    update skt_records\r\n      set alarm_due_sent = true, alarm_due_sent_at = now()\r\n      where id = rec.record_id;\r\n  end loop;\r\nend;\r\n$function$\n"
+  },
+  {
     "schema_name": "extensions",
     "function_name": "encrypt",
     "definition": "CREATE OR REPLACE FUNCTION extensions.encrypt(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_encrypt$function$\n"
@@ -107,12 +112,12 @@
   {
     "schema_name": "extensions",
     "function_name": "gen_salt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.gen_salt(text)\n RETURNS text\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_gen_salt$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION extensions.gen_salt(text, integer)\n RETURNS text\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_gen_salt_rounds$function$\n"
   },
   {
     "schema_name": "extensions",
     "function_name": "gen_salt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.gen_salt(text, integer)\n RETURNS text\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_gen_salt_rounds$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION extensions.gen_salt(text)\n RETURNS text\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_gen_salt$function$\n"
   },
   {
     "schema_name": "public",
@@ -277,12 +282,17 @@
   {
     "schema_name": "extensions",
     "function_name": "pgp_pub_decrypt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt(bytea, bytea)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_text$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt(bytea, bytea, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
     "function_name": "pgp_pub_decrypt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt(bytea, bytea, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_text$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt(bytea, bytea)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_text$function$\n"
+  },
+  {
+    "schema_name": "extensions",
+    "function_name": "pgp_pub_decrypt_bytea",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -296,18 +306,13 @@
   },
   {
     "schema_name": "extensions",
-    "function_name": "pgp_pub_decrypt_bytea",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
+    "function_name": "pgp_pub_encrypt",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt(text, bytea)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
     "function_name": "pgp_pub_encrypt",
     "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt(text, bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_text$function$\n"
-  },
-  {
-    "schema_name": "extensions",
-    "function_name": "pgp_pub_encrypt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt(text, bytea)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -322,17 +327,12 @@
   {
     "schema_name": "extensions",
     "function_name": "pgp_sym_decrypt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt(bytea, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_text$function$\n"
-  },
-  {
-    "schema_name": "extensions",
-    "function_name": "pgp_sym_decrypt",
     "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt(bytea, text, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
-    "function_name": "pgp_sym_decrypt_bytea",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_bytea$function$\n"
+    "function_name": "pgp_sym_decrypt",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt(bytea, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -341,8 +341,8 @@
   },
   {
     "schema_name": "extensions",
-    "function_name": "pgp_sym_encrypt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt(text, text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_text$function$\n"
+    "function_name": "pgp_sym_decrypt_bytea",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_bytea$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -351,13 +351,18 @@
   },
   {
     "schema_name": "extensions",
-    "function_name": "pgp_sym_encrypt_bytea",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt_bytea(bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_bytea$function$\n"
+    "function_name": "pgp_sym_encrypt",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt(text, text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
     "function_name": "pgp_sym_encrypt_bytea",
     "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt_bytea(bytea, text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_bytea$function$\n"
+  },
+  {
+    "schema_name": "extensions",
+    "function_name": "pgp_sym_encrypt_bytea",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt_bytea(bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_bytea$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -503,6 +508,11 @@
     "schema_name": "extensions",
     "function_name": "uuid_ns_x500",
     "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_ns_x500()\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_ns_x500$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "validate_products_alt_barcodes",
+    "definition": "CREATE OR REPLACE FUNCTION public.validate_products_alt_barcodes()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\ndeclare\r\n  alt_code text;\r\n  distinct_count integer;\r\nbegin\r\n  -- null ise sorun yok\r\n  if new.alt_barcodes is null then\r\n    return new;\r\n  end if;\r\n\r\n  -- trim + boş değer kontrolü\r\n  new.alt_barcodes := array(\r\n    select trim(b)\r\n      from unnest(new.alt_barcodes) as b\r\n     where trim(b) <> ''\r\n  );\r\n\r\n  if cardinality(new.alt_barcodes) > 10 then\r\n    raise exception 'En fazla 10 alt barkod ekleyebilirsiniz';\r\n  end if;\r\n\r\n  select count(*) into distinct_count\r\n    from (select distinct unnest(new.alt_barcodes)) t;\r\n\r\n  if distinct_count <> cardinality(new.alt_barcodes) then\r\n    raise exception 'Alt barkod listesinde tekrar eden değerler var';\r\n  end if;\r\n\r\n  foreach alt_code in array new.alt_barcodes loop\r\n    -- ana barkodla aynı olamaz\r\n    if alt_code = new.barcode then\r\n      raise exception 'Alt barkod ana barkod ile aynı olamaz (%).', alt_code;\r\n    end if;\r\n\r\n    -- aynı tenant’ta başka ürünlerin alt/ana barkodlarıyla çakışma kontrolü\r\n    if exists (\r\n      select 1\r\n        from public.products p\r\n       where p.tenant_id = new.tenant_id\r\n         and p.id <> coalesce(new.id, '00000000-0000-0000-0000-000000000000'::uuid)\r\n         and (\r\n              p.barcode = alt_code\r\n              or (p.alt_barcodes @> array[alt_code])\r\n         )\r\n    ) then\r\n      raise exception 'Alt barkod başka bir ürünle çakışıyor (%).', alt_code;\r\n    end if;\r\n  end loop;\r\n\r\n  return new;\r\nend;\r\n$function$\n"
   },
   {
     "schema_name": "extensions",

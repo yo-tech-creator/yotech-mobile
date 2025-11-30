@@ -125,6 +125,26 @@
     "definition": "CREATE INDEX idx_break_user ON public.break_logs USING btree (user_id)"
   },
   {
+    "table_name": "device_tokens",
+    "index_name": "device_tokens_pkey",
+    "definition": "CREATE UNIQUE INDEX device_tokens_pkey ON public.device_tokens USING btree (id)"
+  },
+  {
+    "table_name": "device_tokens",
+    "index_name": "device_tokens_token_idx",
+    "definition": "CREATE INDEX device_tokens_token_idx ON public.device_tokens USING btree (token)"
+  },
+  {
+    "table_name": "device_tokens",
+    "index_name": "device_tokens_token_key",
+    "definition": "CREATE UNIQUE INDEX device_tokens_token_key ON public.device_tokens USING btree (token)"
+  },
+  {
+    "table_name": "device_tokens",
+    "index_name": "device_tokens_user_idx",
+    "definition": "CREATE INDEX device_tokens_user_idx ON public.device_tokens USING btree (user_id)"
+  },
+  {
     "table_name": "employee_scores",
     "index_name": "employee_scores_pkey",
     "definition": "CREATE UNIQUE INDEX employee_scores_pkey ON public.employee_scores USING btree (id)"
@@ -411,6 +431,11 @@
   },
   {
     "table_name": "products",
+    "index_name": "idx_products_alt_barcodes",
+    "definition": "CREATE INDEX idx_products_alt_barcodes ON public.products USING gin (alt_barcodes)"
+  },
+  {
+    "table_name": "products",
     "index_name": "idx_products_barcode",
     "definition": "CREATE INDEX idx_products_barcode ON public.products USING btree (tenant_id, barcode)"
   },
@@ -480,6 +505,11 @@
     "definition": "CREATE UNIQUE INDEX shifts_tenant_id_branch_id_week_start_date_key ON public.shifts USING btree (tenant_id, branch_id, week_start_date)"
   },
   {
+    "table_name": "skt_alarm_notifications",
+    "index_name": "skt_alarm_notifications_pkey",
+    "definition": "CREATE UNIQUE INDEX skt_alarm_notifications_pkey ON public.skt_alarm_notifications USING btree (id)"
+  },
+  {
     "table_name": "skt_records",
     "index_name": "idx_skt_alarm_date",
     "definition": "CREATE INDEX idx_skt_alarm_date ON public.skt_records USING btree (alarm_date) WHERE (alarm_sent = false)"
@@ -513,6 +543,11 @@
     "table_name": "skt_records",
     "index_name": "idx_skt_tenant_branch",
     "definition": "CREATE INDEX idx_skt_tenant_branch ON public.skt_records USING btree (tenant_id, branch_id)"
+  },
+  {
+    "table_name": "skt_records",
+    "index_name": "skt_records_deleted_at_idx",
+    "definition": "CREATE INDEX skt_records_deleted_at_idx ON public.skt_records USING btree (deleted_at) WHERE (deleted_at IS NOT NULL)"
   },
   {
     "table_name": "skt_records",
