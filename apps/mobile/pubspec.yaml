@@ -15,6 +15,10 @@ dependencies:
   
   # Supabase
   supabase_flutter: ^2.0.0
+  collection: ^1.18.0
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
   
   # Local Storage
   shared_preferences: ^2.2.2
@@ -31,6 +35,7 @@ dependencies:
   mobile_scanner: ^4.0.1
   firebase_core: ^4.2.1
   firebase_messaging: ^16.0.4
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:
@@ -48,6 +53,7 @@ dev_dependencies:
   flutter_native_splash: ^2.3.5
 
 flutter:
+  generate: true
   uses-material-design: true
   
   assets:

@@ -60,6 +60,31 @@
     "definition": "CREATE INDEX idx_attendance_user ON public.attendance USING btree (user_id)"
   },
   {
+    "table_name": "branch_requests",
+    "index_name": "branch_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX branch_requests_pkey ON public.branch_requests USING btree (id)"
+  },
+  {
+    "table_name": "branch_requests",
+    "index_name": "idx_branch_requests_branch",
+    "definition": "CREATE INDEX idx_branch_requests_branch ON public.branch_requests USING btree (branch_id)"
+  },
+  {
+    "table_name": "branch_requests",
+    "index_name": "idx_branch_requests_category",
+    "definition": "CREATE INDEX idx_branch_requests_category ON public.branch_requests USING btree (category)"
+  },
+  {
+    "table_name": "branch_requests",
+    "index_name": "idx_branch_requests_created_by",
+    "definition": "CREATE INDEX idx_branch_requests_created_by ON public.branch_requests USING btree (created_by)"
+  },
+  {
+    "table_name": "branch_requests",
+    "index_name": "idx_branch_requests_status",
+    "definition": "CREATE INDEX idx_branch_requests_status ON public.branch_requests USING btree (status)"
+  },
+  {
     "table_name": "branch_scores",
     "index_name": "branch_scores_pkey",
     "definition": "CREATE UNIQUE INDEX branch_scores_pkey ON public.branch_scores USING btree (id)"
@@ -123,6 +148,46 @@
     "table_name": "break_logs",
     "index_name": "idx_break_user",
     "definition": "CREATE INDEX idx_break_user ON public.break_logs USING btree (user_id)"
+  },
+  {
+    "table_name": "break_sessions",
+    "index_name": "break_sessions_branch_started_idx",
+    "definition": "CREATE INDEX break_sessions_branch_started_idx ON public.break_sessions USING btree (branch_id, started_at DESC)"
+  },
+  {
+    "table_name": "break_sessions",
+    "index_name": "break_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX break_sessions_pkey ON public.break_sessions USING btree (id)"
+  },
+  {
+    "table_name": "break_sessions",
+    "index_name": "break_sessions_user_open_idx",
+    "definition": "CREATE INDEX break_sessions_user_open_idx ON public.break_sessions USING btree (user_id) WHERE (ended_at IS NULL)"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "index_name": "depot_notice_offers_notice_idx",
+    "definition": "CREATE INDEX depot_notice_offers_notice_idx ON public.depot_notice_offers USING btree (notice_id, status)"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "index_name": "depot_notice_offers_pkey",
+    "definition": "CREATE UNIQUE INDEX depot_notice_offers_pkey ON public.depot_notice_offers USING btree (id)"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "index_name": "depot_notice_offers_unique_pending",
+    "definition": "CREATE UNIQUE INDEX depot_notice_offers_unique_pending ON public.depot_notice_offers USING btree (notice_id, branch_id) WHERE (status = 'pending'::depot_offer_status)"
+  },
+  {
+    "table_name": "depot_notices",
+    "index_name": "depot_notices_pkey",
+    "definition": "CREATE UNIQUE INDEX depot_notices_pkey ON public.depot_notices USING btree (id)"
+  },
+  {
+    "table_name": "depot_notices",
+    "index_name": "depot_notices_tenant_branch_idx",
+    "definition": "CREATE INDEX depot_notices_tenant_branch_idx ON public.depot_notices USING btree (tenant_id, branch_id, status)"
   },
   {
     "table_name": "device_tokens",
@@ -230,46 +295,6 @@
     "definition": "CREATE INDEX idx_health_reports_user_id ON public.health_reports USING btree (user_id)"
   },
   {
-    "table_name": "inventory_transfers",
-    "index_name": "idx_inventory_transfers_approved_by",
-    "definition": "CREATE INDEX idx_inventory_transfers_approved_by ON public.inventory_transfers USING btree (approved_by)"
-  },
-  {
-    "table_name": "inventory_transfers",
-    "index_name": "idx_inventory_transfers_product_id",
-    "definition": "CREATE INDEX idx_inventory_transfers_product_id ON public.inventory_transfers USING btree (product_id)"
-  },
-  {
-    "table_name": "inventory_transfers",
-    "index_name": "idx_inventory_transfers_requested_by",
-    "definition": "CREATE INDEX idx_inventory_transfers_requested_by ON public.inventory_transfers USING btree (requested_by)"
-  },
-  {
-    "table_name": "inventory_transfers",
-    "index_name": "idx_transfer_from_branch",
-    "definition": "CREATE INDEX idx_transfer_from_branch ON public.inventory_transfers USING btree (from_branch_id)"
-  },
-  {
-    "table_name": "inventory_transfers",
-    "index_name": "idx_transfer_status",
-    "definition": "CREATE INDEX idx_transfer_status ON public.inventory_transfers USING btree (status)"
-  },
-  {
-    "table_name": "inventory_transfers",
-    "index_name": "idx_transfer_tenant",
-    "definition": "CREATE INDEX idx_transfer_tenant ON public.inventory_transfers USING btree (tenant_id)"
-  },
-  {
-    "table_name": "inventory_transfers",
-    "index_name": "idx_transfer_to_branch",
-    "definition": "CREATE INDEX idx_transfer_to_branch ON public.inventory_transfers USING btree (to_branch_id)"
-  },
-  {
-    "table_name": "inventory_transfers",
-    "index_name": "inventory_transfers_pkey",
-    "definition": "CREATE UNIQUE INDEX inventory_transfers_pkey ON public.inventory_transfers USING btree (id)"
-  },
-  {
     "table_name": "leave_requests",
     "index_name": "idx_leave_dates",
     "definition": "CREATE INDEX idx_leave_dates ON public.leave_requests USING btree (start_date, end_date)"
@@ -333,6 +358,11 @@
     "table_name": "malfunction_reports",
     "index_name": "malfunction_reports_pkey",
     "definition": "CREATE UNIQUE INDEX malfunction_reports_pkey ON public.malfunction_reports USING btree (id)"
+  },
+  {
+    "table_name": "merch_people",
+    "index_name": "merch_people_pkey",
+    "definition": "CREATE UNIQUE INDEX merch_people_pkey ON public.merch_people USING btree (id)"
   },
   {
     "table_name": "modules",
@@ -590,6 +620,86 @@
     "definition": "CREATE UNIQUE INDEX stockout_lists_pkey ON public.stockout_lists USING btree (id)"
   },
   {
+    "table_name": "store_scoring_form_versions",
+    "index_name": "store_scoring_form_versions_form_id_version_key",
+    "definition": "CREATE UNIQUE INDEX store_scoring_form_versions_form_id_version_key ON public.store_scoring_form_versions USING btree (form_id, version)"
+  },
+  {
+    "table_name": "store_scoring_form_versions",
+    "index_name": "store_scoring_form_versions_form_idx",
+    "definition": "CREATE INDEX store_scoring_form_versions_form_idx ON public.store_scoring_form_versions USING btree (form_id)"
+  },
+  {
+    "table_name": "store_scoring_form_versions",
+    "index_name": "store_scoring_form_versions_pkey",
+    "definition": "CREATE UNIQUE INDEX store_scoring_form_versions_pkey ON public.store_scoring_form_versions USING btree (id)"
+  },
+  {
+    "table_name": "store_scoring_forms",
+    "index_name": "store_scoring_forms_pkey",
+    "definition": "CREATE UNIQUE INDEX store_scoring_forms_pkey ON public.store_scoring_forms USING btree (id)"
+  },
+  {
+    "table_name": "store_scoring_forms",
+    "index_name": "store_scoring_forms_tenant_id_code_key",
+    "definition": "CREATE UNIQUE INDEX store_scoring_forms_tenant_id_code_key ON public.store_scoring_forms USING btree (tenant_id, code)"
+  },
+  {
+    "table_name": "store_scoring_forms",
+    "index_name": "store_scoring_forms_tenant_idx",
+    "definition": "CREATE INDEX store_scoring_forms_tenant_idx ON public.store_scoring_forms USING btree (tenant_id)"
+  },
+  {
+    "table_name": "store_scoring_items",
+    "index_name": "store_scoring_items_pkey",
+    "definition": "CREATE UNIQUE INDEX store_scoring_items_pkey ON public.store_scoring_items USING btree (id)"
+  },
+  {
+    "table_name": "store_scoring_items",
+    "index_name": "store_scoring_items_section_idx",
+    "definition": "CREATE INDEX store_scoring_items_section_idx ON public.store_scoring_items USING btree (section_id)"
+  },
+  {
+    "table_name": "store_scoring_sections",
+    "index_name": "store_scoring_sections_pkey",
+    "definition": "CREATE UNIQUE INDEX store_scoring_sections_pkey ON public.store_scoring_sections USING btree (id)"
+  },
+  {
+    "table_name": "store_scoring_sections",
+    "index_name": "store_scoring_sections_version_idx",
+    "definition": "CREATE INDEX store_scoring_sections_version_idx ON public.store_scoring_sections USING btree (form_version_id)"
+  },
+  {
+    "table_name": "store_scoring_session_items",
+    "index_name": "store_scoring_session_items_pkey",
+    "definition": "CREATE UNIQUE INDEX store_scoring_session_items_pkey ON public.store_scoring_session_items USING btree (id)"
+  },
+  {
+    "table_name": "store_scoring_session_items",
+    "index_name": "store_scoring_session_items_session_id_item_id_key",
+    "definition": "CREATE UNIQUE INDEX store_scoring_session_items_session_id_item_id_key ON public.store_scoring_session_items USING btree (session_id, item_id)"
+  },
+  {
+    "table_name": "store_scoring_session_items",
+    "index_name": "store_scoring_session_items_session_idx",
+    "definition": "CREATE INDEX store_scoring_session_items_session_idx ON public.store_scoring_session_items USING btree (session_id)"
+  },
+  {
+    "table_name": "store_scoring_sessions",
+    "index_name": "store_scoring_sessions_branch_idx",
+    "definition": "CREATE INDEX store_scoring_sessions_branch_idx ON public.store_scoring_sessions USING btree (branch_id)"
+  },
+  {
+    "table_name": "store_scoring_sessions",
+    "index_name": "store_scoring_sessions_evaluator_idx",
+    "definition": "CREATE INDEX store_scoring_sessions_evaluator_idx ON public.store_scoring_sessions USING btree (evaluator_id)"
+  },
+  {
+    "table_name": "store_scoring_sessions",
+    "index_name": "store_scoring_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX store_scoring_sessions_pkey ON public.store_scoring_sessions USING btree (id)"
+  },
+  {
     "table_name": "task_assignees",
     "index_name": "idx_task_assignees_user",
     "definition": "CREATE INDEX idx_task_assignees_user ON public.task_assignees USING btree (user_id)"
@@ -636,6 +746,16 @@
   },
   {
     "table_name": "tasks",
+    "index_name": "idx_tasks_parent_sort",
+    "definition": "CREATE INDEX idx_tasks_parent_sort ON public.tasks USING btree (parent_task_id, sort_order)"
+  },
+  {
+    "table_name": "tasks",
+    "index_name": "idx_tasks_parent_task",
+    "definition": "CREATE INDEX idx_tasks_parent_task ON public.tasks USING btree (parent_task_id)"
+  },
+  {
+    "table_name": "tasks",
     "index_name": "idx_tasks_status",
     "definition": "CREATE INDEX idx_tasks_status ON public.tasks USING btree (status)"
   },
@@ -668,6 +788,26 @@
     "table_name": "tenants",
     "index_name": "tenants_pkey",
     "definition": "CREATE UNIQUE INDEX tenants_pkey ON public.tenants USING btree (id)"
+  },
+  {
+    "table_name": "todos",
+    "index_name": "idx_todos_owner_id",
+    "definition": "CREATE INDEX idx_todos_owner_id ON public.todos USING btree (owner_id)"
+  },
+  {
+    "table_name": "todos",
+    "index_name": "idx_todos_parent_id",
+    "definition": "CREATE INDEX idx_todos_parent_id ON public.todos USING btree (parent_id)"
+  },
+  {
+    "table_name": "todos",
+    "index_name": "idx_todos_tenant",
+    "definition": "CREATE INDEX idx_todos_tenant ON public.todos USING btree (tenant_id)"
+  },
+  {
+    "table_name": "todos",
+    "index_name": "todos_pkey",
+    "definition": "CREATE UNIQUE INDEX todos_pkey ON public.todos USING btree (id)"
   },
   {
     "table_name": "users",

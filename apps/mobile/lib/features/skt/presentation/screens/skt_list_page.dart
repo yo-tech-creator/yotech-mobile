@@ -7,6 +7,7 @@ import '../../domain/models/product_summary_model.dart';
 import '../../domain/models/skt_record_model.dart';
 import '../../domain/providers/skt_providers.dart';
 import 'package:yotech_mobile/shared/widgets/barcode_scanner_page.dart';
+import 'package:yotech_mobile/shared/widgets/product_search_results_list.dart';
 
 const List<int> _alarmDayOptions = [1, 2, 3, 5, 7, 14];
 const List<String> _requestTypeOptions = <String>[
@@ -790,7 +791,7 @@ class _SktCreateSheetState extends ConsumerState<_SktCreateSheet> {
                   ),
                 ),
               const SizedBox(height: 12),
-              _ProductSearchResults(
+              ProductSearchResultsList(
                 searchAsync: searchAsync,
                 searching: searching,
                 onSelect: (product) {
@@ -1623,6 +1624,7 @@ class _SktEditSheetState extends ConsumerState<_SktEditSheet> {
     final current = _expiryDate ?? DateTime.now();
     final selected = await showDatePicker(
       context: context,
+      locale: Localizations.localeOf(context),
       initialDate: current,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
@@ -1684,78 +1686,6 @@ class _SktEditSheetState extends ConsumerState<_SktEditSheet> {
         });
       }
     }
-  }
-}
-
-class _ProductSearchResults extends StatelessWidget {
-  const _ProductSearchResults({
-    required this.searchAsync,
-    required this.searching,
-    required this.onSelect,
-  });
-
-  final AsyncValue<List<ProductSummaryModel>> searchAsync;
-  final bool searching;
-  final ValueChanged<ProductSummaryModel> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!searching) {
-      return Text(
-        'En az 3 karakter girerek arama yapın.',
-        style: Theme.of(context).textTheme.bodySmall,
-      );
-    }
-
-    return searchAsync.when(
-      data: (products) {
-        if (products.isEmpty) {
-          return Text(
-            'Eşleşme bulunamadı.',
-            style: Theme.of(context).textTheme.bodySmall,
-          );
-        }
-        return SizedBox(
-          height: 180,
-          child: ListView.separated(
-            itemCount: products.length,
-            separatorBuilder: (_, __) => const Divider(height: 0),
-            itemBuilder: (context, index) {
-              final product = products[index];
-              return ListTile(
-                title: Text(product.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Barkod: ${product.barcode}'),
-                    if (product.altBarcodes.isNotEmpty)
-                      Text(
-                        'Alt barkodlar: ${product.altBarcodes.join(', ')}',
-                      ),
-                  ],
-                ),
-                leading: const Icon(Icons.inventory_2_outlined),
-                onTap: () => onSelect(product),
-              );
-            },
-          ),
-        );
-      },
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: CircularProgressIndicator(),
-        ),
-      ),
-      error: (error, _) => Text(
-        'Arama sırasında hata oluştu: $error',
-        style: Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.copyWith(color: Theme.of(context).colorScheme.error),
-      ),
-    );
   }
 }
 

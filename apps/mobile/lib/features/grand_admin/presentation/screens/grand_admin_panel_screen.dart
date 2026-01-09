@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yotech_mobile/features/settings/presentation/screens/settings_page.dart';
+import 'package:yotech_mobile/features/region_manager/presentation/screens/region_manager_dashboard_screen.dart';
 import 'package:yotech_mobile/features/grand_admin/domain/providers/grand_admin_providers.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 
@@ -150,6 +151,28 @@ class GrandAdminPanelScreen extends ConsumerWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.manage_accounts_outlined),
+                          title: const Text('Bölge Müdürü Programı'),
+                          subtitle:
+                              const Text('Ziyaret, kontrol listesi, talepler'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const RegionManagerDashboardScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),

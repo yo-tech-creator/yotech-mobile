@@ -21,10 +21,6 @@
   },
   {
     "schemaname": "storage",
-    "tablename": "objects"
-  },
-  {
-    "schemaname": "storage",
     "tablename": "s3_multipart_uploads_parts"
   },
   {
@@ -37,7 +33,15 @@
   },
   {
     "schemaname": "storage",
+    "tablename": "objects"
+  },
+  {
+    "schemaname": "storage",
     "tablename": "buckets_analytics"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "depot_notices"
   },
   {
     "schemaname": "public",
@@ -58,10 +62,6 @@
   {
     "schemaname": "public",
     "tablename": "skt_alarm_notifications"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "inventory_transfers"
   },
   {
     "schemaname": "public",
@@ -89,10 +89,6 @@
   },
   {
     "schemaname": "public",
-    "tablename": "tasks"
-  },
-  {
-    "schemaname": "public",
     "tablename": "branches"
   },
   {
@@ -102,6 +98,10 @@
   {
     "schemaname": "public",
     "tablename": "products"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tasks"
   },
   {
     "schemaname": "public",
@@ -158,5 +158,49 @@
   {
     "schemaname": "public",
     "tablename": "leave_requests"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_sessions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "depot_notice_offers"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "todos"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "merch_people"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_forms"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_requests"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_form_versions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_sections"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_items"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_sessions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_session_items"
   }
 ]

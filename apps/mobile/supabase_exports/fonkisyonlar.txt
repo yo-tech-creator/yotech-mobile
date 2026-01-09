@@ -2,7 +2,7 @@
   {
     "schema_name": "public",
     "function_name": "add_personel",
-    "definition": "CREATE OR REPLACE FUNCTION public.add_personel(p_employee_code text, p_password text, p_tenant_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_user_id UUID;\r\n  v_email TEXT;\r\n  v_phone TEXT;\r\nBEGIN\r\n  v_user_id := gen_random_uuid();\r\n  v_email := LOWER(p_employee_code) || '@filemarket.com';\r\n  v_phone := '5550000000';\r\n  \r\n  -- Auth kullanıcısı oluştur (basit şifreleme)\r\n  INSERT INTO auth.users (\r\n    instance_id, id, aud, role, email,\r\n    encrypted_password,\r\n    email_confirmed_at, created_at, updated_at,\r\n    confirmation_token, email_change, email_change_token_new, recovery_token\r\n  ) VALUES (\r\n    '00000000-0000-0000-0000-000000000000',\r\n    v_user_id,\r\n    'authenticated',\r\n    'authenticated',\r\n    v_email,\r\n    '$2a$10$' || encode(digest(p_password || v_user_id::text, 'sha256'), 'base64'),\r\n    NOW(), NOW(), NOW(),\r\n    '', '', '', ''\r\n  );\r\n  \r\n  -- Public users tablosuna ekle\r\n  INSERT INTO public.users (\r\n    id, tenant_id, first_name, last_name, email, phone,\r\n    employee_code, role, position, hire_date, active\r\n  ) VALUES (\r\n    v_user_id,\r\n    p_tenant_id,\r\n    'Yeni',\r\n    'Personel',\r\n    v_email,\r\n    v_phone,\r\n    p_employee_code,\r\n    'personel',\r\n    'Mağaza Personeli',\r\n    CURRENT_DATE,\r\n    true\r\n  );\r\n  \r\n  RETURN jsonb_build_object(\r\n    'success', true,\r\n    'user_id', v_user_id,\r\n    'email', v_email\r\n  );\r\n  \r\nEXCEPTION\r\n  WHEN OTHERS THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', SQLERRM\r\n    );\r\nEND;\r\n$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION public.add_personel(p_employee_code text, p_password text, p_tenant_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'extensions'\nAS $function$\r\nDECLARE\r\n  v_user_id uuid;\r\n  v_email text;\r\n  v_phone text;\r\n  v_encrypted_password text;\r\nBEGIN\r\n  v_user_id := gen_random_uuid();\r\n  v_email := LOWER(p_employee_code) || '@filemarket.com';\r\n  v_phone := '5550000000';\r\n  v_encrypted_password := crypt(p_password, gen_salt('bf')); \r\n\r\n  INSERT INTO auth.users (\r\n    instance_id,\r\n    id,\r\n    aud,\r\n    role,\r\n    email,\r\n    encrypted_password,\r\n    email_confirmed_at,\r\n    created_at,\r\n    updated_at,\r\n    confirmation_token,\r\n    email_change,\r\n    email_change_token_new,\r\n    recovery_token\r\n  )\r\n  VALUES (\r\n    '00000000-0000-0000-0000-000000000000',\r\n    v_user_id,\r\n    'authenticated',\r\n    'authenticated',\r\n    v_email,\r\n    v_encrypted_password,\r\n    NOW(),\r\n    NOW(),\r\n    NOW(),\r\n    '',\r\n    '',\r\n    '',\r\n    ''\r\n  );\r\n\r\n  INSERT INTO public.users (\r\n    id,\r\n    tenant_id,\r\n    first_name,\r\n    last_name,\r\n    email,\r\n    phone,\r\n    employee_code,\r\n    role,\r\n    position,\r\n    hire_date,\r\n    active\r\n  )\r\n  VALUES (\r\n    v_user_id,\r\n    p_tenant_id,\r\n    'Yeni',\r\n    'Personel',\r\n    v_email,\r\n    v_phone,\r\n    p_employee_code,\r\n    'personel',\r\n    'Mağaza Personeli',\r\n    CURRENT_DATE,\r\n    TRUE\r\n  );\r\n\r\n  RETURN jsonb_build_object('success', TRUE, 'user_id', v_user_id, 'email', v_email);\r\n\r\nEXCEPTION\r\n  WHEN OTHERS THEN\r\n    RETURN jsonb_build_object('success', FALSE, 'error', SQLERRM);\r\nEND;\r\n$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -18,6 +18,11 @@
     "schema_name": "public",
     "function_name": "batch_update_module_order",
     "definition": "CREATE OR REPLACE FUNCTION public.batch_update_module_order(p_module_orders jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_module JSONB;\r\n  v_count INT := 0;\r\nBEGIN\r\n  FOR v_module IN SELECT * FROM jsonb_array_elements(p_module_orders)\r\n  LOOP\r\n    INSERT INTO user_module_preferences (user_id, module_code, display_order)\r\n    VALUES (\r\n      current_user_id(),\r\n      v_module->>'module_code',\r\n      (v_module->>'display_order')::INT\r\n    )\r\n    ON CONFLICT (user_id, module_code)\r\n    DO UPDATE SET \r\n      display_order = (v_module->>'display_order')::INT,\r\n      updated_at = NOW();\r\n    \r\n    v_count := v_count + 1;\r\n  END LOOP;\r\n  \r\n  RETURN jsonb_build_object(\r\n    'success', true,\r\n    'updated_count', v_count\r\n  );\r\n  \r\nEXCEPTION\r\n  WHEN OTHERS THEN\r\n    RETURN jsonb_build_object(\r\n      'success', false,\r\n      'error', SQLERRM\r\n    );\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "branch_belongs_to_current_tenant",
+    "definition": "CREATE OR REPLACE FUNCTION public.branch_belongs_to_current_tenant(p_branch_id uuid)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT EXISTS (\r\n    SELECT 1\r\n    FROM public.branches b\r\n    WHERE b.id = p_branch_id\r\n      AND b.tenant_id = current_tenant_id()\r\n  );\r\n$function$\n"
   },
   {
     "schema_name": "public",
@@ -46,8 +51,13 @@
   },
   {
     "schema_name": "public",
+    "function_name": "current_user_ctx",
+    "definition": "CREATE OR REPLACE FUNCTION public.current_user_ctx()\n RETURNS TABLE(id uuid, tenant_id uuid, role user_role, branch_id uuid)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'auth'\nAS $function$\r\n  select u.id, u.tenant_id, u.role, u.branch_id\r\n  from users u\r\n  where u.id = auth.uid();\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
     "function_name": "current_user_id",
-    "definition": "CREATE OR REPLACE FUNCTION public.current_user_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT COALESCE(\r\n    auth.uid(),\r\n    '00000000-0000-0000-0000-000000000000'::uuid\r\n  );\r\n$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION public.current_user_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'auth'\nAS $function$\r\n  select auth.uid();\r\n$function$\n"
   },
   {
     "schema_name": "public",
@@ -75,6 +85,16 @@
     "definition": "CREATE OR REPLACE FUNCTION extensions.decrypt_iv(bytea, bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_decrypt_iv$function$\n"
   },
   {
+    "schema_name": "public",
+    "function_name": "depot_set_branch_name",
+    "definition": "CREATE OR REPLACE FUNCTION public.depot_set_branch_name()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n    v_branch_name text;\r\nbegin\r\n    select name into v_branch_name\r\n    from public.branches\r\n    where id = new.branch_id;\r\n\r\n    new.branch_name = v_branch_name;\r\n    return new;\r\nend;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "depot_touch_updated_at",
+    "definition": "CREATE OR REPLACE FUNCTION public.depot_touch_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\r\nBEGIN\r\n    NEW.updated_at = timezone('utc', now());\r\n    RETURN NEW;\r\nEND;\r\n$function$\n"
+  },
+  {
     "schema_name": "extensions",
     "function_name": "digest",
     "definition": "CREATE OR REPLACE FUNCTION extensions.digest(bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_digest$function$\n"
@@ -100,6 +120,11 @@
     "definition": "CREATE OR REPLACE FUNCTION extensions.encrypt_iv(bytea, bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_encrypt_iv$function$\n"
   },
   {
+    "schema_name": "public",
+    "function_name": "end_break_session",
+    "definition": "CREATE OR REPLACE FUNCTION public.end_break_session(p_user_id uuid DEFAULT auth.uid())\n RETURNS break_sessions\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_session break_sessions;\r\nBEGIN\r\n  SELECT * INTO v_session\r\n  FROM break_sessions\r\n  WHERE user_id = p_user_id AND ended_at IS NULL\r\n  ORDER BY started_at DESC\r\n  LIMIT 1;\r\n\r\n  IF v_session.id IS NULL THEN\r\n    RAISE EXCEPTION 'Aktif mola bulunamadı';\r\n  END IF;\r\n\r\n  UPDATE break_sessions\r\n  SET ended_at = now()\r\n  WHERE id = v_session.id\r\n  RETURNING * INTO v_session;\r\n\r\n  RETURN v_session;\r\nEND;\r\n$function$\n"
+  },
+  {
     "schema_name": "extensions",
     "function_name": "gen_random_bytes",
     "definition": "CREATE OR REPLACE FUNCTION extensions.gen_random_bytes(integer)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_random_bytes$function$\n"
@@ -123,6 +148,26 @@
     "schema_name": "public",
     "function_name": "get_all_tenants",
     "definition": "CREATE OR REPLACE FUNCTION public.get_all_tenants()\n RETURNS TABLE(id uuid, code text, name text, active boolean, total_users bigint, active_modules bigint)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nBEGIN\r\n  -- Sadece grand admin çağırabilir\r\n  IF current_user_role() != 'grand_admin' THEN\r\n    RAISE EXCEPTION 'Bu fonksiyonu sadece Grand Admin çağırabilir';\r\n  END IF;\r\n  \r\n  RETURN QUERY\r\n  SELECT \r\n    t.id,\r\n    t.code,\r\n    t.name,\r\n    t.active,\r\n    COUNT(DISTINCT u.id) as total_users,\r\n    COUNT(DISTINCT tm.module_code) FILTER (WHERE tm.is_enabled = true) as active_modules\r\n  FROM tenants t\r\n  LEFT JOIN users u ON u.tenant_id = t.id AND u.active = true\r\n  LEFT JOIN tenant_modules tm ON tm.tenant_id = t.id\r\n  WHERE t.code != 'SYSTEM' -- Sistem tenant'ını gösterme\r\n  GROUP BY t.id, t.code, t.name, t.active\r\n  ORDER BY t.name;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_branch_break_sessions",
+    "definition": "CREATE OR REPLACE FUNCTION public.get_branch_break_sessions(p_user_id uuid DEFAULT auth.uid())\n RETURNS SETOF break_sessions\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_mgr users;\r\nBEGIN\r\n  SELECT * INTO v_mgr FROM users WHERE id = p_user_id;\r\n\r\n  IF v_mgr.id IS NULL THEN\r\n    RAISE EXCEPTION 'Kullanıcı bulunamadı';\r\n  END IF;\r\n\r\n  IF v_mgr.role = 'bolge_muduru'::user_role THEN\r\n    RETURN QUERY\r\n      SELECT bs.*\r\n      FROM break_sessions bs\r\n      JOIN branches b ON b.id = bs.branch_id\r\n      WHERE b.region_id = v_mgr.region_id\r\n        AND bs.tenant_id = v_mgr.tenant_id\r\n      ORDER BY bs.started_at DESC;\r\n  ELSIF v_mgr.role = 'sube_muduru'::user_role THEN\r\n    RETURN QUERY\r\n      SELECT bs.*\r\n      FROM break_sessions bs\r\n      WHERE bs.branch_id = v_mgr.branch_id\r\n        AND bs.tenant_id = v_mgr.tenant_id\r\n      ORDER BY bs.started_at DESC;\r\n  ELSE\r\n    RETURN QUERY\r\n      SELECT * FROM break_sessions WHERE user_id = v_mgr.id;\r\n  END IF;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_branch_team_members",
+    "definition": "CREATE OR REPLACE FUNCTION public.get_branch_team_members(p_user_id uuid)\n RETURNS TABLE(member_id uuid, first_name text, last_name text, \"position\" text, role user_role, phone text, email text, employee_code text, branch_id uuid, is_branch_manager boolean)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_requester uuid := auth.uid();\r\n  v_branch uuid;\r\n  v_tenant uuid;\r\nBEGIN\r\n  IF v_requester IS NULL THEN\r\n    RAISE EXCEPTION 'Kimlik doğrulaması gerekiyor';\r\n  END IF;\r\n\r\n  SELECT u.branch_id, u.tenant_id\r\n    INTO v_branch, v_tenant\r\n  FROM users u\r\n  WHERE u.id = p_user_id;\r\n\r\n  IF v_branch IS NULL THEN\r\n    RAISE EXCEPTION 'Bu kullanıcı herhangi bir şubeye bağlı değil';\r\n  END IF;\r\n\r\n  IF v_requester <> p_user_id THEN\r\n    PERFORM 1\r\n    FROM users u\r\n    WHERE u.id = v_requester\r\n      AND (\r\n        u.role = 'grand_admin'::user_role OR\r\n        (u.tenant_id = v_tenant AND u.role = ANY (ARRAY[\r\n          'firma_admin'::user_role,\r\n          'bolge_muduru'::user_role,\r\n          'sube_muduru'::user_role\r\n        ]))\r\n      );\r\n\r\n    IF NOT FOUND THEN\r\n      RAISE EXCEPTION 'Bu takım bilgisine erişim yetkiniz yok';\r\n    END IF;\r\n  END IF;\r\n\r\n  RETURN QUERY\r\n  SELECT\r\n    u.id AS member_id,\r\n    u.first_name,\r\n    u.last_name,\r\n    u.\"position\",\r\n    u.role,\r\n    u.phone,\r\n    u.email,\r\n    u.employee_code,\r\n    u.branch_id,\r\n    (u.role = 'sube_muduru') AS is_branch_manager\r\n  FROM users u\r\n  WHERE u.branch_id = v_branch\r\n  ORDER BY u.first_name, u.last_name;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_depot_notice_offer_counts",
+    "definition": "CREATE OR REPLACE FUNCTION public.get_depot_notice_offer_counts()\n RETURNS TABLE(notice_id uuid, pending_count bigint, accepted_count bigint, rejected_count bigint)\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n    SELECT\r\n        n.id AS notice_id,\r\n        COUNT(*) FILTER (WHERE o.status = 'pending') AS pending_count,\r\n        COUNT(*) FILTER (WHERE o.status = 'accepted') AS accepted_count,\r\n        COUNT(*) FILTER (WHERE o.status = 'rejected') AS rejected_count\r\n    FROM public.depot_notices n\r\n    LEFT JOIN public.depot_notice_offers o ON o.notice_id = n.id\r\n    WHERE n.tenant_id = current_tenant_id()\r\n    GROUP BY n.id;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_personal_profile",
+    "definition": "CREATE OR REPLACE FUNCTION public.get_personal_profile(p_user_id uuid)\n RETURNS TABLE(id uuid, first_name text, last_name text, email text, phone text, \"position\" text, role user_role, employee_code text, hire_date date, tenant_id uuid, tenant_name text, branch_id uuid, branch_name text, branch_code text, branch_city text, branch_district text, branch_manager_id uuid, branch_manager_first_name text, branch_manager_last_name text, branch_manager_phone text, region_id uuid, region_name text, regional_manager_id uuid, regional_manager_first_name text, regional_manager_last_name text, regional_manager_phone text)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_requester uuid := auth.uid();\r\n  v_target_tenant uuid;\r\nBEGIN\r\n  IF v_requester IS NULL THEN\r\n    RAISE EXCEPTION 'Kimlik doğrulaması gerekiyor';\r\n  END IF;\r\n\r\n  SELECT u.tenant_id INTO v_target_tenant FROM users u WHERE u.id = p_user_id;\r\n  IF v_target_tenant IS NULL THEN\r\n    RAISE EXCEPTION 'Kullanıcı bulunamadı';\r\n  END IF;\r\n\r\n  -- Kendisi dışındaki profillere erişmek için ilgili tenant içinde\r\n  -- yetkili role sahip olmak gerekir.\r\n  IF v_requester <> p_user_id THEN\r\n    PERFORM 1\r\n    FROM users u\r\n    WHERE u.id = v_requester\r\n      AND (\r\n        u.role = 'grand_admin'::user_role OR\r\n        (u.tenant_id = v_target_tenant AND u.role = ANY (\r\n          ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role]\r\n        ))\r\n      );\r\n\r\n    IF NOT FOUND THEN\r\n      RAISE EXCEPTION 'Bu profile erişim yetkiniz yok';\r\n    END IF;\r\n  END IF;\r\n\r\n  RETURN QUERY\r\n  SELECT\r\n    u.id,\r\n    u.first_name,\r\n    u.last_name,\r\n    u.email,\r\n    u.phone,\r\n    u.\"position\",\r\n    u.role,\r\n    u.employee_code,\r\n    u.hire_date,\r\n    u.tenant_id,\r\n    t.name AS tenant_name,\r\n    u.branch_id,\r\n    b.name AS branch_name,\r\n    b.code AS branch_code,\r\n    b.city AS branch_city,\r\n    b.district AS branch_district,\r\n    COALESCE(b.manager_id, fb.id) AS branch_manager_id,\r\n    COALESCE(bm.first_name, fb.first_name) AS branch_manager_first_name,\r\n    COALESCE(bm.last_name, fb.last_name) AS branch_manager_last_name,\r\n    COALESCE(bm.phone, fb.phone) AS branch_manager_phone,\r\n    r.id AS region_id,\r\n    r.name AS region_name,\r\n    r.manager_id AS regional_manager_id,\r\n    rm.first_name AS regional_manager_first_name,\r\n    rm.last_name AS regional_manager_last_name,\r\n    rm.phone AS regional_manager_phone\r\n  FROM users u\r\n  LEFT JOIN tenants t ON t.id = u.tenant_id\r\n  LEFT JOIN branches b ON b.id = u.branch_id\r\n  LEFT JOIN users bm ON bm.id = b.manager_id\r\n  LEFT JOIN LATERAL (\r\n    SELECT lb.id, lb.first_name, lb.last_name, lb.phone\r\n    FROM users lb\r\n    WHERE lb.branch_id = b.id AND lb.role = 'sube_muduru'\r\n    ORDER BY lb.created_at DESC\r\n    LIMIT 1\r\n  ) fb ON TRUE\r\n  LEFT JOIN regions r ON r.id = b.region_id\r\n  LEFT JOIN users rm ON rm.id = r.manager_id\r\n  WHERE u.id = p_user_id\r\n  LIMIT 1;\r\nEND;\r\n$function$\n"
   },
   {
     "schema_name": "public",
@@ -240,6 +285,11 @@
     "definition": "CREATE OR REPLACE FUNCTION extensions.gtrgm_union(internal, internal)\n RETURNS gtrgm\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pg_trgm', $function$gtrgm_union$function$\n"
   },
   {
+    "schema_name": "public",
+    "function_name": "handle_offer_cancellation",
+    "definition": "CREATE OR REPLACE FUNCTION public.handle_offer_cancellation()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\r\nBEGIN\r\n    IF TG_OP = 'UPDATE' THEN\r\n        IF OLD.status = 'accepted' AND NEW.status = 'cancelled' THEN\r\n            UPDATE public.depot_notices n\r\n            SET quantity = n.quantity + OLD.quantity,\r\n                status = CASE\r\n                    WHEN EXISTS (\r\n                        SELECT 1 FROM public.depot_notice_offers o\r\n                        WHERE o.notice_id = n.id\r\n                          AND o.status = 'accepted'\r\n                          AND o.id <> NEW.id\r\n                    ) THEN 'in_transfer'::public.depot_notice_status\r\n                    ELSE 'open'::public.depot_notice_status\r\n                END\r\n            WHERE n.id = NEW.notice_id;\r\n        END IF;\r\n    END IF;\r\n    RETURN NEW;\r\nEND;\r\n$function$\n"
+  },
+  {
     "schema_name": "extensions",
     "function_name": "hmac",
     "definition": "CREATE OR REPLACE FUNCTION extensions.hmac(text, text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_hmac$function$\n"
@@ -248,6 +298,11 @@
     "schema_name": "extensions",
     "function_name": "hmac",
     "definition": "CREATE OR REPLACE FUNCTION extensions.hmac(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_hmac$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "is_service_role",
+    "definition": "CREATE OR REPLACE FUNCTION public.is_service_role()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'auth'\nAS $function$\r\n  select auth.role() = 'service_role';\r\n$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -292,6 +347,11 @@
   {
     "schema_name": "extensions",
     "function_name": "pgp_pub_decrypt_bytea",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
+  },
+  {
+    "schema_name": "extensions",
+    "function_name": "pgp_pub_decrypt_bytea",
     "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
   },
   {
@@ -301,8 +361,8 @@
   },
   {
     "schema_name": "extensions",
-    "function_name": "pgp_pub_decrypt_bytea",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
+    "function_name": "pgp_pub_encrypt",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt(text, bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -311,18 +371,13 @@
   },
   {
     "schema_name": "extensions",
-    "function_name": "pgp_pub_encrypt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt(text, bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_text$function$\n"
+    "function_name": "pgp_pub_encrypt_bytea",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt_bytea(bytea, bytea)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_bytea$function$\n"
   },
   {
     "schema_name": "extensions",
     "function_name": "pgp_pub_encrypt_bytea",
     "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt_bytea(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_bytea$function$\n"
-  },
-  {
-    "schema_name": "extensions",
-    "function_name": "pgp_pub_encrypt_bytea",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt_bytea(bytea, bytea)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_bytea$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -337,22 +392,22 @@
   {
     "schema_name": "extensions",
     "function_name": "pgp_sym_decrypt_bytea",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_bytea$function$\n"
-  },
-  {
-    "schema_name": "extensions",
-    "function_name": "pgp_sym_decrypt_bytea",
     "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_bytea$function$\n"
   },
   {
     "schema_name": "extensions",
-    "function_name": "pgp_sym_encrypt",
-    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt(text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_text$function$\n"
+    "function_name": "pgp_sym_decrypt_bytea",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_bytea$function$\n"
   },
   {
     "schema_name": "extensions",
     "function_name": "pgp_sym_encrypt",
     "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt(text, text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_text$function$\n"
+  },
+  {
+    "schema_name": "extensions",
+    "function_name": "pgp_sym_encrypt",
+    "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt(text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_text$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -376,8 +431,43 @@
   },
   {
     "schema_name": "public",
+    "function_name": "region_manager_create_personnel",
+    "definition": "CREATE OR REPLACE FUNCTION public.region_manager_create_personnel(p_branch_id uuid, p_employee_code text, p_password text, p_first_name text, p_last_name text, p_role user_role, p_email text DEFAULT NULL::text, p_phone text DEFAULT NULL::text, p_position text DEFAULT NULL::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_requester uuid := auth.uid();\r\n  v_branch RECORD;\r\n  v_result jsonb;\r\n  v_user_id uuid;\r\n  v_generated_email text;\r\n  v_final_email text;\r\n  v_employee_code text;\r\n  v_password text;\r\n  v_custom_email text;\r\n  v_first_name text := COALESCE(NULLIF(TRIM(p_first_name), ''), 'Yeni');\r\n  v_last_name text := COALESCE(NULLIF(TRIM(p_last_name), ''), 'Personel');\r\nBEGIN\r\n  IF v_requester IS NULL THEN\r\n    RAISE EXCEPTION 'Kimlik doğrulaması gerekiyor';\r\n  END IF;\r\n\r\n  SELECT b.id, b.tenant_id, b.region_id\r\n    INTO v_branch\r\n  FROM public.branches b\r\n  WHERE b.id = p_branch_id AND b.active;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Şube bulunamadı veya aktif değil';\r\n  END IF;\r\n\r\n  PERFORM 1\r\n  FROM public.regions r\r\n  WHERE r.id = v_branch.region_id\r\n    AND r.tenant_id = v_branch.tenant_id\r\n    AND r.manager_id = v_requester;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Bu şube üzerinde yetkiniz yok';\r\n  END IF;\r\n\r\n  IF p_role NOT IN ('personel', 'sube_muduru') THEN\r\n    RAISE EXCEPTION 'Geçersiz rol: %', p_role;\r\n  END IF;\r\n\r\n  v_employee_code := NULLIF(TRIM(p_employee_code), '');\r\n  IF v_employee_code IS NULL THEN\r\n    RAISE EXCEPTION 'Personel kodu gerekli';\r\n  END IF;\r\n\r\n  PERFORM 1\r\n    FROM public.users u\r\n   WHERE u.tenant_id = v_branch.tenant_id\r\n     AND u.employee_code = v_employee_code\r\n   LIMIT 1;\r\n  IF FOUND THEN\r\n    RAISE EXCEPTION 'Bu personel kodu zaten kullanılıyor';\r\n  END IF;\r\n\r\n  v_password := NULLIF(TRIM(p_password), '');\r\n  IF v_password IS NULL OR LENGTH(v_password) < 6 THEN\r\n    RAISE EXCEPTION 'Şifre en az 6 karakter olmalı';\r\n  END IF;\r\n\r\n  v_custom_email := NULLIF(TRIM(p_email), '');\r\n  IF v_custom_email IS NOT NULL THEN\r\n    PERFORM 1\r\n      FROM auth.users au\r\n     WHERE LOWER(au.email) = LOWER(v_custom_email)\r\n     LIMIT 1;\r\n    IF FOUND THEN\r\n      RAISE EXCEPTION 'Bu e-posta adresi zaten kayıtlı';\r\n    END IF;\r\n  END IF;\r\n\r\n  v_result := public.add_personel(v_employee_code, v_password, v_branch.tenant_id);\r\n\r\n  IF COALESCE((v_result->>'success')::boolean, FALSE) IS FALSE THEN\r\n    RAISE EXCEPTION 'Personel oluşturulamadı: %', v_result->>'error';\r\n  END IF;\r\n\r\n  v_user_id := (v_result->>'user_id')::uuid;\r\n  v_generated_email := v_result->>'email';\r\n  v_final_email := COALESCE(v_custom_email, v_generated_email);\r\n\r\n  UPDATE public.users\r\n  SET first_name = v_first_name,\r\n      last_name = v_last_name,\r\n      email = v_final_email,\r\n      phone = NULLIF(TRIM(p_phone), ''),\r\n      \"position\" = NULLIF(TRIM(p_position), ''),\r\n      branch_id = p_branch_id,\r\n      role = p_role,\r\n      active = TRUE,\r\n      updated_at = NOW()\r\n  WHERE id = v_user_id;\r\n\r\n  UPDATE auth.users\r\n  SET email = v_final_email,\r\n      email_confirmed_at = NOW(),\r\n      updated_at = NOW()\r\n  WHERE id = v_user_id;\r\n\r\n  RETURN jsonb_build_object(\r\n    'success', TRUE,\r\n    'user_id', v_user_id,\r\n    'email', v_final_email\r\n  );\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "region_manager_get_branch_personnel",
+    "definition": "CREATE OR REPLACE FUNCTION public.region_manager_get_branch_personnel(p_branch_id uuid)\n RETURNS TABLE(member_id uuid, first_name text, last_name text, email text, phone text, employee_code text, role user_role, \"position\" text, active boolean)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_requester uuid := auth.uid();\r\n  v_branch RECORD;\r\nBEGIN\r\n  IF v_requester IS NULL THEN\r\n    RAISE EXCEPTION 'Kimlik doğrulaması gerekiyor';\r\n  END IF;\r\n\r\n  SELECT b.id, b.tenant_id, b.region_id\r\n    INTO v_branch\r\n  FROM public.branches b\r\n  WHERE b.id = p_branch_id;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Şube bulunamadı';\r\n  END IF;\r\n\r\n  PERFORM 1\r\n  FROM public.regions r\r\n  WHERE r.id = v_branch.region_id\r\n    AND r.tenant_id = v_branch.tenant_id\r\n    AND r.manager_id = v_requester;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Bu şube üzerinde yetkiniz yok';\r\n  END IF;\r\n\r\n  RETURN QUERY\r\n  SELECT\r\n    u.id,\r\n    u.first_name,\r\n    u.last_name,\r\n    u.email,\r\n    u.phone,\r\n    u.employee_code,\r\n    u.role,\r\n    u.\"position\",\r\n    u.active\r\n  FROM public.users u\r\n  WHERE u.branch_id = p_branch_id\r\n    AND u.tenant_id = v_branch.tenant_id\r\n    AND u.active\r\n  ORDER BY u.first_name, u.last_name;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "region_manager_remove_personnel",
+    "definition": "CREATE OR REPLACE FUNCTION public.region_manager_remove_personnel(p_personnel_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_requester uuid := auth.uid();\r\n  v_target RECORD;\r\nBEGIN\r\n  IF v_requester IS NULL THEN\r\n    RAISE EXCEPTION 'Kimlik doğrulaması gerekiyor';\r\n  END IF;\r\n\r\n  SELECT u.*, b.region_id, b.tenant_id AS branch_tenant\r\n    INTO v_target\r\n  FROM public.users u\r\n  LEFT JOIN public.branches b ON b.id = u.branch_id\r\n  WHERE u.id = p_personnel_id;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Personel bulunamadı';\r\n  END IF;\r\n\r\n  IF v_target.branch_id IS NULL THEN\r\n    RAISE NOTICE 'Personel zaten şubeye bağlı değil';\r\n    RETURN;\r\n  END IF;\r\n\r\n  PERFORM 1\r\n  FROM public.regions r\r\n  WHERE r.id = v_target.region_id\r\n    AND r.tenant_id = v_target.branch_tenant\r\n    AND r.manager_id = v_requester;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Bu personel üzerinde yetkiniz yok';\r\n  END IF;\r\n\r\n  UPDATE public.users\r\n  SET branch_id = NULL,\r\n      active = FALSE,\r\n      role = 'personel',\r\n      updated_at = NOW()\r\n  WHERE id = v_target.id;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "region_manager_update_personnel_role",
+    "definition": "CREATE OR REPLACE FUNCTION public.region_manager_update_personnel_role(p_personnel_id uuid, p_role user_role)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_requester uuid := auth.uid();\r\n  v_target RECORD;\r\nBEGIN\r\n  IF v_requester IS NULL THEN\r\n    RAISE EXCEPTION 'Kimlik doğrulaması gerekiyor';\r\n  END IF;\r\n\r\n  SELECT u.*, b.region_id, b.tenant_id AS branch_tenant\r\n    INTO v_target\r\n  FROM public.users u\r\n  LEFT JOIN public.branches b ON b.id = u.branch_id\r\n  WHERE u.id = p_personnel_id;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Personel bulunamadı';\r\n  END IF;\r\n\r\n  IF v_target.branch_id IS NULL THEN\r\n    RAISE EXCEPTION 'Personel herhangi bir şubeye bağlı değil';\r\n  END IF;\r\n\r\n  IF p_role NOT IN ('personel', 'sube_muduru') THEN\r\n    RAISE EXCEPTION 'Geçersiz rol: %', p_role;\r\n  END IF;\r\n\r\n  PERFORM 1\r\n  FROM public.regions r\r\n  WHERE r.id = v_target.region_id\r\n    AND r.tenant_id = v_target.branch_tenant\r\n    AND r.manager_id = v_requester;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION 'Bu personel üzerinde yetkiniz yok';\r\n  END IF;\r\n\r\n  UPDATE public.users\r\n  SET role = p_role,\r\n      updated_at = NOW()\r\n  WHERE id = v_target.id;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
     "function_name": "reset_user_password",
     "definition": "CREATE OR REPLACE FUNCTION public.reset_user_password(p_email text, p_new_password text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'auth'\nAS $function$\r\nDECLARE\r\n  v_user_id UUID;\r\n  v_hashed_password TEXT;\r\nBEGIN\r\n  -- User ID bul\r\n  SELECT id INTO v_user_id \r\n  FROM auth.users \r\n  WHERE email = p_email;\r\n  \r\n  IF v_user_id IS NULL THEN\r\n    RETURN jsonb_build_object('success', false, 'error', 'Kullanıcı bulunamadı');\r\n  END IF;\r\n  \r\n  -- Şifreyi hash'le (bcrypt benzeri basit yöntem)\r\n  v_hashed_password := crypt(p_new_password, gen_salt('bf'));\r\n  \r\n  -- Auth tablosunda güncelle\r\n  UPDATE auth.users\r\n  SET \r\n    encrypted_password = v_hashed_password,\r\n    updated_at = NOW()\r\n  WHERE id = v_user_id;\r\n  \r\n  RETURN jsonb_build_object(\r\n    'success', true,\r\n    'message', 'Şifre güncellendi'\r\n  );\r\n  \r\nEXCEPTION WHEN OTHERS THEN\r\n  RETURN jsonb_build_object('success', false, 'error', SQLERRM);\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "seed_default_store_scoring_form",
+    "definition": "CREATE OR REPLACE FUNCTION public.seed_default_store_scoring_form(p_tenant_id uuid, p_admin_id uuid, p_form_code text DEFAULT 'STORE_STANDARD'::text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_existing uuid;\r\n  v_form_id uuid;\r\n  v_version_id uuid;\r\n  v_section_id uuid;\r\n  v_section_index integer := 0;\r\n  v_item_index integer;\r\n  rec_section record;\r\n  item_text text;\r\n  v_sections jsonb := jsonb_build_array(\r\n    jsonb_build_object(\r\n      'title', 'GENEL',\r\n      'items', jsonb_build_array(\r\n        'Mağaza dış alanı; otopark temizliği ve düzeni, cam, sticker ve doğrama temizliği',\r\n        'Mağazadan dış alana açılan kapı ve pencerelerde haşere–kemirgen girişini engelleyecek önlemlerin kontrolü',\r\n        'Mağaza sıfır ürün sayısı (mağaza kaynaklı sıfır sayısı 10 adet üzeri ise puan verilmez)',\r\n        'Müşteri arabası ve müşteri sepeti temizlik ve konumlandırma',\r\n        'Kasa bölgesi standartları (etiket, poşet, optik okuyucular, kasa üstü teşhir)',\r\n        'Macao dolap kırmızı çizgi, doluluk, etiket ve temizlik'\r\n      )\r\n    ),\r\n    jsonb_build_object(\r\n      'title', 'MANAV',\r\n      'items', jsonb_build_array(\r\n        'Manav bölümü doluluk ve RYS',\r\n        'Manav bölümü tazelik ve bileşeleme (kalite standart temellendirilmeli)',\r\n        'Manav bölümü eksik etiket ve künye',\r\n        'Manav bölümü AHT etiket, doluluk, kırmızı çizgi ve temizlik',\r\n        'Manav bölümü soğuk dolap (+4) temizlik, doluluk ve etiket',\r\n        'Manav hazırlık odası ve soğuk oda temizlik, düzen ve kalite temelli kontrol (sıcaklık ve temizlik formu, tanımlı kimyasallar)'\r\n      )\r\n    ),\r\n    jsonb_build_object(\r\n      'title', 'UNLU',\r\n      'items', jsonb_build_array(\r\n        'Unlu servis/distriyel ekmek doluluk & RYS & SKT/RKS',\r\n        'Unlu servis bölümü ekipman, doluluk ve RYS',\r\n        'Unlu servis bölümü izlenebilirlik',\r\n        'Unlu servis bölümü çözündürme, pişirme adetler ve üretim standardı kontrolü (fazla pişme, çiğ kalma, hamurlaşma)',\r\n        'Unlu bölüm AHT etiket, doluluk, kırmızı çizgi ve temizlik',\r\n        'Unlu hazırlık odası ve soğuk oda temizlik, düzen ve kalite temelli kontrol (sıcaklık ve temizlik formu, tanımlı kimyasallar)'\r\n      )\r\n    ),\r\n    jsonb_build_object(\r\n      'title', 'KASAP / ŞARKÜTERİ',\r\n      'items', jsonb_build_array(\r\n        'Kasap şarküteri bölümü tazelik, doluluk ve RYS',\r\n        'Kasap şarküteri bölümü izlenebilirlik',\r\n        'Kasap şarküteri bölümü kıyma mak. standart kullanım',\r\n        'Kasap şarküteri bölümü SKT/RKS (elleçleme / 10 adet ürün)',\r\n        'Kasap şarküteri bölümü AHT etiket, doluluk, kırmızı çizgi ve temizlik',\r\n        'Kasap ve şarküteri hazırlık odası ve soğuk oda temizlik, düzen ve kalite temelli kontrol (sıcaklık ve temizlik formu, tanımlı kimyasallar)'\r\n      )\r\n    ),\r\n    jsonb_build_object(\r\n      'title', 'GENEL (DEVAM)',\r\n      'items', jsonb_build_array(\r\n        'İptal kartın muhafaza ve yönetiliş şekli & gider pusulası muhafaza ve yönetiliş şekli',\r\n        'Personel dış görünüş, iş kıyafeti, yaka kartı ve kişisel hijyen',\r\n        'Bölümlerde personel bulunurluğu',\r\n        'Teşhir sepet sayısı, doluluğu, etiketleri ve konumlandırılması',\r\n        'İçecek dolap FIFO, doluluk ve etiket',\r\n        'Mağaza genel koli açılışları (perfora), ön yüz ve doluluk',\r\n        'Genel depo düzen / mal kabul / karton kafes / sigara içme alanı yönetimi',\r\n        'Atık, iade ve karantina alan standartları',\r\n        'Sosyal alan standartları (mutfak, soyunma dolap, WC ve mescit)',\r\n        'Mağaza genel SKT/RKS (elleçleme 10 ürün)',\r\n        'Mağaza palet altı, raf ve reyon temizlik',\r\n        'Bir önceki mağaza ziyareti tespit / aksiyon',\r\n        'Haftalık ve aylık bülten uygulamaları',\r\n        'Müşteri gözüyle mağaza kontrol formu'\r\n      )\r\n    )\r\n  );\r\nBEGIN\r\n  IF p_tenant_id IS NULL OR p_admin_id IS NULL THEN\r\n    RAISE EXCEPTION 'tenant ve admin kullanıcı kimliği zorunludur';\r\n  END IF;\r\n\r\n  SELECT id INTO v_existing\r\n  FROM public.store_scoring_forms\r\n  WHERE tenant_id = p_tenant_id\r\n    AND code = p_form_code;\r\n\r\n  IF v_existing IS NOT NULL THEN\r\n    SELECT id\r\n      INTO v_version_id\r\n    FROM public.store_scoring_form_versions\r\n    WHERE form_id = v_existing\r\n      AND status = 'published'\r\n    ORDER BY version DESC\r\n    LIMIT 1;\r\n\r\n    IF v_version_id IS NULL THEN\r\n      RETURN v_existing;\r\n    END IF;\r\n\r\n    RETURN v_version_id;\r\n  END IF;\r\n\r\n  INSERT INTO public.store_scoring_forms (\r\n    tenant_id, code, title, description, created_by\r\n  )\r\n  VALUES (\r\n    p_tenant_id,\r\n    p_form_code,\r\n    'Mağaza Genel Denetim Formu',\r\n    'Varsayılan mağaza kalite ve operasyon kontrol listesi',\r\n    p_admin_id\r\n  )\r\n  RETURNING id INTO v_form_id;\r\n\r\n  INSERT INTO public.store_scoring_form_versions (\r\n    form_id, version, status, published_at, created_by\r\n  )\r\n  VALUES (\r\n    v_form_id,\r\n    1,\r\n    'published',\r\n    now(),\r\n    p_admin_id\r\n  )\r\n  RETURNING id INTO v_version_id;\r\n\r\n  FOR rec_section IN\r\n    SELECT value\r\n    FROM jsonb_array_elements(v_sections) AS t(value)\r\n  LOOP\r\n    INSERT INTO public.store_scoring_sections (\r\n      form_version_id, title, order_index\r\n    )\r\n    VALUES (\r\n      v_version_id,\r\n      rec_section.value->>'title',\r\n      v_section_index\r\n    )\r\n    RETURNING id INTO v_section_id;\r\n\r\n    v_item_index := 0;\r\n    FOR item_text IN SELECT jsonb_array_elements_text(rec_section.value->'items') LOOP\r\n      INSERT INTO public.store_scoring_items (\r\n        section_id,\r\n        label,\r\n        positive_points,\r\n        negative_points,\r\n        order_index,\r\n        is_required\r\n      )\r\n      VALUES (\r\n        v_section_id,\r\n        item_text,\r\n        2,\r\n        0,\r\n        v_item_index,\r\n        false\r\n      );\r\n      v_item_index := v_item_index + 1;\r\n    END LOOP;\r\n\r\n    v_section_index := v_section_index + 1;\r\n  END LOOP;\r\n\r\n  RETURN v_version_id;\r\nEND;\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "session_belongs_to_current_tenant",
+    "definition": "CREATE OR REPLACE FUNCTION public.session_belongs_to_current_tenant(p_session_id uuid)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT EXISTS (\r\n    SELECT 1\r\n    FROM public.store_scoring_sessions s\r\n    WHERE s.id = p_session_id\r\n      AND branch_belongs_to_current_tenant(s.branch_id)\r\n  );\r\n$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "set_break_session_updated_at",
+    "definition": "CREATE OR REPLACE FUNCTION public.set_break_session_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\r\nBEGIN\r\n  NEW.updated_at = now();\r\n  RETURN NEW;\r\nEND;\r\n$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -413,6 +503,11 @@
     "schema_name": "extensions",
     "function_name": "similarity_op",
     "definition": "CREATE OR REPLACE FUNCTION extensions.similarity_op(text, text)\n RETURNS boolean\n LANGUAGE c\n STABLE PARALLEL SAFE STRICT\nAS '$libdir/pg_trgm', $function$similarity_op$function$\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "start_break_session",
+    "definition": "CREATE OR REPLACE FUNCTION public.start_break_session(p_user_id uuid DEFAULT auth.uid())\n RETURNS break_sessions\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nDECLARE\r\n  v_user record;\r\n  v_active break_sessions;\r\nBEGIN\r\n  SELECT id, tenant_id, branch_id INTO v_user\r\n  FROM users\r\n  WHERE id = p_user_id;\r\n\r\n  IF v_user.id IS NULL THEN\r\n    RAISE EXCEPTION 'Kullanıcı bulunamadı';\r\n  END IF;\r\n\r\n  SELECT * INTO v_active\r\n  FROM break_sessions\r\n  WHERE user_id = v_user.id AND ended_at IS NULL\r\n  LIMIT 1;\r\n\r\n  IF v_active.id IS NOT NULL THEN\r\n    RETURN v_active; -- zaten açık, aynısını döndür\r\n  END IF;\r\n\r\n  INSERT INTO break_sessions (tenant_id, branch_id, user_id)\r\n  VALUES (v_user.tenant_id, v_user.branch_id, v_user.id)\r\n  RETURNING * INTO v_active;\r\n\r\n  RETURN v_active;\r\nEND;\r\n$function$\n"
   },
   {
     "schema_name": "extensions",
@@ -512,7 +607,7 @@
   {
     "schema_name": "public",
     "function_name": "validate_products_alt_barcodes",
-    "definition": "CREATE OR REPLACE FUNCTION public.validate_products_alt_barcodes()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\ndeclare\r\n  alt_code text;\r\n  distinct_count integer;\r\nbegin\r\n  -- null ise sorun yok\r\n  if new.alt_barcodes is null then\r\n    return new;\r\n  end if;\r\n\r\n  -- trim + boş değer kontrolü\r\n  new.alt_barcodes := array(\r\n    select trim(b)\r\n      from unnest(new.alt_barcodes) as b\r\n     where trim(b) <> ''\r\n  );\r\n\r\n  if cardinality(new.alt_barcodes) > 10 then\r\n    raise exception 'En fazla 10 alt barkod ekleyebilirsiniz';\r\n  end if;\r\n\r\n  select count(*) into distinct_count\r\n    from (select distinct unnest(new.alt_barcodes)) t;\r\n\r\n  if distinct_count <> cardinality(new.alt_barcodes) then\r\n    raise exception 'Alt barkod listesinde tekrar eden değerler var';\r\n  end if;\r\n\r\n  foreach alt_code in array new.alt_barcodes loop\r\n    -- ana barkodla aynı olamaz\r\n    if alt_code = new.barcode then\r\n      raise exception 'Alt barkod ana barkod ile aynı olamaz (%).', alt_code;\r\n    end if;\r\n\r\n    -- aynı tenant’ta başka ürünlerin alt/ana barkodlarıyla çakışma kontrolü\r\n    if exists (\r\n      select 1\r\n        from public.products p\r\n       where p.tenant_id = new.tenant_id\r\n         and p.id <> coalesce(new.id, '00000000-0000-0000-0000-000000000000'::uuid)\r\n         and (\r\n              p.barcode = alt_code\r\n              or (p.alt_barcodes @> array[alt_code])\r\n         )\r\n    ) then\r\n      raise exception 'Alt barkod başka bir ürünle çakışıyor (%).', alt_code;\r\n    end if;\r\n  end loop;\r\n\r\n  return new;\r\nend;\r\n$function$\n"
+    "definition": "CREATE OR REPLACE FUNCTION public.validate_products_alt_barcodes()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\r\ndeclare\r\n  alt_code text;\r\n  distinct_count integer;\r\nbegin\r\n  -- null ise sorun yok\r\n  if new.alt_barcodes is null then\r\n    return new;\r\n  end if;\r\n\r\n  -- trim + boş değer kontrolü\r\n  new.alt_barcodes := array(\r\n    select trim(b)\r\n      from unnest(new.alt_barcodes) as b\r\n     where trim(b) <> ''\r\n  );\r\n\r\n  if cardinality(new.alt_barcodes) > 10 then\r\n    raise exception 'En fazla 10 alt barkod ekleyebilirsiniz';\r\n  end if;\r\n\r\n  select count(*) into distinct_count\r\n    from (select distinct unnest(new.alt_barcodes)) t;\r\n\r\n  if distinct_count <> cardinality(new.alt_barcodes) then\r\n    raise exception 'Alt barkod listesinde tekrar eden değerler var';\r\n  end if;\r\n\r\n  foreach alt_code in array new.alt_barcodes loop\r\n    -- ana barkodla aynı olamaz\r\n    if alt_code = new.barcode then\r\n      raise exception 'Alt barkod ana barkod ile aynı olamaz (%).', alt_code;\r\n    end if;\r\n\r\n    -- aynı tenant’ta başka ürünlerin alt/ana barkodlarıyla çakışma kontrolü\r\n    if exists (\r\n      select 1\r\n        from public.products p\r\n       where p.tenant_id = new.tenant_id\r\n         and p.id <> coalesce(new.id, '00000000-0000-0000-0000-000000000000'::uuid)\r\n         and (\r\n              p.barcode = alt_code\r\n              or (p.alt_barcodes @> array[alt_code])\r\n         )\r\n    ) then\r\n      raise exception 'Alt barkod başka bir ürünle çakışıyor (%).', alt_code;\r\n    end if;\r\n  end loop;\r\n\r\n  return new;\r\nend;\r\n$function$\n"
   },
   {
     "schema_name": "extensions",

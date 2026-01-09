@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yotech_mobile/core/localization/localization_extensions.dart';
+
 import '../../features/auth/domain/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/grand_admin/presentation/screens/grand_admin_panel_screen.dart';
 import '../../features/home/presentation/screens/home_shell.dart';
+import '../../features/region_manager/presentation/screens/region_manager_dashboard_screen.dart';
 import '../../features/inventory_transfer/data/models/inventory_transfer_model.dart';
 import '../../features/inventory_transfer/presentation/screens/create_notice_screen.dart';
 import '../../features/inventory_transfer/presentation/screens/inventory_transfer_list_screen.dart';
@@ -36,12 +39,14 @@ class AppRouter {
       case home:
         return MaterialPageRoute(builder: (_) => const HomeShell());
       case inventoryTransferList:
-        return MaterialPageRoute(builder: (_) => const InventoryTransferListScreen());
+        return MaterialPageRoute(
+            builder: (_) => const InventoryTransferListScreen());
       case createInventoryTransfer:
         return MaterialPageRoute(builder: (_) => const CreateNoticeScreen());
       case inventoryTransferDetail:
         final notice = settings.arguments as DepotNotice;
-        return MaterialPageRoute(builder: (_) => NoticeDetailScreen(notice: notice));
+        return MaterialPageRoute(
+            builder: (_) => NoticeDetailScreen(notice: notice));
       default:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
     }
@@ -61,8 +66,9 @@ class AppRouter {
         switch (user.role) {
           case 'grand_admin':
             return const GrandAdminPanelScreen();
-          case 'firma_admin':
           case 'bolge_muduru':
+            return const RegionManagerDashboardScreen();
+          case 'firma_admin':
           case 'sube_muduru':
           case 'personel':
             return const HomeShell();
@@ -76,10 +82,16 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Hata: $message'),
+              Builder(
+                builder: (context) => Text(
+                  context.l10n.errorWithMessage(message),
+                ),
+              ),
               ElevatedButton(
                 onPressed: () => _ref.read(authProvider.notifier).checkAuth(),
-                child: const Text('Tekrar Dene'),
+                child: Builder(
+                  builder: (context) => Text(context.l10n.tryAgain),
+                ),
               ),
             ],
           ),

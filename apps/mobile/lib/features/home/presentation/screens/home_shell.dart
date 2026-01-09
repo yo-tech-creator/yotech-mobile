@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yotech_mobile/features/break_tracking/break_tracking.dart';
 import 'package:yotech_mobile/features/skt/domain/models/skt_record_model.dart';
 import 'package:yotech_mobile/features/skt/domain/providers/skt_providers.dart';
 import 'package:yotech_mobile/features/skt/presentation/screens/skt_list_page.dart';
@@ -12,7 +13,11 @@ import 'package:yotech_mobile/features/auth/presentation/screens/login_screen.da
 import 'package:yotech_mobile/features/settings/presentation/screens/settings_page.dart';
 import 'package:yotech_mobile/shared/widgets/custom_back_button.dart';
 import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
+import 'package:yotech_mobile/features/inventory_transfer/presentation/providers/inventory_transfer_provider.dart';
 import 'package:yotech_mobile/features/inventory_transfer/presentation/screens/inventory_transfer_list_screen.dart';
+import 'package:yotech_mobile/features/merch/presentation/screens/merch_screen.dart';
+import 'package:yotech_mobile/features/tasks/presentation/screens/branch_tasks_page.dart';
+import 'package:yotech_mobile/features/requests/presentation/screens/requests_hub_page.dart';
 
 class FeatureKeys {
   static const skt = 'skt';
@@ -22,7 +27,6 @@ class FeatureKeys {
   static const tasks = 'tasks';
   static const interbranchTransfer = 'interbranch_transfer';
   static const leaveRequest = 'leave_request';
-  static const breakTracking = 'break_tracking';
   static const itTicket = 'it_ticket';
   static const instoreShortage = 'instore_shortage';
   static const timeAttendance = 'time_attendance';
@@ -76,8 +80,6 @@ FeatureEntry _entryFor(String key) {
       return FeatureEntry(key, 'Görevler', Icons.checklist);
     case FeatureKeys.requests:
       return FeatureEntry(key, 'Talepler', Icons.inbox);
-    case FeatureKeys.breakTracking:
-      return FeatureEntry(key, 'Mola', Icons.timer);
     case FeatureKeys.timeAttendance:
       return FeatureEntry(key, 'Puantaj', Icons.fingerprint);
     case FeatureKeys.profile:
@@ -214,7 +216,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               if (showRequests) FeatureKeys.requests,
               if (has(FeatureKeys.timeAttendance)) FeatureKeys.timeAttendance,
               if (has(FeatureKeys.shifts)) FeatureKeys.shifts,
-              if (has(FeatureKeys.breakTracking)) FeatureKeys.breakTracking,
             ];
 
             List<String> normalized(List<String> list) {
@@ -335,16 +336,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                             },
                             onProfileTap: () async {
                               try {
-                                await _sheetCtrl.animateTo(
-                                  kMinSheetSize,
-                                  duration: const Duration(milliseconds: 140),
-                                  curve: Curves.easeOut,
-                                );
-                              } catch (_) {}
-                              _openFeature(FeatureKeys.profile);
-                            },
-                            onSettingsTap: () async {
-                              try {
                                 final navigator = Navigator.of(context);
                                 if (_sheetCtrl.size > kMinSheetSize + 0.01) {
                                   await _sheetCtrl.animateTo(
@@ -360,6 +351,18 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                                   ),
                                 );
                               } catch (_) {}
+                            },
+                            onSettingsTap: () async {
+                              try {
+                                if (_sheetCtrl.size > kMinSheetSize + 0.01) {
+                                  await _sheetCtrl.animateTo(
+                                    kMinSheetSize,
+                                    duration: const Duration(milliseconds: 140),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                              } catch (_) {}
+                              _openFeature(FeatureKeys.profile);
                             },
                           );
                         },
@@ -397,34 +400,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       case 'depo':
         return const InventoryTransferListScreen();
       case FeatureKeys.merchandising:
-        return const ModuleDemoPage(
-          key: ValueKey('merch'),
-          title: 'Mörş / Plasiyer',
-          tagline: 'Raf görsel doğrulama ve saha skorları',
-          description:
-              'Saha ekipleri planograma uygunluğu fotoğrafla kanıtlar, merkez ekipler skor kartı ile kontrol eder.',
-          icon: Icons.shopping_bag,
-          highlights: [
-            DemoHighlight(
-              title: 'Planogram Gönderimleri',
-              description:
-                  'Fotoğraf + barkod ikilisiyle raf düzeni kaydedilir, hatalı pozlar tekrar istenir.',
-              icon: Icons.camera_alt,
-            ),
-            DemoHighlight(
-              title: 'Ziyaret Rotası',
-              description:
-                  'GPS destekli rota listesi saha ekibinin hangi noktaları tamamladığını gösterir.',
-              icon: Icons.alt_route,
-            ),
-            DemoHighlight(
-              title: 'Skor Kartı',
-              description:
-                  'Teşhir, stok ve fiyat uyumu tek puanda toplanır; mağaza kıyas raporları alınır.',
-              icon: Icons.leaderboard,
-            ),
-          ],
-        );
+        return const MerchScreen();
       case FeatureKeys.forms:
         return const ModuleDemoPage(
           key: ValueKey('forms'),
@@ -455,34 +431,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           ],
         );
       case FeatureKeys.shifts:
-        return const ModuleDemoPage(
-          key: ValueKey('shifts'),
-          title: 'Vardiya Yönetimi',
-          tagline: 'Planlama, onay ve takvim görünümü',
-          description:
-              'Mağaza yöneticileri çalışma planlarını sürükle-bırak yaparken, çalışanlar mobil onay veriyor.',
-          icon: Icons.schedule,
-          highlights: [
-            DemoHighlight(
-              title: 'Haftalık Kanban',
-              description:
-                  'Personeli kartlar üzerinde gezdirerek vardiya bloklarını anında ayarlayın.',
-              icon: Icons.view_week,
-            ),
-            DemoHighlight(
-              title: 'İzin Entegrasyonu',
-              description:
-                  'Onaylı izinler otomatik olarak takvimden düşer, boş slotlara aday önerilir.',
-              icon: Icons.sync,
-            ),
-            DemoHighlight(
-              title: 'Bildirimli Değişim',
-              description:
-                  'Vardiya değiş tokuş talepleri push bildirimi ile ilgili kişilere düşer.',
-              icon: Icons.notifications_active,
-            ),
-          ],
-        );
+        return const ShiftsHubPage();
       case FeatureKeys.announcements:
         return const ModuleDemoPage(
           key: ValueKey('ann'),
@@ -513,92 +462,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           ],
         );
       case FeatureKeys.tasks:
-        return const ModuleDemoPage(
-          key: ValueKey('tasks'),
-          title: 'Görev Yönetimi',
-          tagline: 'Checklist, sorumluluk ve ilerleme takibi',
-          description:
-              'Merkez ekibi görev kartları oluşturur, şubeler kanban benzeri görünümden ilerletir.',
-          icon: Icons.checklist_rtl,
-          highlights: [
-            DemoHighlight(
-              title: 'Kontrol Listeleri',
-              description:
-                  'Her görev için yapılacak maddeleri ekleyip fotoğraf veya dosya isteyin.',
-              icon: Icons.format_list_bulleted,
-            ),
-            DemoHighlight(
-              title: 'Sorumlu Atama',
-              description:
-                  'Birden fazla kullanıcı göreve eklenebilir, her biri kendi alt görevini tamamlar.',
-              icon: Icons.group,
-            ),
-            DemoHighlight(
-              title: 'Zaman Çizelgesi',
-              description:
-                  'Durum değişiklikleri kronolojik olarak kaydedilir, SLA takibi kolaylaşır.',
-              icon: Icons.timeline,
-            ),
-          ],
-        );
+        return const BranchTasksPage();
       case FeatureKeys.requests:
-        return const ModuleDemoPage(
-          key: ValueKey('req'),
-          title: 'Talep Merkezi',
-          tagline: 'İzin, IT ve diğer iş akışları',
-          description:
-              'Çalışanlar tek panelden izin, ekipman veya destek talebi açar, onay verenler aynı karttan yanıtlar.',
-          icon: Icons.inbox,
-          highlights: [
-            DemoHighlight(
-              title: 'İzin Takvimi',
-              description:
-                  'Ekibin yıllık izin yoğunluğu takvimde gösterilir, çakışmalar uyarılır.',
-              icon: Icons.event,
-            ),
-            DemoHighlight(
-              title: 'IT Destek Ticketı',
-              description:
-                  'Fotoğraf, log ve cihaz bilgisi otomatik eklenerek destek talebi açılır.',
-              icon: Icons.support_agent,
-            ),
-            DemoHighlight(
-              title: 'Otomatik Akış',
-              description:
-                  'Talep tipi değişince yönlendirme kuralları devreye girer, manuel yük azalır.',
-              icon: Icons.autorenew,
-            ),
-          ],
-        );
-      case FeatureKeys.breakTracking:
-        return const ModuleDemoPage(
-          key: ValueKey('break'),
-          title: 'Mola Takibi',
-          tagline: 'Dinlenme süresi uyumluluğu',
-          description:
-              'Personelin mola giriş-çıkışları QR, kiosk veya mobil cihazla kaydedilir; yönetmelik süreleri izlenir.',
-          icon: Icons.timer,
-          highlights: [
-            DemoHighlight(
-              title: 'Çoklu Giriş Opsiyonu',
-              description:
-                  'QR kod, kiosk PIN veya Bluetooth beacon ile mola başlatabilirsiniz.',
-              icon: Icons.qr_code_scanner,
-            ),
-            DemoHighlight(
-              title: 'Süre Limitleri',
-              description:
-                  'Kurallara göre maksimum süreyi aşan molalar anında bildirilir.',
-              icon: Icons.hourglass_bottom,
-            ),
-            DemoHighlight(
-              title: 'Anlık Rapor',
-              description:
-                  'Şube ve kullanıcı bazlı mola dağılımı grafik olarak sunulur.',
-              icon: Icons.pie_chart,
-            ),
-          ],
-        );
+        return const RequestsHubPage();
       case FeatureKeys.timeAttendance:
         return const ModuleDemoPage(
           key: ValueKey('ta'),
@@ -1303,12 +1169,23 @@ class HomeDashboard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 8),
+            BreakQuickActionCard(
+              onViewHistory: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ShiftsHubPage(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
             SktAlertSection(recordsAsync: recordsAsync),
             const SizedBox(height: 20),
             const _AnnouncementsPlaceholder(),
             const SizedBox(height: 12),
-            const _QuickNotificationsPlaceholder(),
+            const InventoryQuickNotificationsCard(),
             const SizedBox(height: 24),
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -1530,6 +1407,208 @@ class _AnnouncementsPlaceholder extends StatelessWidget {
       ),
     );
   }
+}
+
+class InventoryQuickNotificationsCard extends ConsumerWidget {
+  const InventoryQuickNotificationsCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final indicators = ref.watch(inventoryTransferIndicatorsProvider);
+    final notifications = indicators.quickNotifications;
+    if (notifications.isEmpty) {
+      return const _QuickNotificationsPlaceholder();
+    }
+
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Hızlı Bildirimler',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.notifications, color: theme.colorScheme.primary),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ...notifications.asMap().entries.map((entry) {
+                final notification = entry.value;
+                final isLast = entry.key == notifications.length - 1;
+                return Padding(
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+                  child: _QuickNotificationTile(
+                    notification: notification,
+                    onTap: () => _handleNotificationTap(
+                      context,
+                      ref,
+                      notification,
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleNotificationTap(
+    BuildContext context,
+    WidgetRef ref,
+    InventoryTransferQuickNotification notification,
+  ) async {
+    final user = ref.read(authProvider).mapOrNull(authenticated: (s) => s.user);
+    final userId = user?.id;
+    if (userId != null) {
+      ref
+          .read(inventoryTransferAlertStatusProvider(userId).notifier)
+          .markNotificationSeen(notification.createdAt);
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => InventoryTransferListScreen(
+          initialTabIndex: notification.targetTabIndex,
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickNotificationTile extends StatelessWidget {
+  const _QuickNotificationTile({
+    required this.notification,
+    this.onTap,
+  });
+
+  final InventoryTransferQuickNotification notification;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final visuals = _NotificationVisuals.resolve(notification.type, colors);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: visuals.background,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              visuals.icon,
+              color: visuals.iconColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notification.title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(notification.description),
+                const SizedBox(height: 4),
+                Text(
+                  _formatRelativeTime(notification.createdAt),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationVisuals {
+  const _NotificationVisuals({
+    required this.icon,
+    required this.background,
+    required this.iconColor,
+  });
+
+  final IconData icon;
+  final Color background;
+  final Color iconColor;
+
+  static _NotificationVisuals resolve(
+    InventoryTransferNotificationType type,
+    ColorScheme colors,
+  ) {
+    switch (type) {
+      case InventoryTransferNotificationType.incomingOffer:
+        return _NotificationVisuals(
+          icon: Icons.mark_email_unread,
+          background: colors.primaryContainer,
+          iconColor: colors.primary,
+        );
+      case InventoryTransferNotificationType.offerAccepted:
+        return _NotificationVisuals(
+          icon: Icons.check_circle,
+          background: colors.secondaryContainer,
+          iconColor: colors.secondary,
+        );
+      case InventoryTransferNotificationType.offerRejected:
+        return _NotificationVisuals(
+          icon: Icons.cancel,
+          background: colors.errorContainer,
+          iconColor: colors.error,
+        );
+      case InventoryTransferNotificationType.offerCancelled:
+        return _NotificationVisuals(
+          icon: Icons.undo,
+          background: colors.surfaceContainerHighest,
+          iconColor: colors.tertiary,
+        );
+      case InventoryTransferNotificationType.shortageNotice:
+        return _NotificationVisuals(
+          icon: Icons.trending_down,
+          background: colors.tertiaryContainer,
+          iconColor: colors.tertiary,
+        );
+      case InventoryTransferNotificationType.surplusNotice:
+        return _NotificationVisuals(
+          icon: Icons.trending_up,
+          background: colors.surfaceContainerHighest,
+          iconColor: colors.primary,
+        );
+    }
+  }
+}
+
+String _formatRelativeTime(DateTime date) {
+  final diff = DateTime.now().difference(date);
+  if (diff.inMinutes < 1) return 'Az önce';
+  if (diff.inMinutes < 60) return '${diff.inMinutes} dk önce';
+  if (diff.inHours < 24) return '${diff.inHours} sa önce';
+  return '${diff.inDays} gün önce';
 }
 
 class _QuickNotificationsPlaceholder extends StatelessWidget {

@@ -1,6 +1,21 @@
 [
   {
     "schema_name": "public",
+    "enum_name": "depot_notice_status",
+    "values": "{open,in_transfer,fulfilled,cancelled}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "depot_notice_type",
+    "values": "{shortage,surplus}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "depot_offer_status",
+    "values": "{pending,accepted,rejected,expired,cancelled,delivered}"
+  },
+  {
+    "schema_name": "public",
     "enum_name": "leave_status",
     "values": "{beklemede,onaylandi,reddedildi}"
   },
@@ -26,8 +41,23 @@
   },
   {
     "schema_name": "public",
+    "enum_name": "manager_todo_status",
+    "values": "{pending,completed}"
+  },
+  {
+    "schema_name": "public",
     "enum_name": "product_issue_status",
     "values": "{acik,inceleniyor,cozuldu,kapandi}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "request_category",
+    "values": "{malfunction,equipment,leave,other}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "request_status",
+    "values": "{pending,in_progress,resolved,cancelled}"
   },
   {
     "schema_name": "public",
@@ -38,6 +68,11 @@
     "schema_name": "public",
     "enum_name": "skt_status",
     "values": "{normal,yaklasan,gecmis}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "store_scoring_item_result",
+    "values": "{positive,negative,not_applicable}"
   },
   {
     "schema_name": "public",

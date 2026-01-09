@@ -1,0 +1,6 @@
+{
+  "/api/tasks/assignees/route": "app/api/tasks/assignees/route.js",
+  "/api/tasks/route": "app/api/tasks/route.js",
+  "/(dashboard)/overview/page": "app/(dashboard)/overview/page.js",
+  "/(dashboard)/tasks/page": "app/(dashboard)/tasks/page.js"
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yotech_mobile/core/localization/localization_extensions.dart';
 import '../../domain/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -40,12 +41,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             icon: const Icon(Icons.error_outline, color: Colors.red),
-            title: const Text('Giriş Başarısız'),
+            title: Text(context.l10n.loginErrorTitle),
             content: Text(errorMsg),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Tamam'),
+                child: Text(context.l10n.dialogOk),
               ),
             ],
           ),
@@ -99,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Giriş Yap',
+                            context.l10n.loginHeading,
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -113,8 +114,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           TextFormField(
                             controller: _sicilNoController,
                             decoration: InputDecoration(
-                              labelText: 'ID / Sicil No',
-                              hintText: 'Sicil numaranızı girin',
+                              labelText: context.l10n.loginIdLabel,
+                              hintText: context.l10n.loginIdHint,
                               prefixIcon: const Icon(Icons.badge_outlined),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -124,10 +125,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Sicil no boş olamaz';
+                                return context.l10n.loginIdEmpty;
                               }
                               if (value.length < 3) {
-                                return 'Sicil no en az 3 karakter olmalı';
+                                return context.l10n.loginIdTooShort;
                               }
                               return null;
                             },
@@ -139,8 +140,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             controller: _passwordController,
                             obscureText: !_isPasswordVisible,
                             decoration: InputDecoration(
-                              labelText: 'Şifre',
-                              hintText: 'Şifrenizi girin',
+                              labelText: context.l10n.loginPasswordLabel,
+                              hintText: context.l10n.loginPasswordHint,
                               prefixIcon: const Icon(Icons.lock_outline),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -162,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Şifre boş olamaz';
+                                return context.l10n.loginPasswordEmpty;
                               }
                               return null;
                             },
@@ -192,9 +193,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                     ),
                                   )
-                                : const Text(
-                                    'Giriş Yap',
-                                    style: TextStyle(
+                                : Text(
+                                    context.l10n.loginButton,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: 0.5,
@@ -231,7 +232,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
               child: Text(
-                'v1.0.0',
+                context.l10n.loginVersionLabel('v1.0.0'),
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 12,

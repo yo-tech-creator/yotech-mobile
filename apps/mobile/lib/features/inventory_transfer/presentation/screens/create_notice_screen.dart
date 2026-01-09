@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
 import 'package:yotech_mobile/features/inventory_transfer/data/models/inventory_transfer_model.dart';
 import 'package:yotech_mobile/features/inventory_transfer/presentation/providers/inventory_transfer_provider.dart';
 import 'package:yotech_mobile/features/skt/domain/models/product_summary_model.dart';
 import 'package:yotech_mobile/features/skt/domain/providers/skt_providers.dart';
 import 'package:yotech_mobile/shared/widgets/barcode_scanner_page.dart';
+import 'package:yotech_mobile/shared/widgets/product_search_results_list.dart';
 
 class CreateNoticeScreen extends ConsumerStatefulWidget {
   const CreateNoticeScreen({super.key});
@@ -22,9 +22,9 @@ class _CreateNoticeScreenState extends ConsumerState<CreateNoticeScreen> {
   final _noteController = TextEditingController();
   DepotNoticeType _type = DepotNoticeType.surplus;
   bool _isLoading = false;
-  bool _isSearchingProduct = false;
+  String _searchQuery = '';
   ProductSummaryModel? _selectedProduct;
-  String? _productSearchError;
+  String? _pendingAutoSelectQuery;
 
   @override
   void dispose() {
@@ -38,12 +38,20 @@ class _CreateNoticeScreenState extends ConsumerState<CreateNoticeScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final quantity = int.tryParse(_quantityController.text.trim());
+    if (quantity == null || quantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Geçerli bir miktar girin.')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       await ref.read(inventoryTransferListProvider.notifier).createNotice(
             productName: _productNameController.text.trim(),
-            quantity: double.parse(_quantityController.text),
+            quantity: quantity.toDouble(),
             unit: _unitController.text,
             type: _type,
             note: _noteController.text.isEmpty ? null : _noteController.text,
@@ -75,77 +83,43 @@ class _CreateNoticeScreenState extends ConsumerState<CreateNoticeScreen> {
       return;
     }
 
-    _productNameController
-      ..clear()
-      ..text = scanned;
-    await _searchProduct(overrideQuery: scanned);
+    setState(() {
+      _productNameController
+        ..clear()
+        ..text = scanned;
+      _searchQuery = scanned;
+      _selectedProduct = null;
+      _pendingAutoSelectQuery = scanned;
+    });
   }
 
-  Future<void> _searchProduct({String? overrideQuery}) async {
-    final query = (overrideQuery ?? _productNameController.text).trim();
-    if (query.isEmpty) {
-      setState(() => _productSearchError = 'Önce ürün adı veya barkod girin.');
-      return;
-    }
-    if (query.length < 3) {
-      setState(() => _productSearchError = 'En az 3 karakter girin.');
+  void _maybeAutoSelect(List<ProductSummaryModel> results) {
+    final pendingQuery = _pendingAutoSelectQuery;
+    if (pendingQuery == null || results.isEmpty) {
       return;
     }
 
-    final user =
-        ref.read(authProvider).mapOrNull(authenticated: (state) => state.user);
-    if (user == null) {
-      setState(
-          () => _productSearchError = 'Kullanıcı oturum bilgisi bulunamadı.');
+    final match = _pickBestMatch(pendingQuery, results);
+    if (match == null) {
       return;
     }
 
-    setState(() {
-      _isSearchingProduct = true;
-      _productSearchError = null;
-    });
-
-    try {
-      final results = await ref.read(sktRepositoryProvider).searchProducts(
-            tenantId: user.tenantId,
-            query: query,
-          );
-
-      if (!mounted) {
-        return;
-      }
-
-      if (results.isEmpty) {
-        setState(() {
-          _selectedProduct = null;
-          _productSearchError = 'Eşleşen ürün bulunamadı.';
-        });
-        return;
-      }
-
-      final match = _pickBestMatch(query, results);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       setState(() {
         _selectedProduct = match;
         _productNameController.text = match.name;
+        _searchQuery = match.name;
+        _pendingAutoSelectQuery = null;
       });
-    } catch (e) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _productSearchError = 'Arama sırasında hata oluştu: $e';
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _isSearchingProduct = false);
-      }
-    }
+    });
   }
 
-  ProductSummaryModel _pickBestMatch(
+  ProductSummaryModel? _pickBestMatch(
     String query,
     List<ProductSummaryModel> results,
   ) {
+    if (results.isEmpty) return null;
     final normalized = query.toLowerCase();
     for (final product in results) {
       if (product.barcode == query) {
@@ -193,6 +167,16 @@ class _CreateNoticeScreenState extends ConsumerState<CreateNoticeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final trimmedQuery = _searchQuery.trim();
+    final searching = trimmedQuery.length >= 3;
+    final searchAsync = searching
+        ? ref.watch(sktProductSearchProvider(trimmedQuery))
+        : const AsyncData<List<ProductSummaryModel>>(<ProductSummaryModel>[]);
+    final searchResults = searchAsync.asData?.value;
+    if (searchResults != null) {
+      _maybeAutoSelect(searchResults);
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Yeni İlan Oluştur')),
       body: SingleChildScrollView(
@@ -209,12 +193,12 @@ class _CreateNoticeScreenState extends ConsumerState<CreateNoticeScreen> {
                   helperText:
                       'Barkod okutabilir veya ürün ismi yazarak arama yapabilirsiniz.',
                   suffixIcon: SizedBox(
-                    width: 96,
+                    width: 140,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_isSearchingProduct)
+                        if (searching && searchAsync.isLoading)
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 4),
                             child: SizedBox(
@@ -222,47 +206,56 @@ class _CreateNoticeScreenState extends ConsumerState<CreateNoticeScreen> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                          )
-                        else
+                          ),
+                        if (_searchQuery.isNotEmpty)
                           IconButton(
-                            tooltip: 'Ürün Ara',
-                            icon: const Icon(Icons.search),
-                            onPressed: () => _searchProduct(),
+                            tooltip: 'Temizle',
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _productNameController.clear();
+                                _searchQuery = '';
+                                _selectedProduct = null;
+                                _pendingAutoSelectQuery = null;
+                              });
+                            },
                           ),
                         IconButton(
                           tooltip: 'Barkod Oku',
                           icon: const Icon(Icons.qr_code_scanner),
-                          onPressed:
-                              _isSearchingProduct ? null : () => _scanBarcode(),
+                          onPressed: _scanBarcode,
                         ),
                       ],
                     ),
                   ),
                 ),
                 textInputAction: TextInputAction.search,
-                onFieldSubmitted: (_) => _searchProduct(),
-                onChanged: (_) {
-                  if (_selectedProduct != null || _productSearchError != null) {
-                    setState(() {
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                    if (value.trim().isEmpty) {
                       _selectedProduct = null;
-                      _productSearchError = null;
-                    });
-                  }
+                      _pendingAutoSelectQuery = null;
+                    }
+                  });
                 },
                 validator: (v) => v?.isEmpty == true ? 'Zorunlu alan' : null,
               ),
-              if (_productSearchError != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    _productSearchError!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
               _buildSelectedProductInfo(),
+              const SizedBox(height: 12),
+              ProductSearchResultsList(
+                searchAsync: searchAsync,
+                searching: searching,
+                onSelect: (product) {
+                  setState(() {
+                    _selectedProduct = product;
+                    _productNameController.text = product.name;
+                    _searchQuery = product.name;
+                    _pendingAutoSelectQuery = null;
+                  });
+                },
+              ),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -270,10 +263,14 @@ class _CreateNoticeScreenState extends ConsumerState<CreateNoticeScreen> {
                     child: TextFormField(
                       controller: _quantityController,
                       decoration: const InputDecoration(labelText: 'Miktar'),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      validator: (v) =>
-                          v?.isEmpty == true ? 'Zorunlu alan' : null,
+                      keyboardType: TextInputType.number,
+                      validator: (v) {
+                        final value = int.tryParse(v ?? '');
+                        if (value == null || value <= 0) {
+                          return 'Pozitif tam sayı girin';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),

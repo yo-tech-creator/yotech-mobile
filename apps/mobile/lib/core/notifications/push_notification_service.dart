@@ -98,7 +98,7 @@ class PushNotificationService {
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       };
 
-      await _client.from('device_tokens').upsert(payload);
+      await _client.from('device_tokens').upsert(payload, onConflict: 'token');
       _lastRegisteredToken = resolvedToken;
     } catch (e) {
       debugPrint('Token kaydı başarısız: $e');

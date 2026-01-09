@@ -58,7 +58,7 @@ class SktRecordModel {
             .toList();
       }
       if (value is String) {
-        final cleaned = value.replaceAll(RegExp('[{}]'), '');
+        final cleaned = value.replaceAll('{', '').replaceAll('}', '');
         if (cleaned.trim().isEmpty) {
           return const <String>[];
         }

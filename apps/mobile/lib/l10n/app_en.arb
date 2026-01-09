@@ -1,0 +1,255 @@
+{
+  "@@locale": "en",
+  "appTitle": "Yotech",
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "description": "Displays an error message",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "tryAgain": "Try Again",
+  "settingsDefaultDisplayName": "YOTECH User",
+  "settingsDefaultRole": "Store Team Member",
+  "settingsTitle": "My Account",
+  "settingsSectionAccount": "Account",
+  "settingsSectionOther": "Other",
+  "settingsPersonalInfoTitle": "Personal Information",
+  "settingsPersonalInfoSubtitle": "View name, contact, and login details",
+  "settingsTeamTitle": "My Team",
+  "settingsTeamSubtitle": "Store teammates and regional manager info",
+  "settingsLanguageTitle": "Language",
+  "settingsLanguageSubtitle": "App language: {language}",
+  "@settingsLanguageSubtitle": {
+    "description": "Subtitle that shows the active language",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsNotificationsTitle": "Notification Settings",
+  "settingsNotificationsSubtitle": "Manage SKT, warehouse transfer, announcement, and task alerts",
+  "settingsContractsTitle": "Contracts",
+  "settingsContractsSubtitle": "KVKK and employment agreements",
+  "settingsVersionLabel": "App Version {version}",
+  "@settingsVersionLabel": {
+    "description": "Displays the current app version",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLogoutButton": "Sign Out",
+  "settingsLogoutSuccess": "Signed out",
+  "settingsLanguageChanged": "Language updated",
+  "languageNameTurkish": "Turkish",
+  "languageNameEnglish": "English",
+  "settingsLanguageSheetTitle": "Choose language",
+  "settingsLanguageSheetDescription": "Select the language you want to use in the app",
+  "announcementsTitle": "Announcements",
+  "announcementsLoadError": "Announcements couldn't be loaded: {error}",
+  "@announcementsLoadError": {
+    "description": "Error text shown on the announcements page",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "announcementsAuthor": "Prepared by {author}",
+  "@announcementsAuthor": {
+    "description": "Displays the author of an announcement",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "announcementsEmptyMessage": "No announcements yet. Keep notifications on so you don't miss updates!",
+  "relativeJustNow": "Just now",
+  "relativeMinutes": "{minutes} min ago",
+  "@relativeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeHours": "{hours} hr ago",
+  "@relativeHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeDays": "{days} day(s) ago",
+  "@relativeDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "loginErrorTitle": "Login Failed",
+  "dialogOk": "OK",
+  "loginHeading": "Sign In",
+  "loginIdLabel": "ID / Employee No",
+  "loginIdHint": "Enter your employee number",
+  "loginIdEmpty": "Employee number can't be empty",
+  "loginIdTooShort": "Employee number must be at least 3 characters",
+  "loginPasswordLabel": "Password",
+  "loginPasswordHint": "Enter your password",
+  "loginPasswordEmpty": "Password can't be empty",
+  "loginButton": "Sign In",
+  "loginVersionLabel": "{version}",
+  "@loginVersionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "breaksTitle": "Shifts & Breaks",
+  "breaksTodayTitle": "Today's Breaks",
+  "breaksHistoryError": "History couldn't be loaded: {error}",
+  "@breaksHistoryError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "breaksHighlightsTitle": "Shift Planning",
+  "breaksHighlightsDescription": "Soon you'll drag and drop shift blocks and manage them with the leave calendar. For now you can start and stop breaks here.",
+  "breaksHighlightWeeklyTitle": "Weekly Kanban",
+  "breaksHighlightWeeklyDescription": "Move teammates across cards to adjust shift blocks instantly.",
+  "breaksHighlightLeaveTitle": "Leave Integration",
+  "breaksHighlightLeaveDescription": "Approved leaves automatically block the calendar and suggest candidates for open slots.",
+  "breaksHighlightNotificationTitle": "Notified Changes",
+  "breaksHighlightNotificationDescription": "Shift swap requests send push notifications to the relevant teammates.",
+  "breaksOngoing": "In progress",
+  "breaksDurationLabel": "Duration: {duration}",
+  "@breaksDurationLabel": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "breaksEmptyMessage": "No breaks recorded for today.",
+  "breakQuickTitle": "My Break",
+  "breakQuickHistory": "History",
+  "breakQuickLoadError": "Break info couldn't be loaded: {error}",
+  "@breakQuickLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "breakQuickIdle": "You don't have an active break. Tap the button below to start one.",
+  "breakQuickStop": "End Break",
+  "breakQuickStart": "Start Break",
+  "breakQuickRefreshTooltip": "Refresh status",
+  "breakQuickEndSuccess": "Break ended.",
+  "breakQuickStartSuccess": "Break started.",
+  "breakQuickFailure": "Action failed: {error}",
+  "@breakQuickFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "breakQuickStartedAt": "Break started at {time}.",
+  "@breakQuickStartedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "breakQuickElapsed": "Elapsed: {time}",
+  "@breakQuickElapsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonActionFailed": "Action failed: {error}",
+  "@commonActionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "commonEdit": "Edit",
+  "commonDelete": "Delete",
+  "commonDismiss": "Cancel",
+  "merchSearchHint": "Search company or name",
+  "merchTitle": "Merch / Field Rep",
+  "merchSearchClose": "Close search",
+  "merchSearchToggle": "Filter / Search",
+  "merchAddPerson": "Add Person",
+  "merchLoadError": "Merch list couldn't be loaded: {error}",
+  "@merchLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "merchEditTitle": "Edit Person",
+  "merchCreateTitle": "Add New Person",
+  "merchFieldFirstName": "First name",
+  "merchFieldLastName": "Last name",
+  "merchFieldCompany": "Company name",
+  "merchFieldPhone": "Phone number",
+  "merchPhoneRequired": "Phone is required",
+  "merchPhoneInvalid": "Enter a valid phone number",
+  "merchFieldRank": "Rank",
+  "merchUpdateButton": "Update Person",
+  "merchAddButton": "Add Person",
+  "merchFieldRequired": "{field} is required",
+  "@merchFieldRequired": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "merchUpdateSuccess": "Person updated",
+  "merchCreateSuccess": "Person added",
+  "merchDeleteTitle": "Delete person",
+  "merchDeleteMessage": "Are you sure you want to delete {name}?",
+  "@merchDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "merchDeleteSuccess": "Person deleted",
+  "merchDeleteFailure": "Delete failed: {error}",
+  "@merchDeleteFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "merchEmptyFiltered": "No results match your search.",
+  "merchEmptyDefault": "No entries yet. Use the button above to add teammates.",
+  "merchRankMerch": "Merch",
+  "merchRankPlasiyer": "Field Rep",
+  "merchRankSevkiyat": "Logistics",
+  "merchRankSef": "Lead",
+  "merchRankYonetici": "Manager"
+}

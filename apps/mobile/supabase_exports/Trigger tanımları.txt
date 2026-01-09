@@ -7,6 +7,13 @@
     "action_statement": "EXECUTE FUNCTION calculate_attendance_minutes()"
   },
   {
+    "table_name": "branch_requests",
+    "trigger_name": "trg_branch_requests_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
     "table_name": "branches",
     "trigger_name": "update_branches_updated_at",
     "event_manipulation": "UPDATE",
@@ -21,11 +28,67 @@
     "action_statement": "EXECUTE FUNCTION calculate_break_duration()"
   },
   {
-    "table_name": "products",
-    "trigger_name": "trg_products_alt_barcodes",
+    "table_name": "break_sessions",
+    "trigger_name": "trg_break_sessions_updated_at",
     "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
-    "action_statement": "EXECUTE FUNCTION validate_products_alt_barcodes()"
+    "action_statement": "EXECUTE FUNCTION set_break_session_updated_at()"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "trigger_name": "depot_notice_offers_branch_name",
+    "event_manipulation": "INSERT",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "trigger_name": "depot_notice_offers_branch_name",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "trigger_name": "depot_notice_offers_after_update",
+    "event_manipulation": "UPDATE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION handle_offer_cancellation()"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "trigger_name": "depot_notice_offers_set_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION depot_touch_updated_at()"
+  },
+  {
+    "table_name": "depot_notices",
+    "trigger_name": "depot_notices_branch_name",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
+  },
+  {
+    "table_name": "depot_notices",
+    "trigger_name": "depot_notices_branch_name",
+    "event_manipulation": "INSERT",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
+  },
+  {
+    "table_name": "depot_notices",
+    "trigger_name": "depot_notices_set_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION depot_touch_updated_at()"
+  },
+  {
+    "table_name": "products",
+    "trigger_name": "update_products_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
   },
   {
     "table_name": "products",
@@ -36,10 +99,10 @@
   },
   {
     "table_name": "products",
-    "trigger_name": "update_products_updated_at",
+    "trigger_name": "trg_products_alt_barcodes",
     "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
-    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    "action_statement": "EXECUTE FUNCTION validate_products_alt_barcodes()"
   },
   {
     "table_name": "regions",
@@ -72,6 +135,13 @@
   {
     "table_name": "task_items",
     "trigger_name": "task_item_completion_update",
+    "event_manipulation": "UPDATE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
+  },
+  {
+    "table_name": "task_items",
+    "trigger_name": "task_item_completion_update",
     "event_manipulation": "INSERT",
     "action_timing": "AFTER",
     "action_statement": "EXECUTE FUNCTION update_task_completion()"
@@ -80,13 +150,6 @@
     "table_name": "task_items",
     "trigger_name": "task_item_completion_update",
     "event_manipulation": "DELETE",
-    "action_timing": "AFTER",
-    "action_statement": "EXECUTE FUNCTION update_task_completion()"
-  },
-  {
-    "table_name": "task_items",
-    "trigger_name": "task_item_completion_update",
-    "event_manipulation": "UPDATE",
     "action_timing": "AFTER",
     "action_statement": "EXECUTE FUNCTION update_task_completion()"
   },

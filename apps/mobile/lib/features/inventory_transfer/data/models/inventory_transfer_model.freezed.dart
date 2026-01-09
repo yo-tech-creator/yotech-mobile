@@ -21,26 +21,19 @@ DepotNotice _$DepotNoticeFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$DepotNotice {
   String get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'tenant_id')
   String get tenantId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'branch_id')
   String get branchId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_by')
+  String? get branchName => throw _privateConstructorUsedError;
   String get createdBy => throw _privateConstructorUsedError;
-  @JsonKey(name: 'product_name')
   String get productName => throw _privateConstructorUsedError;
   double get quantity => throw _privateConstructorUsedError;
   String get unit => throw _privateConstructorUsedError;
   DepotNoticeType get type => throw _privateConstructorUsedError;
   DepotNoticeStatus get status => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
-  @JsonKey(name: 'expires_at')
   DateTime? get expiresAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  DateTime? get updatedAt => throw _privateConstructorUsedError; // Relations
-  @JsonKey(includeFromJson: false)
+  DateTime? get updatedAt => throw _privateConstructorUsedError;
   List<NoticeOffer>? get offers => throw _privateConstructorUsedError;
 
   /// Serializes this DepotNotice to a JSON map.
@@ -61,19 +54,20 @@ abstract class $DepotNoticeCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      @JsonKey(name: 'tenant_id') String tenantId,
-      @JsonKey(name: 'branch_id') String branchId,
-      @JsonKey(name: 'created_by') String createdBy,
-      @JsonKey(name: 'product_name') String productName,
+      String tenantId,
+      String branchId,
+      String? branchName,
+      String createdBy,
+      String productName,
       double quantity,
       String unit,
       DepotNoticeType type,
       DepotNoticeStatus status,
       String? note,
-      @JsonKey(name: 'expires_at') DateTime? expiresAt,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt,
-      @JsonKey(includeFromJson: false) List<NoticeOffer>? offers});
+      DateTime? expiresAt,
+      DateTime createdAt,
+      DateTime? updatedAt,
+      List<NoticeOffer>? offers});
 }
 
 /// @nodoc
@@ -94,6 +88,7 @@ class _$DepotNoticeCopyWithImpl<$Res, $Val extends DepotNotice>
     Object? id = null,
     Object? tenantId = null,
     Object? branchId = null,
+    Object? branchName = freezed,
     Object? createdBy = null,
     Object? productName = null,
     Object? quantity = null,
@@ -119,6 +114,10 @@ class _$DepotNoticeCopyWithImpl<$Res, $Val extends DepotNotice>
           ? _value.branchId
           : branchId // ignore: cast_nullable_to_non_nullable
               as String,
+      branchName: freezed == branchName
+          ? _value.branchName
+          : branchName // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdBy: null == createdBy
           ? _value.createdBy
           : createdBy // ignore: cast_nullable_to_non_nullable
@@ -177,19 +176,20 @@ abstract class _$$DepotNoticeImplCopyWith<$Res>
   @useResult
   $Res call(
       {String id,
-      @JsonKey(name: 'tenant_id') String tenantId,
-      @JsonKey(name: 'branch_id') String branchId,
-      @JsonKey(name: 'created_by') String createdBy,
-      @JsonKey(name: 'product_name') String productName,
+      String tenantId,
+      String branchId,
+      String? branchName,
+      String createdBy,
+      String productName,
       double quantity,
       String unit,
       DepotNoticeType type,
       DepotNoticeStatus status,
       String? note,
-      @JsonKey(name: 'expires_at') DateTime? expiresAt,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt,
-      @JsonKey(includeFromJson: false) List<NoticeOffer>? offers});
+      DateTime? expiresAt,
+      DateTime createdAt,
+      DateTime? updatedAt,
+      List<NoticeOffer>? offers});
 }
 
 /// @nodoc
@@ -208,6 +208,7 @@ class __$$DepotNoticeImplCopyWithImpl<$Res>
     Object? id = null,
     Object? tenantId = null,
     Object? branchId = null,
+    Object? branchName = freezed,
     Object? createdBy = null,
     Object? productName = null,
     Object? quantity = null,
@@ -233,6 +234,10 @@ class __$$DepotNoticeImplCopyWithImpl<$Res>
           ? _value.branchId
           : branchId // ignore: cast_nullable_to_non_nullable
               as String,
+      branchName: freezed == branchName
+          ? _value.branchName
+          : branchName // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdBy: null == createdBy
           ? _value.createdBy
           : createdBy // ignore: cast_nullable_to_non_nullable
@@ -286,19 +291,20 @@ class __$$DepotNoticeImplCopyWithImpl<$Res>
 class _$DepotNoticeImpl implements _DepotNotice {
   const _$DepotNoticeImpl(
       {required this.id,
-      @JsonKey(name: 'tenant_id') required this.tenantId,
-      @JsonKey(name: 'branch_id') required this.branchId,
-      @JsonKey(name: 'created_by') required this.createdBy,
-      @JsonKey(name: 'product_name') required this.productName,
+      required this.tenantId,
+      required this.branchId,
+      this.branchName,
+      required this.createdBy,
+      required this.productName,
       required this.quantity,
       this.unit = 'adet',
       required this.type,
       this.status = DepotNoticeStatus.open,
       this.note,
-      @JsonKey(name: 'expires_at') this.expiresAt,
-      @JsonKey(name: 'created_at') required this.createdAt,
-      @JsonKey(name: 'updated_at') this.updatedAt,
-      @JsonKey(includeFromJson: false) final List<NoticeOffer>? offers})
+      this.expiresAt,
+      required this.createdAt,
+      this.updatedAt,
+      final List<NoticeOffer>? offers})
       : _offers = offers;
 
   factory _$DepotNoticeImpl.fromJson(Map<String, dynamic> json) =>
@@ -307,16 +313,14 @@ class _$DepotNoticeImpl implements _DepotNotice {
   @override
   final String id;
   @override
-  @JsonKey(name: 'tenant_id')
   final String tenantId;
   @override
-  @JsonKey(name: 'branch_id')
   final String branchId;
   @override
-  @JsonKey(name: 'created_by')
+  final String? branchName;
+  @override
   final String createdBy;
   @override
-  @JsonKey(name: 'product_name')
   final String productName;
   @override
   final double quantity;
@@ -331,19 +335,13 @@ class _$DepotNoticeImpl implements _DepotNotice {
   @override
   final String? note;
   @override
-  @JsonKey(name: 'expires_at')
   final DateTime? expiresAt;
   @override
-  @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @override
-  @JsonKey(name: 'updated_at')
   final DateTime? updatedAt;
-// Relations
   final List<NoticeOffer>? _offers;
-// Relations
   @override
-  @JsonKey(includeFromJson: false)
   List<NoticeOffer>? get offers {
     final value = _offers;
     if (value == null) return null;
@@ -354,7 +352,7 @@ class _$DepotNoticeImpl implements _DepotNotice {
 
   @override
   String toString() {
-    return 'DepotNotice(id: $id, tenantId: $tenantId, branchId: $branchId, createdBy: $createdBy, productName: $productName, quantity: $quantity, unit: $unit, type: $type, status: $status, note: $note, expiresAt: $expiresAt, createdAt: $createdAt, updatedAt: $updatedAt, offers: $offers)';
+    return 'DepotNotice(id: $id, tenantId: $tenantId, branchId: $branchId, branchName: $branchName, createdBy: $createdBy, productName: $productName, quantity: $quantity, unit: $unit, type: $type, status: $status, note: $note, expiresAt: $expiresAt, createdAt: $createdAt, updatedAt: $updatedAt, offers: $offers)';
   }
 
   @override
@@ -367,6 +365,8 @@ class _$DepotNoticeImpl implements _DepotNotice {
                 other.tenantId == tenantId) &&
             (identical(other.branchId, branchId) ||
                 other.branchId == branchId) &&
+            (identical(other.branchName, branchName) ||
+                other.branchName == branchName) &&
             (identical(other.createdBy, createdBy) ||
                 other.createdBy == createdBy) &&
             (identical(other.productName, productName) ||
@@ -393,6 +393,7 @@ class _$DepotNoticeImpl implements _DepotNotice {
       id,
       tenantId,
       branchId,
+      branchName,
       createdBy,
       productName,
       quantity,
@@ -423,21 +424,21 @@ class _$DepotNoticeImpl implements _DepotNotice {
 
 abstract class _DepotNotice implements DepotNotice {
   const factory _DepotNotice(
-          {required final String id,
-          @JsonKey(name: 'tenant_id') required final String tenantId,
-          @JsonKey(name: 'branch_id') required final String branchId,
-          @JsonKey(name: 'created_by') required final String createdBy,
-          @JsonKey(name: 'product_name') required final String productName,
-          required final double quantity,
-          final String unit,
-          required final DepotNoticeType type,
-          final DepotNoticeStatus status,
-          final String? note,
-          @JsonKey(name: 'expires_at') final DateTime? expiresAt,
-          @JsonKey(name: 'created_at') required final DateTime createdAt,
-          @JsonKey(name: 'updated_at') final DateTime? updatedAt,
-          @JsonKey(includeFromJson: false) final List<NoticeOffer>? offers}) =
-      _$DepotNoticeImpl;
+      {required final String id,
+      required final String tenantId,
+      required final String branchId,
+      final String? branchName,
+      required final String createdBy,
+      required final String productName,
+      required final double quantity,
+      final String unit,
+      required final DepotNoticeType type,
+      final DepotNoticeStatus status,
+      final String? note,
+      final DateTime? expiresAt,
+      required final DateTime createdAt,
+      final DateTime? updatedAt,
+      final List<NoticeOffer>? offers}) = _$DepotNoticeImpl;
 
   factory _DepotNotice.fromJson(Map<String, dynamic> json) =
       _$DepotNoticeImpl.fromJson;
@@ -445,16 +446,14 @@ abstract class _DepotNotice implements DepotNotice {
   @override
   String get id;
   @override
-  @JsonKey(name: 'tenant_id')
   String get tenantId;
   @override
-  @JsonKey(name: 'branch_id')
   String get branchId;
   @override
-  @JsonKey(name: 'created_by')
+  String? get branchName;
+  @override
   String get createdBy;
   @override
-  @JsonKey(name: 'product_name')
   String get productName;
   @override
   double get quantity;
@@ -467,16 +466,12 @@ abstract class _DepotNotice implements DepotNotice {
   @override
   String? get note;
   @override
-  @JsonKey(name: 'expires_at')
   DateTime? get expiresAt;
   @override
-  @JsonKey(name: 'created_at')
   DateTime get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
-  DateTime? get updatedAt; // Relations
+  DateTime? get updatedAt;
   @override
-  @JsonKey(includeFromJson: false)
   List<NoticeOffer>? get offers;
 
   /// Create a copy of DepotNotice
@@ -494,22 +489,16 @@ NoticeOffer _$NoticeOfferFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$NoticeOffer {
   String get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'notice_id')
   String get noticeId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'tenant_id')
   String get tenantId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'branch_id')
   String get branchId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'offered_by')
+  String? get branchName => throw _privateConstructorUsedError;
   String get offeredBy => throw _privateConstructorUsedError;
   double get quantity => throw _privateConstructorUsedError;
   DepotOfferStatus get status => throw _privateConstructorUsedError;
-  @JsonKey(name: 'decision_by')
   String? get decisionBy => throw _privateConstructorUsedError;
-  @JsonKey(name: 'decision_at')
   DateTime? get decisionAt => throw _privateConstructorUsedError;
   String? get message => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this NoticeOffer to a JSON map.
@@ -530,16 +519,17 @@ abstract class $NoticeOfferCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      @JsonKey(name: 'notice_id') String noticeId,
-      @JsonKey(name: 'tenant_id') String tenantId,
-      @JsonKey(name: 'branch_id') String branchId,
-      @JsonKey(name: 'offered_by') String offeredBy,
+      String noticeId,
+      String tenantId,
+      String branchId,
+      String? branchName,
+      String offeredBy,
       double quantity,
       DepotOfferStatus status,
-      @JsonKey(name: 'decision_by') String? decisionBy,
-      @JsonKey(name: 'decision_at') DateTime? decisionAt,
+      String? decisionBy,
+      DateTime? decisionAt,
       String? message,
-      @JsonKey(name: 'created_at') DateTime createdAt});
+      DateTime createdAt});
 }
 
 /// @nodoc
@@ -561,6 +551,7 @@ class _$NoticeOfferCopyWithImpl<$Res, $Val extends NoticeOffer>
     Object? noticeId = null,
     Object? tenantId = null,
     Object? branchId = null,
+    Object? branchName = freezed,
     Object? offeredBy = null,
     Object? quantity = null,
     Object? status = null,
@@ -586,6 +577,10 @@ class _$NoticeOfferCopyWithImpl<$Res, $Val extends NoticeOffer>
           ? _value.branchId
           : branchId // ignore: cast_nullable_to_non_nullable
               as String,
+      branchName: freezed == branchName
+          ? _value.branchName
+          : branchName // ignore: cast_nullable_to_non_nullable
+              as String?,
       offeredBy: null == offeredBy
           ? _value.offeredBy
           : offeredBy // ignore: cast_nullable_to_non_nullable
@@ -628,16 +623,17 @@ abstract class _$$NoticeOfferImplCopyWith<$Res>
   @useResult
   $Res call(
       {String id,
-      @JsonKey(name: 'notice_id') String noticeId,
-      @JsonKey(name: 'tenant_id') String tenantId,
-      @JsonKey(name: 'branch_id') String branchId,
-      @JsonKey(name: 'offered_by') String offeredBy,
+      String noticeId,
+      String tenantId,
+      String branchId,
+      String? branchName,
+      String offeredBy,
       double quantity,
       DepotOfferStatus status,
-      @JsonKey(name: 'decision_by') String? decisionBy,
-      @JsonKey(name: 'decision_at') DateTime? decisionAt,
+      String? decisionBy,
+      DateTime? decisionAt,
       String? message,
-      @JsonKey(name: 'created_at') DateTime createdAt});
+      DateTime createdAt});
 }
 
 /// @nodoc
@@ -657,6 +653,7 @@ class __$$NoticeOfferImplCopyWithImpl<$Res>
     Object? noticeId = null,
     Object? tenantId = null,
     Object? branchId = null,
+    Object? branchName = freezed,
     Object? offeredBy = null,
     Object? quantity = null,
     Object? status = null,
@@ -682,6 +679,10 @@ class __$$NoticeOfferImplCopyWithImpl<$Res>
           ? _value.branchId
           : branchId // ignore: cast_nullable_to_non_nullable
               as String,
+      branchName: freezed == branchName
+          ? _value.branchName
+          : branchName // ignore: cast_nullable_to_non_nullable
+              as String?,
       offeredBy: null == offeredBy
           ? _value.offeredBy
           : offeredBy // ignore: cast_nullable_to_non_nullable
@@ -719,16 +720,17 @@ class __$$NoticeOfferImplCopyWithImpl<$Res>
 class _$NoticeOfferImpl implements _NoticeOffer {
   const _$NoticeOfferImpl(
       {required this.id,
-      @JsonKey(name: 'notice_id') required this.noticeId,
-      @JsonKey(name: 'tenant_id') required this.tenantId,
-      @JsonKey(name: 'branch_id') required this.branchId,
-      @JsonKey(name: 'offered_by') required this.offeredBy,
+      required this.noticeId,
+      required this.tenantId,
+      required this.branchId,
+      this.branchName,
+      required this.offeredBy,
       required this.quantity,
       this.status = DepotOfferStatus.pending,
-      @JsonKey(name: 'decision_by') this.decisionBy,
-      @JsonKey(name: 'decision_at') this.decisionAt,
+      this.decisionBy,
+      this.decisionAt,
       this.message,
-      @JsonKey(name: 'created_at') required this.createdAt});
+      required this.createdAt});
 
   factory _$NoticeOfferImpl.fromJson(Map<String, dynamic> json) =>
       _$$NoticeOfferImplFromJson(json);
@@ -736,16 +738,14 @@ class _$NoticeOfferImpl implements _NoticeOffer {
   @override
   final String id;
   @override
-  @JsonKey(name: 'notice_id')
   final String noticeId;
   @override
-  @JsonKey(name: 'tenant_id')
   final String tenantId;
   @override
-  @JsonKey(name: 'branch_id')
   final String branchId;
   @override
-  @JsonKey(name: 'offered_by')
+  final String? branchName;
+  @override
   final String offeredBy;
   @override
   final double quantity;
@@ -753,20 +753,17 @@ class _$NoticeOfferImpl implements _NoticeOffer {
   @JsonKey()
   final DepotOfferStatus status;
   @override
-  @JsonKey(name: 'decision_by')
   final String? decisionBy;
   @override
-  @JsonKey(name: 'decision_at')
   final DateTime? decisionAt;
   @override
   final String? message;
   @override
-  @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'NoticeOffer(id: $id, noticeId: $noticeId, tenantId: $tenantId, branchId: $branchId, offeredBy: $offeredBy, quantity: $quantity, status: $status, decisionBy: $decisionBy, decisionAt: $decisionAt, message: $message, createdAt: $createdAt)';
+    return 'NoticeOffer(id: $id, noticeId: $noticeId, tenantId: $tenantId, branchId: $branchId, branchName: $branchName, offeredBy: $offeredBy, quantity: $quantity, status: $status, decisionBy: $decisionBy, decisionAt: $decisionAt, message: $message, createdAt: $createdAt)';
   }
 
   @override
@@ -781,6 +778,8 @@ class _$NoticeOfferImpl implements _NoticeOffer {
                 other.tenantId == tenantId) &&
             (identical(other.branchId, branchId) ||
                 other.branchId == branchId) &&
+            (identical(other.branchName, branchName) ||
+                other.branchName == branchName) &&
             (identical(other.offeredBy, offeredBy) ||
                 other.offeredBy == offeredBy) &&
             (identical(other.quantity, quantity) ||
@@ -797,8 +796,20 @@ class _$NoticeOfferImpl implements _NoticeOffer {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, noticeId, tenantId, branchId,
-      offeredBy, quantity, status, decisionBy, decisionAt, message, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      noticeId,
+      tenantId,
+      branchId,
+      branchName,
+      offeredBy,
+      quantity,
+      status,
+      decisionBy,
+      decisionAt,
+      message,
+      createdAt);
 
   /// Create a copy of NoticeOffer
   /// with the given fields replaced by the non-null parameter values.
@@ -818,18 +829,18 @@ class _$NoticeOfferImpl implements _NoticeOffer {
 
 abstract class _NoticeOffer implements NoticeOffer {
   const factory _NoticeOffer(
-          {required final String id,
-          @JsonKey(name: 'notice_id') required final String noticeId,
-          @JsonKey(name: 'tenant_id') required final String tenantId,
-          @JsonKey(name: 'branch_id') required final String branchId,
-          @JsonKey(name: 'offered_by') required final String offeredBy,
-          required final double quantity,
-          final DepotOfferStatus status,
-          @JsonKey(name: 'decision_by') final String? decisionBy,
-          @JsonKey(name: 'decision_at') final DateTime? decisionAt,
-          final String? message,
-          @JsonKey(name: 'created_at') required final DateTime createdAt}) =
-      _$NoticeOfferImpl;
+      {required final String id,
+      required final String noticeId,
+      required final String tenantId,
+      required final String branchId,
+      final String? branchName,
+      required final String offeredBy,
+      required final double quantity,
+      final DepotOfferStatus status,
+      final String? decisionBy,
+      final DateTime? decisionAt,
+      final String? message,
+      required final DateTime createdAt}) = _$NoticeOfferImpl;
 
   factory _NoticeOffer.fromJson(Map<String, dynamic> json) =
       _$NoticeOfferImpl.fromJson;
@@ -837,31 +848,26 @@ abstract class _NoticeOffer implements NoticeOffer {
   @override
   String get id;
   @override
-  @JsonKey(name: 'notice_id')
   String get noticeId;
   @override
-  @JsonKey(name: 'tenant_id')
   String get tenantId;
   @override
-  @JsonKey(name: 'branch_id')
   String get branchId;
   @override
-  @JsonKey(name: 'offered_by')
+  String? get branchName;
+  @override
   String get offeredBy;
   @override
   double get quantity;
   @override
   DepotOfferStatus get status;
   @override
-  @JsonKey(name: 'decision_by')
   String? get decisionBy;
   @override
-  @JsonKey(name: 'decision_at')
   DateTime? get decisionAt;
   @override
   String? get message;
   @override
-  @JsonKey(name: 'created_at')
   DateTime get createdAt;
 
   /// Create a copy of NoticeOffer

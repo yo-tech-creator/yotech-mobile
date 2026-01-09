@@ -1,0 +1,255 @@
+{
+  "@@locale": "tr",
+  "appTitle": "Yotech",
+  "errorWithMessage": "Hata: {message}",
+  "@errorWithMessage": {
+    "description": "Hata mesajını gösterir",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "tryAgain": "Tekrar Dene",
+  "settingsDefaultDisplayName": "YOTECH Kullanıcısı",
+  "settingsDefaultRole": "Kasa Reyon Personeli",
+  "settingsTitle": "Hesabım",
+  "settingsSectionAccount": "Hesap",
+  "settingsSectionOther": "Diğer",
+  "settingsPersonalInfoTitle": "Kişisel Bilgilerim",
+  "settingsPersonalInfoSubtitle": "Ad, iletişim ve giriş bilgilerini görüntüle",
+  "settingsTeamTitle": "Takım arkadaşlarım",
+  "settingsTeamSubtitle": "Şubendeki ekip ve bölge müdürü bilgileri",
+  "settingsLanguageTitle": "Dil",
+  "settingsLanguageSubtitle": "Uygulama dili: {language}",
+  "@settingsLanguageSubtitle": {
+    "description": "Dil seçeneği alt başlığı",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsNotificationsTitle": "Bildirim Ayarları",
+  "settingsNotificationsSubtitle": "SKT, depo sevk, duyuru ve görev bildirimlerini yönet",
+  "settingsContractsTitle": "Sözleşmeler",
+  "settingsContractsSubtitle": "KVKK ve çalışma sözleşmeleri",
+  "settingsVersionLabel": "Uygulama Versiyonu {version}",
+  "@settingsVersionLabel": {
+    "description": "Uygulama versiyon bilgisini gösterir",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLogoutButton": "Çıkış Yap",
+  "settingsLogoutSuccess": "Oturum kapatıldı",
+  "settingsLanguageChanged": "Dil değiştirildi",
+  "languageNameTurkish": "Türkçe",
+  "languageNameEnglish": "İngilizce",
+  "settingsLanguageSheetTitle": "Dil seçimi",
+  "settingsLanguageSheetDescription": "Uygulama için kullanmak istediğiniz dili seçin",
+  "announcementsTitle": "Duyurular",
+  "announcementsLoadError": "Duyurular yüklenemedi: {error}",
+  "@announcementsLoadError": {
+    "description": "Duyuru sayfası hata mesajı",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "announcementsAuthor": "Hazırlayan: {author}",
+  "@announcementsAuthor": {
+    "description": "Duyuruyu hazırlayan kişi",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      }
+    }
+  },
+  "announcementsEmptyMessage": "Henüz duyuru yayınlanmamış. Yenilikleri kaçırmamak için bildirimlerini açık tut!",
+  "relativeJustNow": "Az önce",
+  "relativeMinutes": "{minutes} dk önce",
+  "@relativeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeHours": "{hours} sa önce",
+  "@relativeHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeDays": "{days} gün önce",
+  "@relativeDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "loginErrorTitle": "Giriş Başarısız",
+  "dialogOk": "Tamam",
+  "loginHeading": "Giriş Yap",
+  "loginIdLabel": "ID / Sicil No",
+  "loginIdHint": "Sicil numaranızı girin",
+  "loginIdEmpty": "Sicil no boş olamaz",
+  "loginIdTooShort": "Sicil no en az 3 karakter olmalı",
+  "loginPasswordLabel": "Şifre",
+  "loginPasswordHint": "Şifrenizi girin",
+  "loginPasswordEmpty": "Şifre boş olamaz",
+  "loginButton": "Giriş Yap",
+  "loginVersionLabel": "{version}",
+  "@loginVersionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "breaksTitle": "Vardiya ve Molalar",
+  "breaksTodayTitle": "Bugünkü Molalar",
+  "breaksHistoryError": "Geçmiş yüklenemedi: {error}",
+  "@breaksHistoryError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "breaksHighlightsTitle": "Vardiya Planlama",
+  "breaksHighlightsDescription": "Yakında vardiya bloklarını sürükle-bırak düzenleyip izin takvimiyle entegre yöneteceksiniz. Şimdilik molalarınızı buradan açıp kapatabilirsiniz.",
+  "breaksHighlightWeeklyTitle": "Haftalık Kanban",
+  "breaksHighlightWeeklyDescription": "Personeli kartlar üzerinde gezdirerek vardiya bloklarını anında ayarlayın.",
+  "breaksHighlightLeaveTitle": "İzin Entegrasyonu",
+  "breaksHighlightLeaveDescription": "Onaylı izinler otomatik olarak takvimden düşer, boş slotlara aday önerilir.",
+  "breaksHighlightNotificationTitle": "Bildirimli Değişim",
+  "breaksHighlightNotificationDescription": "Vardiya değiş tokuş talepleri push bildirimi ile ilgili kişilere düşer.",
+  "breaksOngoing": "Devam ediyor",
+  "breaksDurationLabel": "Süre: {duration}",
+  "@breaksDurationLabel": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "breaksEmptyMessage": "Bugün için kaydedilmiş mola bulunmuyor.",
+  "breakQuickTitle": "Molam",
+  "breakQuickHistory": "Geçmiş",
+  "breakQuickLoadError": "Mola bilgisi alınamadı: {error}",
+  "@breakQuickLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "breakQuickIdle": "Şu anda açık bir mola yok. Başlatmak için aşağıdaki düğmeye dokunun.",
+  "breakQuickStop": "Molayı Bitir",
+  "breakQuickStart": "Molayı Başlat",
+  "breakQuickRefreshTooltip": "Durumu yenile",
+  "breakQuickEndSuccess": "Mola sonlandırıldı.",
+  "breakQuickStartSuccess": "Mola başlatıldı.",
+  "breakQuickFailure": "İşlem başarısız: {error}",
+  "@breakQuickFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "breakQuickStartedAt": "Mola {time} saatinde başladı.",
+  "@breakQuickStartedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "breakQuickElapsed": "Geçen süre: {time}",
+  "@breakQuickElapsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonActionFailed": "İşlem başarısız: {error}",
+  "@commonActionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "commonEdit": "Düzenle",
+  "commonDelete": "Sil",
+  "commonDismiss": "Vazgeç",
+  "merchSearchHint": "Firma veya isim ara",
+  "merchTitle": "Mörş / Plasiyer",
+  "merchSearchClose": "Aramayı kapat",
+  "merchSearchToggle": "Filtre / Ara",
+  "merchAddPerson": "Personel Ekle",
+  "merchLoadError": "Mörş listesi yüklenemedi: {error}",
+  "@merchLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "merchEditTitle": "Personeli Düzenle",
+  "merchCreateTitle": "Yeni Personel Ekle",
+  "merchFieldFirstName": "İsim",
+  "merchFieldLastName": "Soyisim",
+  "merchFieldCompany": "Firma adı",
+  "merchFieldPhone": "Telefon numarası",
+  "merchPhoneRequired": "Telefon gerekli",
+  "merchPhoneInvalid": "Geçerli bir numara girin",
+  "merchFieldRank": "Rütbe",
+  "merchUpdateButton": "Personeli Güncelle",
+  "merchAddButton": "Personel Ekle",
+  "merchFieldRequired": "{field} gerekli",
+  "@merchFieldRequired": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "merchUpdateSuccess": "Personel güncellendi",
+  "merchCreateSuccess": "Personel eklendi",
+  "merchDeleteTitle": "Personeli sil",
+  "merchDeleteMessage": "{name} kaydını silmek istediğine emin misin?",
+  "@merchDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "merchDeleteSuccess": "Personel silindi",
+  "merchDeleteFailure": "Silme işlemi başarısız: {error}",
+  "@merchDeleteFailure": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "merchEmptyFiltered": "Aramana uygun sonuç bulunamadı.",
+  "merchEmptyDefault": "Henüz kayıt yok. Sağ üstteki butondan ekip arkadaşlarını ekleyebilirsin.",
+  "merchRankMerch": "Mörş",
+  "merchRankPlasiyer": "Plasiyer",
+  "merchRankSevkiyat": "Sevkiyat",
+  "merchRankSef": "Şef",
+  "merchRankYonetici": "Yönetici"
+}
