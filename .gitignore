@@ -1,4 +1,40 @@
-﻿# Node
+﻿# OS & editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Node / Next.js
+node_modules/
+.pnpm-store/
+.pnp.*
+.next/
+out/
+dist/
+.cache/
+.turbo/
+.vercel/
+*.tsbuildinfo
+
+# Flutter / Dart
+**/.dart_tool/
+**/.packages
+**/build/
+**/coverage/
+**/ios/Flutter/.last_build_id
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+
+# Logs
+*.log
+
+# Env
+.env
+.env.*
+!.env.example# Node
 node_modules/
 pnpm-lock.yaml
 

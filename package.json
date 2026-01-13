@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "yotech",
   "private": true,
   "packageManager": "pnpm@9",
@@ -6,6 +6,6 @@
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "generate:types": "echo \"stub: tip uretimi buraya eklenecek\""
+    "generate:types": "echo 'stub: tip uretimi buraya eklenecek'"
   }
 }
