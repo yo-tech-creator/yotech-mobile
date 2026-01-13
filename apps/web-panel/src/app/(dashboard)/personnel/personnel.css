@@ -1,0 +1,92 @@
+.table-card {
+  padding: 16px;
+}
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.table-toolbar .toolbar-stat {
+  font-size: 14px;
+  color: #555;
+}
+
+.table-toolbar .ghost,
+.dialog-footer .ghost,
+.ghost {
+  background: transparent;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.table-toolbar .primary,
+.primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.ghost.danger,
+.danger {
+  border-color: #fca5a5;
+  color: #b91c1c;
+  background: #fff5f5;
+}
+
+.table-wrapper {
+  overflow: auto;
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+}
+
+.personnel-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.personnel-table th,
+.personnel-table td {
+  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.personnel-table thead th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.filter-row th {
+  background: #fff;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d7d7d7;
+  border-radius: 6px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.empty {
+  text-align: center;
+  color: #666;
+  padding: 18px;
+}
+
+.font-semibold {
+  font-weight: 600;
+}

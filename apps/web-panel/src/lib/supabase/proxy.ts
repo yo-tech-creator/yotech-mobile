@@ -4,6 +4,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const isLoginPage = request.nextUrl.pathname.startsWith("/login");
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
@@ -19,15 +20,35 @@ export async function updateSession(request: NextRequest) {
       },
     },
   });
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    const user = data?.user;
 
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+    if (error || !user) {
+      // Token bozulmuşsa Supabase auth çerezlerini temizle
+      request.cookies.getAll().forEach((cookie) => {
+        if (cookie.name.startsWith("sb-") || cookie.name.startsWith("supabase-")) {
+          response.cookies.set(cookie.name, "", { maxAge: 0, path: "/" });
+        }
+      });
 
-  if (!user && !request.nextUrl.pathname.startsWith("/login")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+      if (isLoginPage) {
+        return response;
+      }
+
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+
+    return response;
+  } catch (err) {
+    console.error("supabase auth getUser failed", err);
+    if (!isLoginPage) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    return response;
   }
-
-  return response;
 }

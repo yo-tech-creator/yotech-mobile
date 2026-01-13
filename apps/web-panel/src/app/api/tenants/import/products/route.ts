@@ -106,9 +106,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: `${tenantCode} kodlu firma bulunamadı` }, { status: 404 });
   }
 
+  // Mevcut barkod/alt barkodları önceden al ve çakışanları yükleme sırasında atla
+  let existingCodes = new Set<string>();
+  try {
+    const existingResult = (await supabaseAdmin.from("products").select("barcode, alt_barcodes").eq("tenant_id", tenant.id)) as {
+      data: { barcode: string | null; alt_barcodes: string[] | null }[] | null;
+      error: any;
+    };
+
+    if (existingResult.error) {
+      console.error("products fetch error", existingResult.error);
+      return NextResponse.json({ message: "Ürün kontrolü yapılamadı" }, { status: 500 });
+    }
+
+    existingResult.data?.forEach((row) => {
+      if (row.barcode) existingCodes.add(row.barcode.trim());
+      row.alt_barcodes?.forEach((code) => {
+        const trimmed = typeof code === "string" ? code.trim() : "";
+        if (trimmed) existingCodes.add(trimmed);
+      });
+    });
+  } catch (error) {
+    console.error("products fetch network error", error);
+    return NextResponse.json({ message: "Ürün kontrolü sırasında Supabase bağlantısı sağlanamadı" }, { status: 502 });
+  }
+
   const payload: Database["public"]["Tables"]["products"]["Insert"][] = [];
   const seenCodes = new Set<string>();
   const allAltCodes = new Set<string>();
+  const skipped: string[] = [];
 
   for (let index = 0; index < body.products.length; index += 1) {
     const raw = body.products[index];
@@ -125,8 +151,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: `${rowNumber}. satırda barcode ve name boş olamaz` }, { status: 400 });
     }
 
+    if (existingCodes.has(barcode)) {
+      skipped.push(`${barcode} (sistemde mevcut)`);
+      continue;
+    }
     if (seenCodes.has(barcode)) {
-      return NextResponse.json({ message: `Tekrarlanan barkod bulundu: ${barcode}` }, { status: 400 });
+      skipped.push(`${barcode} (yükleme listesinde tekrar)`);
+      continue;
     }
     seenCodes.add(barcode);
 
@@ -147,13 +178,27 @@ export async function POST(request: Request) {
     const altSet = new Set<string>();
     for (const code of cleanedAlt) {
       if (code === barcode) {
-        return NextResponse.json({ message: `${barcode} için alt barkod ana barkod ile aynı olamaz` }, { status: 400 });
+        skipped.push(`${barcode} (alt barkod ana barkod ile aynı)`);
+        altSet.clear();
+        break;
+      }
+      if (existingCodes.has(code)) {
+        skipped.push(`${barcode} (${code} sistemde mevcut)`);
+        altSet.clear();
+        break;
       }
       if (seenCodes.has(code) || allAltCodes.has(code) || altSet.has(code)) {
-        return NextResponse.json({ message: `${barcode} için alt barkod tekrarı veya başka ürünle çakışma: ${code}` }, { status: 400 });
+        skipped.push(`${barcode} (${code} çakışıyor)`);
+        altSet.clear();
+        break;
       }
       altSet.add(code);
       allAltCodes.add(code);
+    }
+
+    if (altSet.size === 0 && cleanedAlt.length > 0) {
+      // Alt barkod çakışmasından ötürü atlandı
+      continue;
     }
 
     const priceValue = raw.price === undefined || raw.price === null ? null : Number(raw.price);
@@ -175,58 +220,20 @@ export async function POST(request: Request) {
     });
   }
 
-  let existing: { barcode: string | null; alt_barcodes: string[] | null }[] | null = null;
-  try {
-    const existingResult = (await supabaseAdmin
-      .from("products")
-      .select("barcode, alt_barcodes")
-      .eq("tenant_id", tenant.id)) as {
-      data: { barcode: string | null; alt_barcodes: string[] | null }[] | null;
-      error: any;
-    };
-
-    if (existingResult.error) {
-      console.error("products fetch error", existingResult.error);
-      return NextResponse.json({ message: "Ürün kontrolü yapılamadı" }, { status: 500 });
-    }
-
-    existing = existingResult.data;
-  } catch (error) {
-    console.error("products fetch network error", error);
-    return NextResponse.json({ message: "Ürün kontrolü sırasında Supabase bağlantısı sağlanamadı" }, { status: 502 });
-  }
-
-  if (existing) {
-    const payloadCodes = new Set<string>([...seenCodes, ...allAltCodes]);
-    const conflicts: string[] = [];
-
-    existing.forEach((row) => {
-      if (row.barcode && payloadCodes.has(row.barcode)) {
-        conflicts.push(row.barcode);
-      }
-      if (Array.isArray(row.alt_barcodes)) {
-        row.alt_barcodes.forEach((code: string) => {
-          const trimmed = typeof code === "string" ? code.trim() : "";
-          if (trimmed && payloadCodes.has(trimmed)) {
-            conflicts.push(trimmed);
-          }
-        });
-      }
-    });
-
-    if (conflicts.length > 0) {
-      const uniqueConflicts = Array.from(new Set(conflicts));
-      return NextResponse.json({ message: `Sistemde kayıtlı barkod/alt barkod çakışmaları: ${uniqueConflicts.join(", ")}` }, { status: 409 });
-    }
-  }
-
   for (let start = 0; start < payload.length; start += INSERT_BATCH_SIZE) {
     const chunk = payload.slice(start, start + INSERT_BATCH_SIZE);
 
     try {
-      const { error: insertError } = await supabaseAdmin.from("products").insert(chunk);
+      const { error: insertError } = await supabaseAdmin
+        .from("products")
+        .upsert(chunk, { onConflict: "tenant_id,barcode", ignoreDuplicates: true });
 
       if (insertError) {
+        // 23505 unique violation: yine de devam et, çünkü ignoreDuplicates bazen PostgREST sürümüne göre yüzeysel kalabiliyor
+        if (insertError.code === "23505") {
+          console.warn("products insert duplicate skipped", insertError, { chunkStart: start, chunkSize: chunk.length });
+          continue;
+        }
         console.error("products insert error", insertError, { chunkStart: start, chunkSize: chunk.length });
         return NextResponse.json({ message: "Ürünler eklenemedi" }, { status: 500 });
       }
@@ -236,5 +243,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ tenantCode, productCount: payload.length }, { status: 201 });
+  return NextResponse.json({ tenantCode, productCount: payload.length, skipped }, { status: 201 });
 }

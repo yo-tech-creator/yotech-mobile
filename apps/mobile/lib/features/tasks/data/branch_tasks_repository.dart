@@ -21,7 +21,42 @@ class BranchTasksRepository {
 
     final rows = List<Map<String, dynamic>>.from(response as List);
     final records = rows.map(BranchTaskRecord.fromMap).toList();
-    return BranchTaskNode.buildTree(records);
+
+    final creatorIds = records.map((r) => r.managerId).toSet().toList();
+    final creatorMap = <String, Map<String, dynamic>>{};
+
+    if (creatorIds.isNotEmpty) {
+      final creatorsResponse = await _client
+          .from('users')
+          .select('id, first_name, last_name, role')
+          .inFilter('id', creatorIds);
+
+      final creatorRows =
+          List<Map<String, dynamic>>.from(creatorsResponse as List);
+      for (final user in creatorRows) {
+        final id = user['id'] as String?;
+        if (id != null) {
+          creatorMap[id] = user;
+        }
+      }
+    }
+
+    final enriched = records.map((record) {
+      final user = creatorMap[record.managerId];
+      final firstName = user?['first_name'] as String?;
+      final lastName = user?['last_name'] as String?;
+      final role = user?['role'] as String?;
+      final fullName = [firstName, lastName]
+          .where((part) => part != null && part.isNotEmpty)
+          .join(' ');
+
+      return record.copyWith(
+        managerName: fullName.isEmpty ? null : fullName,
+        managerRole: role,
+      );
+    }).toList();
+
+    return BranchTaskNode.buildTree(enriched);
   }
 
   Future<void> updateTaskStatus({

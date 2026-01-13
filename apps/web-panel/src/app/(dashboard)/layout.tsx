@@ -6,18 +6,16 @@ import { DashboardShell, type DashboardProfile, type DashboardRole } from "@/com
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const supabase = await getSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: userResp, error: userErr } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (userErr || !userResp?.user) {
     redirect("/login" as Route);
   }
 
   const { data: profile, error } = await supabase
     .from("users")
     .select("role, first_name, last_name")
-    .match({ id: session.user.id })
+    .match({ id: userResp.user.id })
     .maybeSingle<{ role: string | null; first_name: string | null; last_name: string | null }>();
 
   if (error || !profile?.role) {

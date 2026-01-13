@@ -17,7 +17,16 @@ const ROLES = [
   { value: "sube_muduru", label: "Şube Müdürü" },
 ];
 
-const TABLE_COLS = "150px 150px 180px 140px 220px 160px 90px 160px";
+const TABLE_COLS = [
+  "minmax(120px, 1.05fr)",
+  "minmax(120px, 1.05fr)",
+  "minmax(140px, 1.15fr)",
+  "minmax(120px, 1fr)",
+  "minmax(200px, 1.6fr)",
+  "minmax(150px, 1.1fr)",
+  "minmax(90px, 0.7fr)",
+  "minmax(140px, 0.85fr)",
+].join(" ");
 const TABLE_COLUMN_DIVIDER = "1px solid #d1d5db";
 const TABLE_CELL_STYLE = {
   display: "flex",
@@ -386,6 +395,7 @@ export function UserAccessManager() {
             borderRadius: 8,
             overflow: "hidden",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+            width: "100%",
           }}
         >
           <div

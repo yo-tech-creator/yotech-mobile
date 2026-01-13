@@ -19,18 +19,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: "tenantId zorunlu" }, { status: 400 });
   }
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: userResp, error: userError } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (userError || !userResp?.user) {
     return NextResponse.json({ message: "Yetkisiz" }, { status: 401 });
   }
 
   const { data: profile } = await supabase
     .from("users")
     .select("role")
-    .eq("id", session.user.id)
+    .eq("id", userResp.user.id)
     .maybeSingle<{ role: string | null }>();
 
   if (profile?.role !== "grand_admin") {

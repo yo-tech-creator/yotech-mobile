@@ -63,10 +63,6 @@ export function LoginForm() {
         throw new Error(signInError.message);
       }
 
-      const { data: browserSession } = await supabase.auth.getSession();
-      console.log("browser session", browserSession);
-      console.log("document.cookie", document.cookie);
-
       router.replace("/");
       router.refresh();
 

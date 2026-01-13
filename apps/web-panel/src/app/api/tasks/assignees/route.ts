@@ -6,18 +6,16 @@ import type { Database } from "@/lib/types/database";
 
 export async function GET() {
   const supabase = (await getSupabaseServerClient()) as SupabaseClient<any>;
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: userResp, error: userErr } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (userErr || !userResp?.user) {
     return NextResponse.json({ message: "Yetkisiz" }, { status: 401 });
   }
 
   const { data: profile, error: profileError } = await supabase
     .from("users")
     .select("id, tenant_id, branch_id")
-    .eq("id", session.user.id)
+    .eq("id", userResp.user.id)
     .maybeSingle();
 
   if (profileError || !profile) {

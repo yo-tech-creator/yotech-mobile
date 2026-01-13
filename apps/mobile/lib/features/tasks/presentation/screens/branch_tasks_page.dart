@@ -7,6 +7,13 @@ import '../../../region_manager/domain/models/branch_task_node.dart';
 import '../../domain/providers/branch_tasks_providers.dart';
 import '../../data/branch_tasks_repository.dart';
 
+enum _TaskFilter {
+  aktif,
+  tamamlanan,
+  subeAtanan,
+  olusturdugum,
+}
+
 class BranchTasksPage extends ConsumerStatefulWidget {
   const BranchTasksPage({super.key});
 
@@ -16,6 +23,7 @@ class BranchTasksPage extends ConsumerStatefulWidget {
 
 class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
   final Set<String> _expandedTaskIds = <String>{};
+  _TaskFilter _filter = _TaskFilter.aktif;
 
   @override
   Widget build(BuildContext context) {
@@ -89,22 +97,93 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
             );
           }
 
-          return RefreshIndicator(
-            onRefresh: () => ref.refresh(branchTaskTreeProvider.future),
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                final node = tasks[index];
-                return _buildTaskNode(
-                  context: context,
-                  node: node,
-                  ancestors: const <BranchTaskNode>[],
-                  currentUserId: currentUser?.id,
-                  canCancel: canCancel,
-                );
-              },
-            ),
+          final filteredTasks = _applyFilter(
+            tasks,
+            filter: _filter,
+            currentUserId: currentUser?.id,
+          );
+
+          return Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  children: [
+                    const Text('Görünüm'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<_TaskFilter>(
+                        key: ValueKey(_filter),
+                        initialValue: _filter,
+                        items: const [
+                          DropdownMenuItem(
+                            value: _TaskFilter.aktif,
+                            child: Text('Aktif görevler'),
+                          ),
+                          DropdownMenuItem(
+                            value: _TaskFilter.tamamlanan,
+                            child: Text('Tamamlanan görevler'),
+                          ),
+                          DropdownMenuItem(
+                            value: _TaskFilter.subeAtanan,
+                            child: Text('Şubeye atanan görevler'),
+                          ),
+                          DropdownMenuItem(
+                            value: _TaskFilter.olusturdugum,
+                            child: Text('Oluşturduğum görevler'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _filter = value);
+                          }
+                        },
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => ref.refresh(branchTaskTreeProvider.future),
+                  child: filteredTasks.isEmpty
+                      ? ListView(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          children: const [
+                            _InfoState(
+                              icon: Icons.search_off,
+                              title: 'Bu filtrede görev yok',
+                              description:
+                                  'Farklı bir görünüm seçerek görevleri görüntüleyin.',
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          itemCount: filteredTasks.length,
+                          itemBuilder: (context, index) {
+                            final node = filteredTasks[index];
+                            return _buildTaskNode(
+                              context: context,
+                              node: node,
+                              ancestors: const <BranchTaskNode>[],
+                              currentUserId: currentUser?.id,
+                              canCancel: canCancel,
+                            );
+                          },
+                        ),
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -132,6 +211,10 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
     final progressPercent =
         progress != null ? (progress * 100).clamp(0, 100).round() : null;
     final isCancelable = canCancel && currentUserId == node.record.managerId;
+    final isCreator =
+        currentUserId != null && currentUserId == node.record.managerId;
+    final canApprove =
+        depth == 0 && isCreator && (progress ?? 0) >= 1 && !isCompleted;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -233,6 +316,11 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
                           ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Öncelik: ${_priorityLabel(node.record.priority)} · Atayan: ${(node.record.managerName ?? 'Bilinmiyor')} (${_roleLabel(node.record.managerRole)})',
+                      style: theme.textTheme.bodySmall,
+                    ),
                     if (depth == 0 && progressPercent != null) ...[
                       const SizedBox(height: 6),
                       LinearProgressIndicator(
@@ -248,6 +336,19 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
                       Text(
                         '%$progressPercent tamamlandı',
                         style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                    if (canApprove) ...[
+                      const SizedBox(height: 6),
+                      FilledButton.icon(
+                        onPressed: () => _approveTask(node),
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: const Text('Görevi onayla'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          visualDensity: VisualDensity.compact,
+                        ),
                       ),
                     ],
                   ],
@@ -317,40 +418,44 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
           root: node,
           repository: repository,
         );
+      } else if (!shouldComplete && node.children.isNotEmpty) {
+        await _markDescendantsPending(
+          root: node,
+          repository: repository,
+        );
       }
 
       if (ancestors.isNotEmpty) {
-        var childCompleted = shouldComplete;
-        var childId = node.record.id;
-
         for (var index = ancestors.length - 1; index >= 0; index--) {
           final ancestor = ancestors[index];
-          final allChildrenCompleted = ancestor.children.every((child) {
-            if (child.record.id == childId) {
-              return childCompleted;
-            }
-            return child.record.status == BranchTaskStatus.completed;
-          });
+          final allChildrenCompleted = ancestor.children.every(
+            (child) => _isNodeCompleteAfterToggle(
+              child,
+              toggledNode: node,
+              shouldComplete: shouldComplete,
+            ),
+          );
 
-          if (allChildrenCompleted) {
-            if (ancestor.record.status != BranchTaskStatus.completed) {
-              await repository.updateTaskStatus(
-                taskId: ancestor.record.id,
-                status: BranchTaskStatus.completed,
-              );
-            }
-            childCompleted = true;
-          } else {
-            if (ancestor.record.status == BranchTaskStatus.completed) {
-              await repository.updateTaskStatus(
-                taskId: ancestor.record.id,
-                status: BranchTaskStatus.inProgress,
-              );
-            }
-            childCompleted = false;
+          final anyChildrenCompleted = ancestor.children.any(
+            (child) => _isNodeCompleteAfterToggle(
+              child,
+              toggledNode: node,
+              shouldComplete: shouldComplete,
+            ),
+          );
+
+          final nextStatus = allChildrenCompleted
+              ? BranchTaskStatus.completed
+              : (anyChildrenCompleted
+                  ? BranchTaskStatus.inProgress
+                  : BranchTaskStatus.pending);
+
+          if (ancestor.record.status != nextStatus) {
+            await repository.updateTaskStatus(
+              taskId: ancestor.record.id,
+              status: nextStatus,
+            );
           }
-
-          childId = ancestor.record.id;
         }
       }
 
@@ -406,6 +511,28 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
     }
   }
 
+  Future<void> _approveTask(BranchTaskNode node) async {
+    try {
+      final repository = ref.read(branchTasksRepositoryProvider);
+      await repository.updateTaskStatus(
+        taskId: node.record.id,
+        status: BranchTaskStatus.completed,
+      );
+      final _ = await ref.refresh(branchTaskTreeProvider.future);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Görev onaylandı')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Görev onaylanamadı: $error')),
+        );
+      }
+    }
+  }
+
   Future<void> _markDescendantsComplete({
     required BranchTaskNode root,
     required BranchTasksRepository repository,
@@ -417,6 +544,23 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
         await repository.updateTaskStatus(
           taskId: current.record.id,
           status: BranchTaskStatus.completed,
+        );
+      }
+      queue.addAll(current.children);
+    }
+  }
+
+  Future<void> _markDescendantsPending({
+    required BranchTaskNode root,
+    required BranchTasksRepository repository,
+  }) async {
+    final queue = <BranchTaskNode>[...root.children];
+    while (queue.isNotEmpty) {
+      final current = queue.removeLast();
+      if (current.record.status != BranchTaskStatus.pending) {
+        await repository.updateTaskStatus(
+          taskId: current.record.id,
+          status: BranchTaskStatus.pending,
         );
       }
       queue.addAll(current.children);
@@ -630,6 +774,91 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage> {
     final hour = local.hour.toString().padLeft(2, '0');
     final minute = local.minute.toString().padLeft(2, '0');
     return '$day.$month.${local.year} $hour:$minute';
+  }
+
+  List<BranchTaskNode> _applyFilter(
+    List<BranchTaskNode> nodes, {
+    required _TaskFilter filter,
+    required String? currentUserId,
+  }) {
+    BranchTaskNode? filterNode(BranchTaskNode node) {
+      final filteredChildren =
+          node.children.map(filterNode).whereType<BranchTaskNode>().toList();
+
+      final matches = switch (filter) {
+        _TaskFilter.aktif => node.record.status != BranchTaskStatus.completed,
+        _TaskFilter.tamamlanan =>
+          node.record.status == BranchTaskStatus.completed,
+        _TaskFilter.subeAtanan =>
+          node.record.status != BranchTaskStatus.completed &&
+              node.record.managerRole == 'bolge_muduru',
+        _TaskFilter.olusturdugum =>
+          currentUserId != null && node.record.managerId == currentUserId,
+      };
+
+      if (matches || filteredChildren.isNotEmpty) {
+        return BranchTaskNode(record: node.record, children: filteredChildren);
+      }
+      return null;
+    }
+
+    return nodes.map(filterNode).whereType<BranchTaskNode>().toList();
+  }
+
+  String _priorityLabel(String? value) {
+    switch (value) {
+      case 'yuksek':
+        return 'Yüksek';
+      case 'orta':
+        return 'Orta';
+      case 'dusuk':
+        return 'Düşük';
+      default:
+        return 'Belirtilmedi';
+    }
+  }
+
+  String _roleLabel(String? role) {
+    switch (role) {
+      case 'bolge_muduru':
+        return 'Bölge Müdürü';
+      case 'sube_muduru':
+        return 'Şube Müdürü';
+      case 'personel':
+        return 'Personel';
+      case 'firma_admin':
+        return 'Firma Admin';
+      case 'grand_admin':
+        return 'Grand Admin';
+      default:
+        return 'Rol bilinmiyor';
+    }
+  }
+
+  bool _containsNode(BranchTaskNode node, String targetId) {
+    for (final child in node.children) {
+      if (child.record.id == targetId) {
+        return true;
+      }
+      if (_containsNode(child, targetId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _isNodeCompleteAfterToggle(
+    BranchTaskNode node, {
+    required BranchTaskNode toggledNode,
+    required bool shouldComplete,
+  }) {
+    if (node.record.id == toggledNode.record.id) {
+      return shouldComplete;
+    }
+    if (_containsNode(node, toggledNode.record.id)) {
+      return shouldComplete;
+    }
+    return node.record.status == BranchTaskStatus.completed;
   }
 }
 

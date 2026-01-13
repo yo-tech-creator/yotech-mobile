@@ -1,0 +1,138 @@
+.table-card {
+  padding: 16px;
+}
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.table-toolbar .toolbar-stat {
+  font-size: 14px;
+  color: #555;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.page-size {
+  width: 120px;
+}
+
+.pager {
+  display: flex;
+  gap: 6px;
+}
+
+.pager.compact {
+  align-items: center;
+}
+
+.pager-label {
+  font-size: 13px;
+  color: #555;
+}
+
+.table-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.table-toolbar .ghost {
+  background: transparent;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  overflow: auto;
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.products-table th,
+.products-table td {
+  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.products-table thead th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.filter-row th {
+  background: #fff;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d7d7d7;
+  border-radius: 6px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.price-filter {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-chip.success {
+  background: #e8f6ef;
+  color: #1a7f43;
+  border: 1px solid #c6e9d4;
+}
+
+.status-chip.muted {
+  background: #f4f4f5;
+  color: #555;
+  border: 1px solid #e3e3e3;
+}
+
+.cell-main {
+  font-weight: 600;
+}
+
+.cell-sub {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.empty {
+  text-align: center;
+  color: #666;
+  padding: 18px;
+}
+
+.error {
+  color: #b42318;
+  margin-bottom: 12px;
+}

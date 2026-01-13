@@ -336,7 +336,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                             },
                             onProfileTap: () async {
                               try {
-                                final navigator = Navigator.of(context);
+                                final navigator =
+                                    Navigator.of(context, rootNavigator: true);
                                 if (_sheetCtrl.size > kMinSheetSize + 0.01) {
                                   await _sheetCtrl.animateTo(
                                     kMinSheetSize,
@@ -354,6 +355,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                             },
                             onSettingsTap: () async {
                               try {
+                                final navigator =
+                                    Navigator.of(context, rootNavigator: true);
                                 if (_sheetCtrl.size > kMinSheetSize + 0.01) {
                                   await _sheetCtrl.animateTo(
                                     kMinSheetSize,
@@ -361,8 +364,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                                     curve: Curves.easeOut,
                                   );
                                 }
+                                if (!mounted) return;
+                                await navigator.push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const SettingsPage(),
+                                  ),
+                                );
                               } catch (_) {}
-                              _openFeature(FeatureKeys.profile);
                             },
                           );
                         },

@@ -240,6 +240,58 @@ export type Database = {
           },
         ];
       };
+      merch_people: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          created_by: string | null;
+          first_name: string;
+          last_name: string;
+          company_name: string;
+          phone_number: string;
+          rank: string;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          tenant_id: string;
+          created_by?: string | null;
+          first_name: string;
+          last_name: string;
+          company_name: string;
+          phone_number: string;
+          rank: string;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          tenant_id?: string;
+          created_by?: string | null;
+          first_name?: string;
+          last_name?: string;
+          company_name?: string;
+          phone_number?: string;
+          rank?: string;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "merch_people_tenant_id_fkey";
+            columns: ["tenant_id"];
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "merch_people_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       regions: {
         Row: {
           id: string;

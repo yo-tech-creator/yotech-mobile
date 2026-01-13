@@ -40,6 +40,8 @@ class BranchTaskRecord {
     this.dueDate,
     this.priority,
     this.sortOrder,
+    this.managerName,
+    this.managerRole,
   });
 
   final String id;
@@ -55,6 +57,8 @@ class BranchTaskRecord {
   final DateTime? dueDate;
   final String? priority;
   final int? sortOrder;
+  final String? managerName;
+  final String? managerRole;
 
   factory BranchTaskRecord.fromMap(Map<String, dynamic> map) {
     return BranchTaskRecord(
@@ -73,6 +77,32 @@ class BranchTaskRecord {
           : null,
       priority: map['priority'] as String?,
       sortOrder: map['sort_order'] as int?,
+      managerName: map['manager_name'] as String?,
+      managerRole: map['manager_role'] as String?,
+    );
+  }
+
+  BranchTaskRecord copyWith({
+    BranchTaskStatus? status,
+    String? managerName,
+    String? managerRole,
+  }) {
+    return BranchTaskRecord(
+      id: id,
+      tenantId: tenantId,
+      managerId: managerId,
+      branchId: branchId,
+      title: title,
+      status: status ?? this.status,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      parentId: parentId,
+      description: description,
+      dueDate: dueDate,
+      priority: priority,
+      sortOrder: sortOrder,
+      managerName: managerName ?? this.managerName,
+      managerRole: managerRole ?? this.managerRole,
     );
   }
 }

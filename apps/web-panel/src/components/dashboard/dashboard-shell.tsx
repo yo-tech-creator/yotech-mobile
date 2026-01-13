@@ -52,6 +52,13 @@ const ROLE_NAVIGATION: Record<DashboardRole, NavigationItem[]> = {
   ],
   bolge_muduru: [
     { href: "/overview" as Route, label: "Genel Bakış", icon: LayoutDashboard },
+    { href: "/tasks" as Route, label: "Görevler", icon: ClipboardList },
+    { href: "/skt" as Route, label: "SKT Kontrol", icon: ShieldCheck },
+    { href: "/products" as Route, label: "Ürün Listesi", icon: Package },
+    { href: "/personnel" as Route, label: "Personel", icon: Users },
+    { href: "/transfers" as Route, label: "Depolar Arası Sevk", icon: ArrowLeftRight },
+    { href: "/merch" as Route, label: "Mörş", icon: ShoppingBag },
+    { href: "/forms" as Route, label: "Form Kontrol", icon: FileCheck },
   ],
   sube_muduru: [
     { href: "/overview" as Route, label: "Genel Bakış", icon: LayoutDashboard },

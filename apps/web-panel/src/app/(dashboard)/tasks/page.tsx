@@ -10,8 +10,13 @@ type Task = {
   status: string | null;
   priority: string | null;
   due_date: string | null;
+  completed_at?: string | null;
   created_at: string | null;
   created_by: string;
+  creator_name?: string | null;
+  creator_role?: string | null;
+  is_creator?: boolean;
+  branch_name?: string | null;
   branch_id: string | null;
   parent_task_id: string | null;
   task_assignees?: { user_id: string }[];
@@ -44,18 +49,23 @@ const priorities = [
 ];
 
 const scopes = [
-  { value: "mine", label: "Bana atanan / oluşturduğum" },
-  { value: "branch", label: "Şubedeki tüm görevler" },
+  { value: "all", label: "Tüm görevler" },
+  { value: "branchAssigned", label: "Şubeye atanan görevler" },
+  { value: "myCreated", label: "Oluşturduğum görevler" },
 ];
 
 function TaskCard({
   node,
   assigneeLookup,
   onCompletionChange,
+  onApprove,
+  onCancel,
 }: {
   node: TaskNode;
   assigneeLookup: Map<string, Assignee>;
   onCompletionChange: (taskId: string, completion: number) => Promise<void>;
+  onApprove: (taskId: string) => Promise<void>;
+  onCancel: (taskId: string) => Promise<void>;
 }) {
   const [localCompletion, setLocalCompletion] = useState<number>(node.completion_percentage ?? 0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,10 +88,24 @@ function TaskCard({
     void onCompletionChange(node.id, value);
   };
   const assigneeNames = (node.task_assignees ?? [])
-    .map((a) => assigneeLookup.get(a.user_id))
-    .filter(Boolean)
-    .map((a) => [a!.first_name, a!.last_name].filter(Boolean).join(" ") || a!.email || a!.id)
+    .map((a) => {
+      const person = assigneeLookup.get(a.user_id);
+      const name = person ? [person.first_name, person.last_name].filter(Boolean).join(" ") : "";
+      return name || person?.email || a.user_id;
+    })
+    .filter((s) => !!s && s.length > 0)
     .join(", ");
+
+  const creatorName = node.creator_name || node.created_by;
+  const creatorRole = node.creator_role || "";
+  const branchLabel = node.branch_name;
+  const canApprove =
+    !!node.is_creator &&
+    !node.parent_task_id &&
+    (node.completion_percentage ?? 0) >= 100 &&
+    node.status !== "tamamlandi";
+  const canCancel = !!node.is_creator && (node.completion_percentage ?? 0) < 100 && node.status !== "tamamlandi";
+  const isCompleted = node.status === "tamamlandi";
 
   const hasChildren = node.children.length > 0;
   return (
@@ -90,9 +114,37 @@ function TaskCard({
         <div className="task-summary">
           <div className="task-title-block">
             <strong>{node.title}</strong>
-            <div className="time-stamp">
-              {node.priority ? `Öncelik: ${node.priority}` : ""}
-              {node.status ? ` · Durum: ${node.status}` : ""}
+            <div className="task-meta">
+              <div className="meta-row meta-row-compact">
+                {node.priority ? <span className="meta-chip priority">Öncelik: {node.priority}</span> : null}
+                {node.status ? <span className="meta-chip status">Durum: {node.status}</span> : null}
+              </div>
+              {creatorName ? (
+                <div className="meta-row">
+                  <span className="meta-label">Atayan:</span>
+                  <span className="meta-text">
+                    {creatorName}
+                    {creatorRole ? ` (${creatorRole})` : ""}
+                  </span>
+                </div>
+              ) : null}
+              {branchLabel || assigneeNames ? (
+                <div className="meta-row">
+                  {branchLabel ? (
+                    <>
+                      <span className="meta-label">Şube:</span>
+                      <span className="meta-text">{branchLabel}</span>
+                    </>
+                  ) : null}
+                  {branchLabel && assigneeNames ? <span className="meta-sep">•</span> : null}
+                  {assigneeNames ? (
+                    <>
+                      <span className="meta-label">Atanan:</span>
+                      <span className="meta-text">{assigneeNames}</span>
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
           <div className="task-summary-right">
@@ -104,32 +156,55 @@ function TaskCard({
             {node.due_date ? <div className="badge">Son: {new Date(node.due_date).toLocaleDateString()}</div> : null}
           </div>
         </div>
-        {assigneeNames ? <div className="time-stamp">Atanan: {assigneeNames}</div> : null}
       </summary>
       {node.description ? <p className="task-desc">{node.description}</p> : null}
-      <div className="progress-row">
-        <label htmlFor={`progress-${node.id}`}>İlerleme</label>
-        <input
-          id={`progress-${node.id}`}
-          type="range"
-          min={0}
-          max={100}
-          step={10}
-          value={localCompletion}
-          onChange={(e) => handleCompletionChange(Number(e.target.value))}
-        />
-        <span className="progress-value">{localCompletion}%</span>
-        <button type="button" className="ghost" onClick={() => handleQuickSet(100)}>
-          Tamamla
-        </button>
-        <button type="button" className="ghost" onClick={() => handleQuickSet(0)}>
-          Sıfırla
-        </button>
-      </div>
+      {isCompleted ? (
+        <div className="progress-row" aria-label="completed-row">
+          <span className="meta-chip status">Görev onaylandı</span>
+          {node.completed_at ? <span className="muted">Tamamlanma: {new Date(node.completed_at).toLocaleDateString()}</span> : null}
+        </div>
+      ) : (
+        <div className="progress-row">
+          <label htmlFor={`progress-${node.id}`}>İlerleme</label>
+          <input
+            id={`progress-${node.id}`}
+            type="range"
+            min={0}
+            max={100}
+            step={10}
+            value={localCompletion}
+            onChange={(e) => handleCompletionChange(Number(e.target.value))}
+          />
+          <span className="progress-value">{localCompletion}%</span>
+          <button type="button" className="ghost" onClick={() => handleQuickSet(100)}>
+            Tamamla
+          </button>
+          <button type="button" className="ghost" onClick={() => handleQuickSet(0)}>
+            Sıfırla
+          </button>
+          {canApprove ? (
+            <button type="button" className="primary" onClick={() => onApprove(node.id)}>
+              Görevi onayla
+            </button>
+          ) : null}
+          {canCancel ? (
+            <button type="button" className="danger" onClick={() => onCancel(node.id)}>
+              İptal et
+            </button>
+          ) : null}
+        </div>
+      )}
       {hasChildren ? (
         <div className="task-children">
           {node.children.map((child) => (
-            <TaskCard key={child.id} node={child} assigneeLookup={assigneeLookup} onCompletionChange={onCompletionChange} />
+            <TaskCard
+              key={child.id}
+              node={child}
+              assigneeLookup={assigneeLookup}
+              onCompletionChange={onCompletionChange}
+              onApprove={onApprove}
+              onCancel={onCancel}
+            />
           ))}
         </div>
       ) : null}
@@ -140,10 +215,16 @@ function TaskCard({
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [assignees, setAssignees] = useState<Assignee[]>([]);
-  const [scope, setScope] = useState<string>("mine");
+  const [scope, setScope] = useState<string>("all");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [completedFilters, setCompletedFilters] = useState({
+    assignee: "",
+    creator: "",
+    startDate: "",
+    endDate: "",
+  });
 
   const [form, setForm] = useState({
     title: "",
@@ -159,6 +240,21 @@ export default function TasksPage() {
     assignees.forEach((a) => map.set(a.id, a));
     return map;
   }, [assignees]);
+
+  const completedCreatorOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const items: { id: string; name: string }[] = [];
+    tasks
+      .filter((t) => t.status === "tamamlandi")
+      .forEach((t) => {
+        const id = t.creator_id || t.created_by;
+        if (!id || seen.has(id)) return;
+        seen.add(id);
+        const name = t.creator_name || t.created_by;
+        items.push({ id, name });
+      });
+    return items;
+  }, [tasks]);
 
   const loadTasks = async () => {
     setLoading(true);
@@ -323,6 +419,38 @@ export default function TasksPage() {
     await loadTasks();
   };
 
+  const approveTask = async (taskId: string) => {
+    setMessage(null);
+    const res = await fetch("/api/tasks", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId, approve: true }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({} as { message?: string }));
+      setMessage(body.message ?? "Onay başarısız");
+      return;
+    }
+    await loadTasks();
+  };
+
+  const cancelTask = async (taskId: string) => {
+    const ok = window.confirm("Görevi ve alt görevlerini iptal etmek istediğinize emin misiniz?");
+    if (!ok) return;
+    setMessage(null);
+    const res = await fetch("/api/tasks", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({} as { message?: string }));
+      setMessage(body.message ?? "Görev iptal edilemedi");
+      return;
+    }
+    await loadTasks();
+  };
+
   useEffect(() => {
     void loadAssignees();
   }, []);
@@ -384,6 +512,52 @@ export default function TasksPage() {
     });
     return roots;
   }, [tasks]);
+
+  const filterActiveTree = (nodes: TaskNode[], ancestorCompleted: boolean): TaskNode[] => {
+    return nodes
+      .map((n) => {
+        const currentCompleted = ancestorCompleted || n.status === "tamamlandi";
+        const children = filterActiveTree(n.children, currentCompleted);
+        if (currentCompleted) {
+          // Hide from active list if itself or ancestor is completed/approved
+          return children.length > 0 ? { ...n, children } : null;
+        }
+        return { ...n, children };
+      })
+      .filter((n): n is TaskNode => !!n);
+  };
+
+  const collectCompleted = (nodes: TaskNode[]): TaskNode[] => {
+    const result: TaskNode[] = [];
+    nodes.forEach((n) => {
+      const childrenCompleted = collectCompleted(n.children);
+      const completedDay = n.completed_at ? n.completed_at.slice(0, 10) : null;
+      const matchesDate = (() => {
+        if (!completedFilters.startDate && !completedFilters.endDate) return true;
+        if (!completedDay) return false;
+        const afterStart = !completedFilters.startDate || completedDay >= completedFilters.startDate;
+        const beforeEnd = !completedFilters.endDate || completedDay <= completedFilters.endDate;
+        return afterStart && beforeEnd;
+      })();
+      const matchesAssignee =
+        !completedFilters.assignee ||
+        (n.task_assignees ?? []).some((a) => a.user_id === completedFilters.assignee);
+      const matchesCreator =
+        !completedFilters.creator ||
+        n.creator_id === completedFilters.creator ||
+        n.created_by === completedFilters.creator;
+
+      if (n.status === "tamamlandi" && matchesDate && matchesAssignee && matchesCreator) {
+        result.push({ ...n, children: childrenCompleted });
+      } else {
+        result.push(...childrenCompleted);
+      }
+    });
+    return result;
+  };
+
+  const activeTasks = useMemo(() => filterActiveTree(taskTree, false), [taskTree]);
+  const completedTasks = useMemo(() => collectCompleted(taskTree), [taskTree, completedFilters]);
 
 
   return (
@@ -521,8 +695,86 @@ export default function TasksPage() {
         {!loading && tasks.length === 0 ? <p>Görev bulunamadı.</p> : null}
 
         <div className="task-grid">
-          {taskTree.map((t) => (
-            <TaskCard key={t.id} node={t} assigneeLookup={assigneeLookup} onCompletionChange={updateCompletion} />
+          {activeTasks.length === 0 ? <p>Aktif görev bulunamadı.</p> : null}
+          {activeTasks.map((t) => (
+            <TaskCard
+              key={t.id}
+              node={t}
+              assigneeLookup={assigneeLookup}
+              onCompletionChange={updateCompletion}
+              onApprove={approveTask}
+              onCancel={cancelTask}
+            />
+          ))}
+        </div>
+
+        <div className="task-grid" style={{ marginTop: 24 }}>
+          <div className="controls" style={{ justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <h4>Tamamlanan görevler</h4>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+              <label className="field compact" style={{ minWidth: 160 }}>
+                Başlangıç
+                <input
+                  type="date"
+                  value={completedFilters.startDate}
+                  onChange={(e) => setCompletedFilters((p) => ({ ...p, startDate: e.target.value }))}
+                />
+              </label>
+              <label className="field compact" style={{ minWidth: 160 }}>
+                Bitiş
+                <input
+                  type="date"
+                  value={completedFilters.endDate}
+                  onChange={(e) => setCompletedFilters((p) => ({ ...p, endDate: e.target.value }))}
+                />
+              </label>
+              <label className="field compact" style={{ minWidth: 180 }}>
+                Atanan
+                <select
+                  value={completedFilters.assignee}
+                  onChange={(e) => setCompletedFilters((p) => ({ ...p, assignee: e.target.value }))}
+                >
+                  <option value="">Hepsi</option>
+                  {assignees.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {[a.first_name, a.last_name].filter(Boolean).join(" ") || a.email || a.id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field compact" style={{ minWidth: 180 }}>
+                Atayan
+                <select
+                  value={completedFilters.creator}
+                  onChange={(e) => setCompletedFilters((p) => ({ ...p, creator: e.target.value }))}
+                >
+                  <option value="">Hepsi</option>
+                  {completedCreatorOptions.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setCompletedFilters({ assignee: "", creator: "", startDate: "", endDate: "" })}
+              >
+                Temizle
+              </button>
+            </div>
+          </div>
+          {completedTasks.length === 0 ? <p>Tamamlanan görev yok.</p> : null}
+          {completedTasks.map((t) => (
+            <TaskCard
+              key={t.id}
+              node={t}
+              assigneeLookup={assigneeLookup}
+              onCompletionChange={updateCompletion}
+              onApprove={approveTask}
+              onCancel={cancelTask}
+            />
           ))}
         </div>
       </div>

@@ -6,18 +6,16 @@ import type { TenantSummary } from "@/types/tenants";
 
 export default async function ModulesPage() {
   const supabase = await getSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: userResp, error: userErr } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (userErr || !userResp?.user) {
     redirect("/login" as Route);
   }
 
   const { data: profile, error: profileError } = await supabase
     .from("users")
     .select("role, tenant_id")
-    .match({ id: session.user.id })
+    .match({ id: userResp.user.id })
     .maybeSingle<{ role: string | null; tenant_id: string | null }>();
 
   if (profileError || !profile?.role) {

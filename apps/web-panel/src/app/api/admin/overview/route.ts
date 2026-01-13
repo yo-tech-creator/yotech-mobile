@@ -6,18 +6,16 @@ import type { Database } from "@/lib/types/database";
 
 async function requireGrandAdmin() {
   const supabase = (await getSupabaseServerClient()) as SupabaseClient<Database>;
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: userResp, error: userErr } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (userErr || !userResp?.user) {
     return { error: NextResponse.json({ message: "Yetkisiz" }, { status: 401 }) } as const;
   }
 
   const { data: profile } = await supabase
     .from("users")
     .select("role")
-    .eq("id", session.user.id)
+    .eq("id", userResp.user.id)
     .maybeSingle<{ role: string | null }>();
 
   if (profile?.role !== "grand_admin") {

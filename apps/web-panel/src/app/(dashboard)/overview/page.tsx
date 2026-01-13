@@ -8,18 +8,16 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function OverviewPage() {
   const supabase = await getSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: userResp, error: userErr } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (userErr || !userResp?.user) {
     redirect("/login" as Route);
   }
 
   const { data: profile, error } = await supabase
     .from("users")
     .select("role")
-    .match({ id: session.user.id })
+    .match({ id: userResp.user.id })
     .maybeSingle<{ role: string | null }>();
 
   if (error || !profile?.role) {

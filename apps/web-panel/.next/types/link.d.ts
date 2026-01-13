@@ -37,7 +37,15 @@ declare namespace __next_route_internal_types__ {
     | `/api/admin/user-directory/branches`
     | `/api/admin/user-directory/tenants`
     | `/api/admin/user-directory/users`
+    | `/api/merch`
     | `/api/modules/list`
+    | `/api/personnel`
+    | `/api/personnel/branches`
+    | `/api/products`
+    | `/api/skt`
+    | `/api/skt/assignees`
+    | `/api/skt/products`
+    | `/api/skt/tasks`
     | `/api/tasks`
     | `/api/tasks/assignees`
     | `/api/tenants/import`
@@ -45,6 +53,8 @@ declare namespace __next_route_internal_types__ {
     | `/api/tenants/import/products`
     | `/api/tenants/import/regions`
     | `/api/tenants/import/staff`
+    | `/api/transfers`
+    | `/api/transfers/offers`
     | `/forms`
     | `/login`
     | `/merch`

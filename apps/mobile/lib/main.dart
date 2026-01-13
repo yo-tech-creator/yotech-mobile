@@ -65,6 +65,11 @@ class MyApp extends ConsumerWidget {
     ref.watch(pushNotificationServiceProvider);
     final locale = ref.watch(localeControllerProvider);
 
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF4DA3FF), // daha açık mavi ton
+      brightness: Brightness.light,
+    );
+
     return MaterialApp(
       onGenerateTitle: (context) => context.l10n.appTitle,
       locale: locale,
@@ -77,8 +82,32 @@ class MyApp extends ConsumerWidget {
       ],
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
         useMaterial3: true,
+        colorScheme: colorScheme,
+        // Griyi azaltıp daha açık, maviye çalan zemin
+        scaffoldBackgroundColor: const Color(0xFFF7FBFF),
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color(0xFFF7FBFF),
+          foregroundColor: colorScheme.onSurface,
+          elevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          color: const Color(0xFFF0F6FF), // hafif mavi dokunuş
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: const Color(0xFFF7FBFF),
+          surfaceTintColor: colorScheme.primary.withAlpha((0.04 * 255).round()),
+        ),
+        sliderTheme: SliderThemeData(
+          thumbColor: colorScheme.primary,
+          activeTrackColor: colorScheme.primary,
+          inactiveTrackColor:
+              colorScheme.primary.withAlpha((0.2 * 255).round()),
+        ),
       ),
       home: router.getInitialScreen(), // ✅ Auth state'e göre yönlendirme
       onGenerateRoute: AppRouter.onGenerateRoute,
