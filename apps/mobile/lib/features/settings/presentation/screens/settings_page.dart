@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yotech_mobile/core/localization/locale_controller.dart';
 import 'package:yotech_mobile/core/localization/localization_extensions.dart';
+import 'package:yotech_mobile/core/theme/app_theme.dart';
+import 'package:yotech_mobile/core/theme/theme_controller.dart';
 import 'package:yotech_mobile/features/settings/presentation/screens/notification_settings_page.dart';
 import 'package:yotech_mobile/features/settings/presentation/screens/personal_info_page.dart';
 import 'package:yotech_mobile/features/settings/presentation/screens/team_members_page.dart';
@@ -38,6 +40,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         l10n.settingsDefaultRole;
     final locale = ref.watch(localeControllerProvider);
     final languageLabel = _languageLabel(context, locale.languageCode);
+    final currentTheme = ref.watch(appThemeControllerProvider);
+    final themeLabel = _themeLabel(currentTheme);
 
     return Scaffold(
       appBar: AppBar(
@@ -149,6 +153,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             },
           ),
           _MenuTile(
+            icon: Icons.palette_outlined,
+            title: 'Tema',
+            subtitle: 'Vibrant Gradient veya Modern Minimalist',
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(themeLabel),
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+            onTap: () => _showThemeSheet(currentTheme),
+          ),
+          _MenuTile(
             icon: Icons.description_outlined,
             title: l10n.settingsContractsTitle,
             subtitle: l10n.settingsContractsSubtitle,
@@ -202,6 +220,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
+  Future<void> _showThemeSheet(AppTheme currentTheme) async {
+    final selected = await showModalBottomSheet<AppTheme>(
+      context: context,
+      builder: (bottomSheetContext) {
+        return _ThemeBottomSheet(selectedTheme: currentTheme);
+      },
+    );
+    if (selected == null || selected == currentTheme) return;
+    await ref.read(appThemeControllerProvider.notifier).setTheme(selected);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Tema güncellendi: ${_themeLabel(selected)}')),
+    );
+  }
+
   String _languageLabel(BuildContext context, String code) {
     final l10n = context.l10n;
     switch (code) {
@@ -211,6 +244,164 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       default:
         return l10n.languageNameTurkish;
     }
+  }
+}
+
+String _themeLabel(AppTheme theme) {
+  switch (theme) {
+    case AppTheme.vibrant:
+      return 'Vibrant Gradient';
+    case AppTheme.minimal:
+      return 'Modern Minimalist';
+    case AppTheme.sunset:
+      return 'Sunset Glow';
+    case AppTheme.ocean:
+      return 'Ocean Breeze';
+    case AppTheme.forest:
+      return 'Forest Dew';
+  }
+}
+
+String _themeDescription(AppTheme theme) {
+  switch (theme) {
+    case AppTheme.vibrant:
+      return 'Gradient kartlar, glassmorphism ve canlı vurgular';
+    case AppTheme.minimal:
+      return 'Soft shadows, yuvarlatılmış köşeler, tek accent rengi';
+    case AppTheme.sunset:
+      return 'Sıcak pembe-turuncu geçişler, parlak vurgu';
+    case AppTheme.ocean:
+      return 'Soğuk mavi-yeşil tonlar, ferah cam efektleri';
+    case AppTheme.forest:
+      return 'Yeşil-mercan geçişler, doğal ve dingin görünüm';
+  }
+}
+
+AppThemeTokens _themeTokens(AppTheme theme) {
+  switch (theme) {
+    case AppTheme.vibrant:
+      return AppThemeTokens.vibrant;
+    case AppTheme.minimal:
+      return AppThemeTokens.minimal;
+    case AppTheme.sunset:
+      return AppThemeTokens.sunset;
+    case AppTheme.ocean:
+      return AppThemeTokens.ocean;
+    case AppTheme.forest:
+      return AppThemeTokens.forest;
+  }
+}
+
+class _ThemeBottomSheet extends ConsumerWidget {
+  const _ThemeBottomSheet({required this.selectedTheme});
+
+  final AppTheme selectedTheme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    const options = AppTheme.values;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tema',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Canlı gradient veya temiz minimal görünümden birini seç.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            ...options.map((option) {
+              final isSelected = option == selectedTheme;
+              final tokens = _themeTokens(option);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => Navigator.of(context).pop(option),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isSelected
+                            ? tokens.cardHighlight
+                            : Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 56,
+                            width: 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: tokens.accentGradient,
+                              border: Border.all(
+                                color: tokens.glassBorder,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: tokens.cardHighlight
+                                      .withValues(alpha: 0.18),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _themeLabel(option),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _themeDescription(option),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(color: Colors.grey[700]),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            color: isSelected
+                                ? tokens.cardHighlight
+                                : Theme.of(context).iconTheme.color,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
   }
 }
 

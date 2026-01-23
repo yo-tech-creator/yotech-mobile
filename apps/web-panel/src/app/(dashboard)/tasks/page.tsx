@@ -11,6 +11,8 @@ type Task = {
   priority: string | null;
   due_date: string | null;
   completed_at?: string | null;
+  approved_at?: string | null;
+  approved_by?: string | null;
   created_at: string | null;
   created_by: string;
   creator_name?: string | null;
@@ -19,6 +21,8 @@ type Task = {
   branch_name?: string | null;
   branch_id: string | null;
   parent_task_id: string | null;
+  source_task_id?: string | null;
+  is_archived?: boolean;
   task_assignees?: { user_id: string }[];
   completion_percentage?: number | null;
 };
@@ -43,10 +47,17 @@ type Assignee = {
 };
 
 const priorities = [
-  { value: "dusuk", label: "Düşük" },
-  { value: "orta", label: "Orta" },
-  { value: "yuksek", label: "Yüksek" },
+  { value: "dusuk", label: "Düşük", emoji: "🟢" },
+  { value: "orta", label: "Orta", emoji: "🟡" },
+  { value: "yuksek", label: "Yüksek", emoji: "🔴" },
 ];
+
+const statusLabels: Record<string, { label: string; emoji: string }> = {
+  atandi: { label: "Atandı", emoji: "📋" },
+  devam_ediyor: { label: "Devam Ediyor", emoji: "🔄" },
+  tamamlandi: { label: "Tamamlandı", emoji: "✅" },
+  onaylandi: { label: "Onaylandı", emoji: "🏆" },
+};
 
 const scopes = [
   { value: "all", label: "Tüm görevler" },
@@ -54,20 +65,58 @@ const scopes = [
   { value: "myCreated", label: "Oluşturduğum görevler" },
 ];
 
-function TaskCard({
+type Tab = "active" | "completed" | "archived";
+
+function getQuestEmoji(task: Task): string {
+  if (task.status === "onaylandi") return "🏆";
+  if (task.status === "tamamlandi") return "✅";
+  const isOverdue = task.due_date && new Date(task.due_date) < new Date();
+  if (isOverdue) return "⚠️";
+  if (task.priority === "yuksek") return "🔥";
+  return "🎯";
+}
+
+function getProgress(node: TaskNode): number {
+  if (node.children.length === 0) {
+    return node.completion_percentage ?? 0;
+  }
+  const total = node.children.reduce((acc, child) => acc + getProgress(child), 0);
+  return Math.round(total / node.children.length);
+}
+
+function countDescendants(node: TaskNode): { total: number; completed: number } {
+  let total = 0;
+  let completed = 0;
+  node.children.forEach((child) => {
+    total += 1;
+    if ((child.completion_percentage ?? 0) >= 100) completed += 1;
+    const sub = countDescendants(child);
+    total += sub.total;
+    completed += sub.completed;
+  });
+  return { total, completed };
+}
+
+// Quest Card - Oyun tarzı görev kartı
+function QuestCard({
   node,
   assigneeLookup,
   onCompletionChange,
   onApprove,
-  onCancel,
+  onArchive,
+  onDelete,
+  depth = 0,
 }: {
   node: TaskNode;
   assigneeLookup: Map<string, Assignee>;
   onCompletionChange: (taskId: string, completion: number) => Promise<void>;
   onApprove: (taskId: string) => Promise<void>;
-  onCancel: (taskId: string) => Promise<void>;
+  onArchive: (taskId: string, archive: boolean) => Promise<void>;
+  onDelete: (taskId: string) => Promise<void>;
+  depth?: number;
 }) {
   const [localCompletion, setLocalCompletion] = useState<number>(node.completion_percentage ?? 0);
+  const [isOpen, setIsOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -82,133 +131,155 @@ function TaskCard({
     }, 400);
   };
 
-  const handleQuickSet = (value: number) => {
-    setLocalCompletion(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    void onCompletionChange(node.id, value);
-  };
+  const progress = getProgress(node);
+  const { total, completed } = countDescendants(node);
+  const hasChildren = node.children.length > 0;
+  const isMainQuest = !node.parent_task_id;
+  const isApproved = node.status === "onaylandi";
+  const isCompleted = node.status === "tamamlandi" || isApproved;
+  const canApprove = node.is_creator && isMainQuest && (node.completion_percentage ?? 0) >= 100 && !isApproved;
+  const canArchive = node.is_creator && isApproved && !node.is_archived;
+  const isOverdue = node.due_date && new Date(node.due_date) < new Date() && !isCompleted;
+  const statusInfo = statusLabels[node.status ?? "atandi"] ?? statusLabels.atandi;
+
   const assigneeNames = (node.task_assignees ?? [])
     .map((a) => {
       const person = assigneeLookup.get(a.user_id);
       const name = person ? [person.first_name, person.last_name].filter(Boolean).join(" ") : "";
-      return name || person?.email || a.user_id;
+      return name || person?.email || "";
     })
-    .filter((s) => !!s && s.length > 0)
+    .filter(Boolean)
     .join(", ");
 
-  const creatorName = node.creator_name || node.created_by;
-  const creatorRole = node.creator_role || "";
-  const branchLabel = node.branch_name;
-  const canApprove =
-    !!node.is_creator &&
-    !node.parent_task_id &&
-    (node.completion_percentage ?? 0) >= 100 &&
-    node.status !== "tamamlandi";
-  const canCancel = !!node.is_creator && (node.completion_percentage ?? 0) < 100 && node.status !== "tamamlandi";
-  const isCompleted = node.status === "tamamlandi";
+  // Quest type label
+  const questTypeLabel = isMainQuest ? "Ana Görev" : depth === 1 ? "Yan Görev" : "Alt Görev";
+  const questTypeBadge = isMainQuest ? "quest-main" : depth === 1 ? "quest-side" : "quest-sub";
 
-  const hasChildren = node.children.length > 0;
   return (
-    <details className="task-card" open={false} aria-label="task-card">
-      <summary>
-        <div className="task-summary">
-          <div className="task-title-block">
-            <strong>{node.title}</strong>
-            <div className="task-meta">
-              <div className="meta-row meta-row-compact">
-                {node.priority ? <span className="meta-chip priority">Öncelik: {node.priority}</span> : null}
-                {node.status ? <span className="meta-chip status">Durum: {node.status}</span> : null}
-              </div>
-              {creatorName ? (
-                <div className="meta-row">
-                  <span className="meta-label">Atayan:</span>
-                  <span className="meta-text">
-                    {creatorName}
-                    {creatorRole ? ` (${creatorRole})` : ""}
-                  </span>
-                </div>
-              ) : null}
-              {branchLabel || assigneeNames ? (
-                <div className="meta-row">
-                  {branchLabel ? (
-                    <>
-                      <span className="meta-label">Şube:</span>
-                      <span className="meta-text">{branchLabel}</span>
-                    </>
-                  ) : null}
-                  {branchLabel && assigneeNames ? <span className="meta-sep">•</span> : null}
-                  {assigneeNames ? (
-                    <>
-                      <span className="meta-label">Atanan:</span>
-                      <span className="meta-text">{assigneeNames}</span>
-                    </>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
+    <div className={`quest-card ${isApproved ? "quest-approved" : ""} ${isOverdue ? "quest-overdue" : ""}`} style={{ marginLeft: depth * 16 }}>
+      <div className="quest-header" onClick={() => hasChildren && setIsOpen(!isOpen)}>
+        <div className="quest-icon">{getQuestEmoji(node)}</div>
+        <div className="quest-info">
+          <div className="quest-title-row">
+            <span className={`quest-type-badge ${questTypeBadge}`}>{questTypeLabel}</span>
+            <h3 className="quest-title">{node.title}</h3>
           </div>
-          <div className="task-summary-right">
-            {typeof node.completion_percentage === "number" ? (
-              <div className="pill pill-progress">
-                <span>{node.completion_percentage}%</span>
-              </div>
-            ) : null}
-            {node.due_date ? <div className="badge">Son: {new Date(node.due_date).toLocaleDateString()}</div> : null}
+          <div className="quest-meta">
+            {node.priority && (
+              <span className={`quest-priority priority-${node.priority}`}>
+                {priorities.find((p) => p.value === node.priority)?.emoji} {priorities.find((p) => p.value === node.priority)?.label}
+              </span>
+            )}
+            <span className="quest-status">
+              {statusInfo.emoji} {statusInfo.label}
+            </span>
+            {node.due_date && (
+              <span className={`quest-due ${isOverdue ? "overdue" : ""}`}>
+                📅 {new Date(node.due_date).toLocaleDateString("tr-TR")}
+              </span>
+            )}
           </div>
         </div>
-      </summary>
-      {node.description ? <p className="task-desc">{node.description}</p> : null}
-      {isCompleted ? (
-        <div className="progress-row" aria-label="completed-row">
-          <span className="meta-chip status">Görev onaylandı</span>
-          {node.completed_at ? <span className="muted">Tamamlanma: {new Date(node.completed_at).toLocaleDateString()}</span> : null}
+        <div className="quest-progress-ring">
+          <svg viewBox="0 0 36 36" className="circular-chart">
+            <path
+              className="circle-bg"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+            <path
+              className={`circle ${isApproved ? "approved" : isCompleted ? "completed" : isOverdue ? "overdue" : ""}`}
+              strokeDasharray={`${progress}, 100`}
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+            <text x="18" y="20.35" className="percentage">{progress}%</text>
+          </svg>
         </div>
-      ) : (
-        <div className="progress-row">
-          <label htmlFor={`progress-${node.id}`}>İlerleme</label>
-          <input
-            id={`progress-${node.id}`}
-            type="range"
-            min={0}
-            max={100}
-            step={10}
-            value={localCompletion}
-            onChange={(e) => handleCompletionChange(Number(e.target.value))}
-          />
-          <span className="progress-value">{localCompletion}%</span>
-          <button type="button" className="ghost" onClick={() => handleQuickSet(100)}>
-            Tamamla
-          </button>
-          <button type="button" className="ghost" onClick={() => handleQuickSet(0)}>
-            Sıfırla
-          </button>
-          {canApprove ? (
-            <button type="button" className="primary" onClick={() => onApprove(node.id)}>
-              Görevi onayla
-            </button>
-          ) : null}
-          {canCancel ? (
-            <button type="button" className="danger" onClick={() => onCancel(node.id)}>
-              İptal et
-            </button>
-          ) : null}
+        {hasChildren && (
+          <div className="quest-expand">
+            {isOpen ? "▼" : "▶"} {completed}/{total}
+          </div>
+        )}
+      </div>
+
+      {/* Detaylar */}
+      <div className="quest-details">
+        {node.description && <p className="quest-desc">{node.description}</p>}
+        <div className="quest-details-meta">
+          {node.creator_name && (
+            <span className="meta-item">
+              👤 Atayan: {node.creator_name} {node.creator_role && `(${node.creator_role})`}
+            </span>
+          )}
+          {node.branch_name && <span className="meta-item">🏪 {node.branch_name}</span>}
+          {assigneeNames && <span className="meta-item">👥 {assigneeNames}</span>}
+          {node.source_task_id && <span className="meta-item">📤 İletilmiş görev</span>}
         </div>
-      )}
-      {hasChildren ? (
-        <div className="task-children">
+
+        {/* İlerleme kontrolü */}
+        {!isApproved && (
+          <div className="quest-progress-control">
+            <label>İlerleme</label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={10}
+              value={localCompletion}
+              onChange={(e) => handleCompletionChange(Number(e.target.value))}
+            />
+            <span className="progress-value">{localCompletion}%</span>
+            <button type="button" className="btn-ghost" onClick={() => { setLocalCompletion(100); void onCompletionChange(node.id, 100); }}>
+              Tamamla
+            </button>
+            <button type="button" className="btn-ghost" onClick={() => { setLocalCompletion(0); void onCompletionChange(node.id, 0); }}>
+              Sıfırla
+            </button>
+          </div>
+        )}
+
+        {/* Aksiyon butonları */}
+        <div className="quest-actions">
+          {canApprove && (
+            <button type="button" className="btn-primary btn-approve" onClick={() => onApprove(node.id)}>
+              ✅ Onayla
+            </button>
+          )}
+          {canArchive && (
+            <button type="button" className="btn-secondary" onClick={() => onArchive(node.id, true)}>
+              📦 Arşivle
+            </button>
+          )}
+          {node.is_archived && (
+            <button type="button" className="btn-secondary" onClick={() => onArchive(node.id, false)}>
+              📂 Arşivden Çıkar
+            </button>
+          )}
+          {node.is_creator && !isApproved && (
+            <button type="button" className="btn-danger" onClick={() => onDelete(node.id)}>
+              🗑️ Sil
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Alt görevler */}
+      {hasChildren && isOpen && (
+        <div className="quest-children">
           {node.children.map((child) => (
-            <TaskCard
+            <QuestCard
               key={child.id}
               node={child}
               assigneeLookup={assigneeLookup}
               onCompletionChange={onCompletionChange}
               onApprove={onApprove}
-              onCancel={onCancel}
+              onArchive={onArchive}
+              onDelete={onDelete}
+              depth={depth + 1}
             />
           ))}
         </div>
-      ) : null}
-    </details>
+      )}
+    </div>
   );
 }
 
@@ -216,15 +287,10 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [scope, setScope] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<Tab>("active");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [completedFilters, setCompletedFilters] = useState({
-    assignee: "",
-    creator: "",
-    startDate: "",
-    endDate: "",
-  });
 
   const [form, setForm] = useState({
     title: "",
@@ -241,25 +307,11 @@ export default function TasksPage() {
     return map;
   }, [assignees]);
 
-  const completedCreatorOptions = useMemo(() => {
-    const seen = new Set<string>();
-    const items: { id: string; name: string }[] = [];
-    tasks
-      .filter((t) => t.status === "tamamlandi")
-      .forEach((t) => {
-        const id = t.creator_id || t.created_by;
-        if (!id || seen.has(id)) return;
-        seen.add(id);
-        const name = t.creator_name || t.created_by;
-        items.push({ id, name });
-      });
-    return items;
-  }, [tasks]);
-
   const loadTasks = async () => {
     setLoading(true);
     setMessage(null);
-    const res = await fetch(`/api/tasks?scope=${scope}`);
+    const archived = activeTab === "archived" ? "true" : "false";
+    const res = await fetch(`/api/tasks?scope=${scope}&archived=${archived}`);
     if (!res.ok) {
       const body = await res.json().catch(() => ({} as { message?: string }));
       setMessage(body.message ?? "Görevler alınamadı");
@@ -297,9 +349,7 @@ export default function TasksPage() {
       if (!parentId) return [...prev, draft];
       const attach = (nodes: DraftNode[]): DraftNode[] =>
         nodes.map((n) =>
-          n.id === parentId
-            ? { ...n, children: [...n.children, draft] }
-            : { ...n, children: attach(n.children) }
+          n.id === parentId ? { ...n, children: [...n.children, draft] } : { ...n, children: attach(n.children) }
         );
       return attach(prev);
     });
@@ -307,17 +357,13 @@ export default function TasksPage() {
 
   const updateDraftField = (id: string, key: keyof DraftNode, value: string) => {
     const apply = (nodes: DraftNode[]): DraftNode[] =>
-      nodes.map((n) =>
-        n.id === id ? { ...n, [key]: value } : { ...n, children: apply(n.children) }
-      );
+      nodes.map((n) => (n.id === id ? { ...n, [key]: value } : { ...n, children: apply(n.children) }));
     updateDrafts(apply);
   };
 
   const removeDraft = (id: string) => {
     const prune = (nodes: DraftNode[]): DraftNode[] =>
-      nodes
-        .filter((n) => n.id !== id)
-        .map((n) => ({ ...n, children: prune(n.children) }));
+      nodes.filter((n) => n.id !== id).map((n) => ({ ...n, children: prune(n.children) }));
     updateDrafts(prune);
   };
 
@@ -326,11 +372,7 @@ export default function TasksPage() {
     nodes.forEach((n) => {
       const title = n.title.trim();
       if (!title) return;
-      result.push({
-        ...n,
-        title,
-        children: collectDrafts(n.children),
-      });
+      result.push({ ...n, title, children: collectDrafts(n.children) });
     });
     return result;
   };
@@ -350,9 +392,7 @@ export default function TasksPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) {
-        throw new Error("Alt görev oluşturulamadı");
-      }
+      if (!res.ok) throw new Error("Alt görev oluşturulamadı");
       const body = (await res.json()) as { id: string };
       if (node.children.length > 0) {
         await createChildTree(body.id, node.children);
@@ -362,9 +402,10 @@ export default function TasksPage() {
 
   const renderDrafts = (nodes: DraftNode[], depth = 0) => {
     return nodes.map((draft) => (
-      <div key={draft.id} className="draft-card" style={{ marginLeft: depth * 12 }}>
+      <div key={draft.id} className="draft-card" style={{ marginLeft: depth * 16 }}>
+        <div className="draft-type">{depth === 0 ? "📦 Yan Görev" : "📎 Alt Görev"}</div>
         <div className="field">
-          <label>Alt görev başlığı</label>
+          <label>Başlık</label>
           <input value={draft.title} onChange={(e) => updateDraftField(draft.id, "title", e.target.value)} />
         </div>
         <div className="field">
@@ -377,7 +418,7 @@ export default function TasksPage() {
             <select value={draft.priority} onChange={(e) => updateDraftField(draft.id, "priority", e.target.value)}>
               {priorities.map((p) => (
                 <option key={p.value} value={p.value}>
-                  {p.label}
+                  {p.emoji} {p.label}
                 </option>
               ))}
             </select>
@@ -388,14 +429,14 @@ export default function TasksPage() {
           </label>
         </div>
         <div className="actions" style={{ justifyContent: "space-between", marginTop: 6 }}>
-          {depth < 1 ? (
-            <button type="button" className="ghost" onClick={() => addDraft(draft.id)}>
-              Alt görev ekle
+          {depth < 2 ? (
+            <button type="button" className="btn-ghost" onClick={() => addDraft(draft.id)}>
+              + Alt görev ekle
             </button>
           ) : (
             <span />
           )}
-          <button type="button" className="ghost" onClick={() => removeDraft(draft.id)}>
+          <button type="button" className="btn-ghost btn-danger-text" onClick={() => removeDraft(draft.id)}>
             Sil
           </button>
         </div>
@@ -434,8 +475,23 @@ export default function TasksPage() {
     await loadTasks();
   };
 
-  const cancelTask = async (taskId: string) => {
-    const ok = window.confirm("Görevi ve alt görevlerini iptal etmek istediğinize emin misiniz?");
+  const archiveTask = async (taskId: string, archive: boolean) => {
+    setMessage(null);
+    const res = await fetch("/api/tasks", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId, archive, unarchive: !archive }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({} as { message?: string }));
+      setMessage(body.message ?? "İşlem başarısız");
+      return;
+    }
+    await loadTasks();
+  };
+
+  const deleteTask = async (taskId: string) => {
+    const ok = window.confirm("Görevi ve alt görevlerini silmek istediğinize emin misiniz?");
     if (!ok) return;
     setMessage(null);
     const res = await fetch("/api/tasks", {
@@ -445,7 +501,7 @@ export default function TasksPage() {
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({} as { message?: string }));
-      setMessage(body.message ?? "Görev iptal edilemedi");
+      setMessage(body.message ?? "Görev silinemedi");
       return;
     }
     await loadTasks();
@@ -457,16 +513,12 @@ export default function TasksPage() {
 
   useEffect(() => {
     void loadTasks();
-  }, [scope]);
+  }, [scope, activeTab]);
 
   const createTask = async () => {
     setMessage(null);
     const assigneeIds =
-      form.assigneeId === "__all__"
-        ? assignees.map((a) => a.id)
-        : form.assigneeId
-        ? [form.assigneeId]
-        : [];
+      form.assigneeId === "__all__" ? assignees.map((a) => a.id) : form.assigneeId ? [form.assigneeId] : [];
     const payload = {
       title: form.title,
       description: form.description || null,
@@ -499,6 +551,7 @@ export default function TasksPage() {
     await loadTasks();
   };
 
+  // Task tree oluştur
   const taskTree: TaskNode[] = useMemo(() => {
     const map = new Map<string, TaskNode>();
     tasks.forEach((t) => map.set(t.id, { ...t, children: [] }));
@@ -513,107 +566,58 @@ export default function TasksPage() {
     return roots;
   }, [tasks]);
 
-  const filterActiveTree = (nodes: TaskNode[], ancestorCompleted: boolean): TaskNode[] => {
-    return nodes
-      .map((n) => {
-        const currentCompleted = ancestorCompleted || n.status === "tamamlandi";
-        const children = filterActiveTree(n.children, currentCompleted);
-        if (currentCompleted) {
-          // Hide from active list if itself or ancestor is completed/approved
-          return children.length > 0 ? { ...n, children } : null;
-        }
-        return { ...n, children };
-      })
-      .filter((n): n is TaskNode => !!n);
-  };
+  // Tab'a göre filtrele
+  const filteredTasks = useMemo(() => {
+    switch (activeTab) {
+      case "active":
+        return taskTree.filter((t) => t.status !== "onaylandi" && !t.is_archived);
+      case "completed":
+        return taskTree.filter((t) => (t.status === "tamamlandi" || t.status === "onaylandi") && !t.is_archived);
+      case "archived":
+        return taskTree.filter((t) => t.is_archived);
+      default:
+        return taskTree;
+    }
+  }, [taskTree, activeTab]);
 
-  const collectCompleted = (nodes: TaskNode[]): TaskNode[] => {
-    const result: TaskNode[] = [];
-    nodes.forEach((n) => {
-      const childrenCompleted = collectCompleted(n.children);
-      const completedDay = n.completed_at ? n.completed_at.slice(0, 10) : null;
-      const matchesDate = (() => {
-        if (!completedFilters.startDate && !completedFilters.endDate) return true;
-        if (!completedDay) return false;
-        const afterStart = !completedFilters.startDate || completedDay >= completedFilters.startDate;
-        const beforeEnd = !completedFilters.endDate || completedDay <= completedFilters.endDate;
-        return afterStart && beforeEnd;
-      })();
-      const matchesAssignee =
-        !completedFilters.assignee ||
-        (n.task_assignees ?? []).some((a) => a.user_id === completedFilters.assignee);
-      const matchesCreator =
-        !completedFilters.creator ||
-        n.creator_id === completedFilters.creator ||
-        n.created_by === completedFilters.creator;
-
-      if (n.status === "tamamlandi" && matchesDate && matchesAssignee && matchesCreator) {
-        result.push({ ...n, children: childrenCompleted });
-      } else {
-        result.push(...childrenCompleted);
-      }
-    });
-    return result;
-  };
-
-  const activeTasks = useMemo(() => filterActiveTree(taskTree, false), [taskTree]);
-  const completedTasks = useMemo(() => collectCompleted(taskTree), [taskTree, completedFilters]);
-
+  // Tab sayaçları
+  const tabCounts = useMemo(() => {
+    const active = taskTree.filter((t) => t.status !== "onaylandi" && !t.is_archived).length;
+    const completed = taskTree.filter((t) => (t.status === "tamamlandi" || t.status === "onaylandi") && !t.is_archived).length;
+    const archived = taskTree.filter((t) => t.is_archived).length;
+    return { active, completed, archived };
+  }, [taskTree]);
 
   return (
-    <div className="page">
+    <div className="page tasks-page">
       <header className="page-header">
-        <h2>Görevler</h2>
-        <p>Şube müdürü olarak görev atayın, size atanmış veya şubenizdeki görevleri görüntüleyin.</p>
+        <div className="header-content">
+          <h2>🎯 Görev Merkezi</h2>
+          <p>Görevlerinizi yönetin, ilerlemeleri takip edin ve ekibinizle koordine olun.</p>
+        </div>
+        <button type="button" className="btn-primary btn-create" onClick={() => setShowCreate(!showCreate)}>
+          {showCreate ? "✕ Kapat" : "✚ Yeni Görev"}
+        </button>
       </header>
 
-      {message ? <p className="alert alert-error">{message}</p> : null}
+      {message && <div className="alert alert-error">{message}</div>}
 
-      {!showCreate ? (
-        <div className="card create-task-card create-collapsed">
-          <div className="create-task-header">
-            <div>
-              <p className="eyebrow">Yeni görev</p>
-              <h3>Görev Oluştur</h3>
-              <p className="muted">Başlık, öncelik ve atamaları belirleyip eklemek için tıklayın.</p>
-            </div>
-            <button type="button" className="primary" onClick={() => setShowCreate(true)}>
-              Görev ekle
-            </button>
-          </div>
-        </div>
-      ) : (
+      {/* Görev oluşturma formu */}
+      {showCreate && (
         <div className="card create-task-card">
-          <div className="create-task-header">
-            <div>
-              <p className="eyebrow">Yeni görev</p>
-              <h3>Görev Oluştur</h3>
-              <p className="muted">Başlık, öncelik ve atamaları belirleyip hızlıca ekleyin.</p>
-            </div>
-            <div className="header-actions">
-              <label className="field compact">
-                Personel
-                <select
-                  value={form.assigneeId}
-                  onChange={(e) => setForm((p) => ({ ...p, assigneeId: e.target.value }))}
-                >
-                  <option value="">(Atama yapma)</option>
-                  <option value="__all__">Tüm personeller</option>
-                  {assignees.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {[a.first_name, a.last_name].filter(Boolean).join(" ") || a.email || a.id}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="pill pill-progress">Taslak</div>
-            </div>
+          <div className="create-header">
+            <h3>🎯 Yeni Görev Oluştur</h3>
+            <span className="badge badge-draft">Taslak</span>
           </div>
 
           <div className="form-grid">
             <label className="field full">
-              Başlık
-              <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Örn: Kampanya lansman hazırlığı" />
+              Görev Başlığı
+              <input
+                value={form.title}
+                onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                placeholder="Örn: Kampanya lansman hazırlığı"
+              />
             </label>
 
             <label className="field">
@@ -621,18 +625,29 @@ export default function TasksPage() {
               <select value={form.priority} onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))}>
                 {priorities.map((p) => (
                   <option key={p.value} value={p.value}>
-                    {p.label}
+                    {p.emoji} {p.label}
                   </option>
                 ))}
               </select>
             </label>
 
             <label className="field">
-              Son Tarih (opsiyonel)
+              Son Tarih
               <input type="date" value={form.due_date} onChange={(e) => setForm((p) => ({ ...p, due_date: e.target.value }))} />
             </label>
 
-
+            <label className="field">
+              Personel Ata
+              <select value={form.assigneeId} onChange={(e) => setForm((p) => ({ ...p, assigneeId: e.target.value }))}>
+                <option value="">(Atama yapma)</option>
+                <option value="__all__">Tüm personeller</option>
+                {assignees.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {[a.first_name, a.last_name].filter(Boolean).join(" ") || a.email || a.id}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <label className="field full">
               Açıklama
@@ -640,140 +655,100 @@ export default function TasksPage() {
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 rows={3}
-                placeholder="Ek bilgi, beklenen çıktı, kaynak linkleri"
+                placeholder="Görev hakkında detaylı bilgi"
               />
             </label>
 
-              <div className="drafts-block full">
-                <div className="drafts-header">
-                  <h4>Alt Görevler</h4>
-                  <button type="button" className="ghost" onClick={() => addDraft()}>
-                    Alt görev ekle
-                  </button>
-                </div>
-                <p className="muted" style={{ marginTop: 0 }}>
-                  En fazla iki seviye alt görev ekleyebilirsin. Boş bırakılırsa yalnızca ana görev oluşturulur.
-                </p>
-                {childDrafts.length === 0 ? (
-                  <p className="muted">Henüz alt görev eklenmedi.</p>
-                ) : (
-                  <div className="drafts-list">{renderDrafts(childDrafts)}</div>
-                )}
+            <div className="drafts-block full">
+              <div className="drafts-header">
+                <h4>📦 Alt Görevler</h4>
+                <button type="button" className="btn-ghost" onClick={() => addDraft()}>
+                  + Yan Görev Ekle
+                </button>
               </div>
+              <p className="muted">En fazla 3 seviye (Ana → Yan → Alt) görev oluşturabilirsiniz.</p>
+              {childDrafts.length === 0 ? (
+                <p className="muted">Henüz yan görev eklenmedi.</p>
+              ) : (
+                <div className="drafts-list">{renderDrafts(childDrafts)}</div>
+              )}
+            </div>
           </div>
 
           <div className="actions create-actions">
-            <div className="hint">Kaydedince görev atanmış kişilerin listesine düşer.</div>
-            <div className="actions" style={{ gap: 8 }}>
-              <button type="button" className="ghost" onClick={() => setShowCreate(false)}>
-                Vazgeç
-              </button>
-              <button type="button" className="primary" onClick={createTask} disabled={!form.title.trim()}>
-                Kaydet
-              </button>
-            </div>
+            <button type="button" className="btn-ghost" onClick={() => setShowCreate(false)}>
+              Vazgeç
+            </button>
+            <button type="button" className="btn-primary" onClick={createTask} disabled={!form.title.trim()}>
+              ✓ Görevi Oluştur
+            </button>
           </div>
         </div>
       )}
 
-      <div className="card">
-        <div className="controls" style={{ justifyContent: "space-between", alignItems: "center" }}>
-          <h3>Görev Listesi</h3>
-          <label>
-            Görünüm
-            <select value={scope} onChange={(e) => setScope(e.target.value)}>
-              {scopes.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+      {/* Tab bar */}
+      <div className="tab-bar">
+        <button
+          type="button"
+          className={`tab ${activeTab === "active" ? "active" : ""}`}
+          onClick={() => setActiveTab("active")}
+        >
+          🎯 Aktif <span className="tab-count">{tabCounts.active}</span>
+        </button>
+        <button
+          type="button"
+          className={`tab ${activeTab === "completed" ? "active" : ""}`}
+          onClick={() => setActiveTab("completed")}
+        >
+          ✅ Tamamlanan <span className="tab-count">{tabCounts.completed}</span>
+        </button>
+        <button
+          type="button"
+          className={`tab ${activeTab === "archived" ? "active" : ""}`}
+          onClick={() => setActiveTab("archived")}
+        >
+          📦 Arşiv <span className="tab-count">{tabCounts.archived}</span>
+        </button>
 
-        {loading ? <p>Yükleniyor...</p> : null}
-        {!loading && tasks.length === 0 ? <p>Görev bulunamadı.</p> : null}
+        <div className="tab-spacer" />
 
-        <div className="task-grid">
-          {activeTasks.length === 0 ? <p>Aktif görev bulunamadı.</p> : null}
-          {activeTasks.map((t) => (
-            <TaskCard
-              key={t.id}
-              node={t}
-              assigneeLookup={assigneeLookup}
-              onCompletionChange={updateCompletion}
-              onApprove={approveTask}
-              onCancel={cancelTask}
-            />
-          ))}
-        </div>
+        <label className="scope-select">
+          <select value={scope} onChange={(e) => setScope(e.target.value)}>
+            {scopes.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
-        <div className="task-grid" style={{ marginTop: 24 }}>
-          <div className="controls" style={{ justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-            <h4>Tamamlanan görevler</h4>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-              <label className="field compact" style={{ minWidth: 160 }}>
-                Başlangıç
-                <input
-                  type="date"
-                  value={completedFilters.startDate}
-                  onChange={(e) => setCompletedFilters((p) => ({ ...p, startDate: e.target.value }))}
-                />
-              </label>
-              <label className="field compact" style={{ minWidth: 160 }}>
-                Bitiş
-                <input
-                  type="date"
-                  value={completedFilters.endDate}
-                  onChange={(e) => setCompletedFilters((p) => ({ ...p, endDate: e.target.value }))}
-                />
-              </label>
-              <label className="field compact" style={{ minWidth: 180 }}>
-                Atanan
-                <select
-                  value={completedFilters.assignee}
-                  onChange={(e) => setCompletedFilters((p) => ({ ...p, assignee: e.target.value }))}
-                >
-                  <option value="">Hepsi</option>
-                  {assignees.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {[a.first_name, a.last_name].filter(Boolean).join(" ") || a.email || a.id}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="field compact" style={{ minWidth: 180 }}>
-                Atayan
-                <select
-                  value={completedFilters.creator}
-                  onChange={(e) => setCompletedFilters((p) => ({ ...p, creator: e.target.value }))}
-                >
-                  <option value="">Hepsi</option>
-                  {completedCreatorOptions.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => setCompletedFilters({ assignee: "", creator: "", startDate: "", endDate: "" })}
-              >
-                Temizle
-              </button>
-            </div>
+      {/* Görev listesi */}
+      <div className="card quest-list-card">
+        {loading && <p className="loading">Yükleniyor...</p>}
+        {!loading && filteredTasks.length === 0 && (
+          <div className="empty-state">
+            <span className="empty-icon">
+              {activeTab === "active" ? "🎯" : activeTab === "completed" ? "✅" : "📦"}
+            </span>
+            <p>
+              {activeTab === "active" && "Aktif görev bulunmuyor."}
+              {activeTab === "completed" && "Tamamlanan görev bulunmuyor."}
+              {activeTab === "archived" && "Arşivlenmiş görev bulunmuyor."}
+            </p>
           </div>
-          {completedTasks.length === 0 ? <p>Tamamlanan görev yok.</p> : null}
-          {completedTasks.map((t) => (
-            <TaskCard
+        )}
+
+        <div className="quest-list">
+          {filteredTasks.map((t) => (
+            <QuestCard
               key={t.id}
               node={t}
               assigneeLookup={assigneeLookup}
               onCompletionChange={updateCompletion}
               onApprove={approveTask}
-              onCancel={cancelTask}
+              onArchive={archiveTask}
+              onDelete={deleteTask}
             />
           ))}
         </div>

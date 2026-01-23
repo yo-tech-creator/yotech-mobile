@@ -197,7 +197,7 @@ function ProductTemplateCard({ tenantId }: { tenantId?: string }) {
       <ul className="provisioning-checklist">
         <li>tenant_code tüm satırlarda hedef firma kodu ile eşleşmeli.</li>
         <li>barcode benzersiz olmalı; alt_barcodes en fazla 10 değer, ana barkodla aynı olamaz.</li>
-        <li>brand/category/supplier/unit opsiyonel; unit boşsa "adet" kabul edilir.</li>
+        <li>brand/category/supplier/unit opsiyonel; unit boşsa adet kabul edilir.</li>
         <li>price opsiyonel numerik; active true/false ile ürün durumu belirlenir.</li>
         <li>{tenantId ? `${tenantId} için şablon oluşturuldu.` : "Tenant kodunu doldurmayı unutmayın."}</li>
       </ul>

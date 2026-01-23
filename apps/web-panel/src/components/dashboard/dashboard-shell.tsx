@@ -43,12 +43,17 @@ const ROLE_NAVIGATION: Record<DashboardRole, NavigationItem[]> = {
     { href: "/tenants" as Route, label: "Firmalar", icon: Building },
     { href: "/users" as Route, label: "Kullanıcı Yetkileri", icon: Users },
     { href: "/operations" as Route, label: "Operasyon", icon: Database },
+    { href: "/forms" as Route, label: "Formlar", icon: FileCheck },
+    { href: "/supabase" as Route, label: "Supabase", icon: ShieldCheck },
     { href: "/observability" as Route, label: "Gözlemlenebilirlik", icon: Activity },
     { href: "/settings" as Route, label: "Ayarlar", icon: Settings },
   ],
   firma_admin: [
     { href: "/overview" as Route, label: "Genel Bakış", icon: LayoutDashboard },
     { href: "/users" as Route, label: "Kullanıcılar", icon: Users },
+    { href: "/products" as Route, label: "Ürünler", icon: Package },
+    { href: "/forms" as Route, label: "Formlar", icon: FileCheck },
+    { href: "/settings" as Route, label: "Ayarlar", icon: Settings },
   ],
   bolge_muduru: [
     { href: "/overview" as Route, label: "Genel Bakış", icon: LayoutDashboard },
@@ -59,6 +64,7 @@ const ROLE_NAVIGATION: Record<DashboardRole, NavigationItem[]> = {
     { href: "/transfers" as Route, label: "Depolar Arası Sevk", icon: ArrowLeftRight },
     { href: "/merch" as Route, label: "Mörş", icon: ShoppingBag },
     { href: "/forms" as Route, label: "Form Kontrol", icon: FileCheck },
+    { href: "/settings" as Route, label: "Ayarlar", icon: Settings },
   ],
   sube_muduru: [
     { href: "/overview" as Route, label: "Genel Bakış", icon: LayoutDashboard },
@@ -70,6 +76,7 @@ const ROLE_NAVIGATION: Record<DashboardRole, NavigationItem[]> = {
     { href: "/forms" as Route, label: "Form Kontrol", icon: FileCheck },
     { href: "/transfers" as Route, label: "Depolar Arası Sevk", icon: ArrowLeftRight },
     { href: "/merch" as Route, label: "Mörş", icon: ShoppingBag },
+    { href: "/settings" as Route, label: "Ayarlar", icon: Settings },
   ],
 };
 

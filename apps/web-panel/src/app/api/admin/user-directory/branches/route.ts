@@ -27,12 +27,19 @@ export async function GET(request: Request) {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role")
+    .select("role, tenant_id")
     .eq("id", userResp.user.id)
-    .maybeSingle<{ role: string | null }>();
+    .maybeSingle<{ role: string | null; tenant_id: string | null }>();
 
-  if (profile?.role !== "grand_admin") {
-    return NextResponse.json({ message: "Bu işlem için grand_admin olmalısınız" }, { status: 403 });
+  const isGrand = profile?.role === "grand_admin";
+  const isFirma = profile?.role === "firma_admin" && profile.tenant_id;
+
+  if (!isGrand && !isFirma) {
+    return NextResponse.json({ message: "Bu işlem için yetkiniz yok" }, { status: 403 });
+  }
+
+  if (isFirma && profile?.tenant_id !== tenantId) {
+    return NextResponse.json({ message: "Bu firmayı görüntüleme yetkiniz yok" }, { status: 403 });
   }
 
   const { data, error } = await supabaseAdmin

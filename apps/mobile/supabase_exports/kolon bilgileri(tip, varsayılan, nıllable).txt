@@ -2121,6 +2121,38 @@
   },
   {
     "table_schema": "public",
+    "table_name": "shift_pattern_drafts",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shift_pattern_drafts",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shift_pattern_drafts",
+    "column_name": "patterns",
+    "data_type": "jsonb",
+    "is_nullable": "NO",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "shift_pattern_drafts",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
     "table_name": "shifts",
     "column_name": "id",
     "data_type": "uuid",
@@ -2750,6 +2782,14 @@
     "data_type": "timestamp with time zone",
     "is_nullable": "NO",
     "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "store_scoring_items",
+    "column_name": "metadata",
+    "data_type": "jsonb",
+    "is_nullable": "NO",
+    "column_default": "'{}'::jsonb"
   },
   {
     "table_schema": "public",
@@ -3876,6 +3916,14 @@
     "table_name": "v_store_scoring_published_forms",
     "column_name": "tenant_id",
     "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_store_scoring_published_forms",
+    "column_name": "tenant",
+    "data_type": "text",
     "is_nullable": "YES",
     "column_default": null
   },

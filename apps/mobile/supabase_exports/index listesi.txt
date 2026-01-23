@@ -505,6 +505,11 @@
     "definition": "CREATE UNIQUE INDEX regions_tenant_id_code_key ON public.regions USING btree (tenant_id, code)"
   },
   {
+    "table_name": "shift_pattern_drafts",
+    "index_name": "shift_pattern_drafts_pkey",
+    "definition": "CREATE UNIQUE INDEX shift_pattern_drafts_pkey ON public.shift_pattern_drafts USING btree (user_id, tenant_id)"
+  },
+  {
     "table_name": "shifts",
     "index_name": "idx_shifts_branch_id",
     "definition": "CREATE INDEX idx_shifts_branch_id ON public.shifts USING btree (branch_id)"

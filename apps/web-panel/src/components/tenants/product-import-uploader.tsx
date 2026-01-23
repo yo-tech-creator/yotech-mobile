@@ -350,7 +350,7 @@ export function ProductImportUploader({ showHeader = true, tenantHint }: Props) 
           <li>tenant_code: Hedef firma kodu; tüm satırlarda aynı olmalı.</li>
           <li>barcode: Zorunlu ve aynı firmada benzersiz.</li>
           <li>alt_barcodes: Virgülle ayrılmış en fazla 10 değer; ana barkodla aynı olamaz.</li>
-          <li>brand/category/supplier/unit: Opsiyonel; unit boşsa "adet" kabul edilir.</li>
+          <li>brand/category/supplier/unit: Opsiyonel; unit boşsa adet kabul edilir.</li>
           <li>price: Opsiyonel numerik değer.</li>
           <li>active: true aktif, false pasif ürün oluşturur.</li>
         </ul>

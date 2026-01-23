@@ -66,6 +66,51 @@ class BranchTasksRepository {
     await _client
         .from('tasks')
         .update({'status': branchTaskStatusToString(status)}).eq('id', taskId);
+
+    // Eğer tamamlandı olarak işaretlendiyse, üst görevleri de kontrol et
+    if (status == BranchTaskStatus.completed) {
+      await _checkAndCompleteParentTasks(taskId);
+    }
+  }
+
+  /// Alt görevlerin hepsi tamamlandıysa üst görevi de tamamla
+  /// Rekürsif olarak tüm üst görevleri kontrol eder
+  Future<void> _checkAndCompleteParentTasks(String taskId) async {
+    // Önce bu görevin parent_task_id'sini bul
+    final taskResponse = await _client
+        .from('tasks')
+        .select('parent_task_id')
+        .eq('id', taskId)
+        .maybeSingle();
+
+    if (taskResponse == null) return;
+
+    final parentTaskId = taskResponse['parent_task_id'] as String?;
+    if (parentTaskId == null) return;
+
+    // Parent'ın tüm alt görevlerini kontrol et
+    final siblingsResponse = await _client
+        .from('tasks')
+        .select('id, status')
+        .eq('parent_task_id', parentTaskId);
+
+    final siblings = List<Map<String, dynamic>>.from(siblingsResponse as List);
+
+    // Tüm kardeşler tamamlandı mı kontrol et
+    final allCompleted = siblings.every((sibling) {
+      final status = sibling['status'] as String?;
+      return status == 'tamamlandi';
+    });
+
+    if (allCompleted) {
+      // Üst görevi tamamla
+      await _client
+          .from('tasks')
+          .update({'status': 'tamamlandi'}).eq('id', parentTaskId);
+
+      // Rekürsif olarak bir üst seviyeyi de kontrol et
+      await _checkAndCompleteParentTasks(parentTaskId);
+    }
   }
 
   Future<BranchTaskRecord> createTask({

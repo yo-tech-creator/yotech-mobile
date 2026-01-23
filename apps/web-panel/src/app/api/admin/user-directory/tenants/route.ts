@@ -20,22 +20,36 @@ export async function GET() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role")
+    .select("role, tenant_id")
     .eq("id", userResp.user.id)
-    .maybeSingle<{ role: string | null }>();
+    .maybeSingle<{ role: string | null; tenant_id: string | null }>();
 
-  if (profile?.role !== "grand_admin") {
-    return NextResponse.json({ message: "Bu işlem için grand_admin olmalısınız" }, { status: 403 });
+  if (profile?.role === "grand_admin") {
+    const { data, error } = await supabaseAdmin
+      .from("tenants")
+      .select("id, code, name, active")
+      .order("name", { ascending: true });
+
+    if (error) {
+      return NextResponse.json({ message: "Firmalar alınamadı" }, { status: 500 });
+    }
+
+    return NextResponse.json({ tenants: data ?? [] });
   }
 
-  const { data, error } = await supabaseAdmin
-    .from("tenants")
-    .select("id, code, name, active")
-    .order("name", { ascending: true });
+  if (profile?.role === "firma_admin" && profile.tenant_id) {
+    const { data, error } = await supabaseAdmin
+      .from("tenants")
+      .select("id, code, name, active")
+      .eq("id", profile.tenant_id)
+      .order("name", { ascending: true });
 
-  if (error) {
-    return NextResponse.json({ message: "Firmalar alınamadı" }, { status: 500 });
+    if (error) {
+      return NextResponse.json({ message: "Firmalar alınamadı" }, { status: 500 });
+    }
+
+    return NextResponse.json({ tenants: data ?? [] });
   }
 
-  return NextResponse.json({ tenants: data ?? [] });
+  return NextResponse.json({ message: "Bu işlem için yetkiniz yok" }, { status: 403 });
 }

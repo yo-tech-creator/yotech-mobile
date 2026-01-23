@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { CardActionButton, CardInlineActions, CardListShell, SoftBadge, cardStyles } from "@/components/ui/card-list";
 import "./skt.css";
 
 type SktRecord = {
@@ -47,6 +48,8 @@ type UiRecord = {
 };
 
 type StatusFilter = "all" | "expired" | "upcoming" | "normal";
+
+type ViewMode = "all" | "requests";
 
 type TimelineKey =
   | "all"
@@ -96,6 +99,7 @@ export default function SktPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [timeline, setTimeline] = useState<TimelineKey>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [modal, setModal] = useState<ModalState>(null);
   const [form, setForm] = useState<FormState>({
@@ -201,6 +205,9 @@ export default function SktPage() {
     const includeExpired = option?.range.includeExpired ?? false;
 
     return mapped.filter((r) => {
+      // View mode filtresi - talepler sadece product_status dolu olanları gösterir
+      if (viewMode === "requests" && !r.productStatus) return false;
+
       const matchesSearch =
         needle.length === 0 ||
         r.product.toLowerCase().includes(needle) ||
@@ -234,9 +241,24 @@ export default function SktPage() {
 
       return matchesSearch && matchesCategory && matchesTimeline && matchesStatus;
     });
-  }, [mapped, search, category, timeline, statusFilter]);
+  }, [mapped, search, category, timeline, statusFilter, viewMode]);
+
+  // Talep sayısı hesapla
+  const requestCount = useMemo(() => mapped.filter((r) => r.productStatus).length, [mapped]);
 
   const allSelected = filtered.length > 0 && filtered.every((r) => selected.has(r.id));
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllFiltered = () => setSelected(new Set(filtered.map((r) => r.id)));
+  const clearSelection = () => setSelected(new Set());
 
   const openCreate = () => {
     setForm({ productId: "", productSearch: "", expiryDate: "", quantity: "", notes: "", productStatus: "", alarmDays: "7" });
@@ -244,21 +266,20 @@ export default function SktPage() {
     setProductOptions([]);
   };
 
-  const openEdit = () => {
-    if (selected.size !== 1) return;
-    const id = Array.from(selected)[0];
-    const record = mapped.find((r) => r.id === id);
-    if (!record) return;
+  const openEdit = (record?: UiRecord) => {
+    const target = record ?? (selected.size === 1 ? mapped.find((r) => r.id === Array.from(selected)[0]) : null);
+    if (!target) return;
+    setSelected(new Set([target.id]));
     setForm({
-      productId: record.productId,
-      productSearch: `${record.product} (${record.barcode})`,
-      expiryDate: record.expiry.slice(0, 10),
-      quantity: record.quantity?.toString() ?? "",
-      notes: record.notes ?? "",
-      productStatus: record.productStatus ?? "",
+      productId: target.productId,
+      productSearch: `${target.product} (${target.barcode})`,
+      expiryDate: target.expiry.slice(0, 10),
+      quantity: target.quantity?.toString() ?? "",
+      notes: target.notes ?? "",
+      productStatus: target.productStatus ?? "",
       alarmDays: "7",
     });
-    setModal({ type: "edit", record });
+    setModal({ type: "edit", record: target });
   };
 
   const saveRecord = async () => {
@@ -289,8 +310,8 @@ export default function SktPage() {
     }
   };
 
-  const deleteSelected = async () => {
-    const ids = Array.from(selected);
+  const deleteSelected = async (idsOverride?: string[]) => {
+    const ids = idsOverride ?? Array.from(selected);
     if (!ids.length) return;
     const res = await fetch("/api/skt", {
       method: "DELETE",
@@ -301,6 +322,7 @@ export default function SktPage() {
       const detail = await res.text();
       throw new Error(detail || "Kayıtlar silinemedi");
     }
+    setSelected(new Set());
   };
 
   const loadAssignees = async () => {
@@ -345,161 +367,221 @@ export default function SktPage() {
 
   const closeModal = () => setModal(null);
 
-  return (
-    <div className="page">
-      <header className="page-header">
-        <h2>SKT Kontrol</h2>
-        <p>Şube müdürü kendi şubesindeki SKT kayıtlarını izler, filtreler ve aksiyon alır.</p>
-      </header>
+  const filterContent = (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Görünüm Seçici - Tüm Kayıtlar / Talepler */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
+        <button
+          type="button"
+          className={`filter-tab ${viewMode === "all" ? "active" : ""}`}
+          onClick={() => setViewMode("all")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: viewMode === "all" ? "2px solid var(--primary)" : "1px solid var(--border)",
+            background: viewMode === "all" ? "var(--primary-light)" : "transparent",
+            fontWeight: viewMode === "all" ? 700 : 400,
+            cursor: "pointer",
+          }}
+        >
+          📋 Tüm Kayıtlar ({mapped.length})
+        </button>
+        <button
+          type="button"
+          className={`filter-tab ${viewMode === "requests" ? "active" : ""}`}
+          onClick={() => setViewMode("requests")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: viewMode === "requests" ? "2px solid var(--primary)" : "1px solid var(--border)",
+            background: viewMode === "requests" ? "var(--primary-light)" : "transparent",
+            fontWeight: viewMode === "requests" ? 700 : 400,
+            cursor: "pointer",
+            position: "relative",
+          }}
+        >
+          📨 Şube Talepleri
+          {requestCount > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: -6,
+                right: -6,
+                background: "var(--danger)",
+                color: "white",
+                borderRadius: "50%",
+                width: 20,
+                height: 20,
+                fontSize: 11,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {requestCount}
+            </span>
+          )}
+        </button>
+      </div>
 
-      <div className="card skt-card">
-        <div className="skt-toolbar">
-          <div className="skt-search">
-            <input
-              placeholder="Ürün adı, barkod veya alt barkod"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="skt-filters">
-            <select value={category ?? ""} onChange={(e) => setCategory(e.target.value || null)}>
-              <option value="">Kategori: Tümü</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <select value={timeline} onChange={(e) => setTimeline(e.target.value as TimelineKey)}>
-              {timelineOptions.map((opt) => (
-                <option key={opt.key} value={opt.key}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}>
-              <option value="all">Durum: Tümü</option>
-              <option value="upcoming">Yaklaşan (≤7 gün)</option>
-              <option value="normal">Normal (&gt;7 gün)</option>
-              <option value="expired">Süresi geçmiş</option>
-            </select>
-          </div>
-          <div className="skt-actions">
-            <button onClick={openCreate} className="primary">Yeni SKT</button>
-            <button onClick={openEdit} disabled={selected.size !== 1}>Düzenle</button>
-            <button
-              onClick={() => {
-                if (selected.size === 0) return;
-                if (!window.confirm("Seçili kayıtlar silinsin mi?")) return;
-                void deleteSelected().then(loadRecords).catch((err) => setError((err as Error).message));
-              }}
-              disabled={selected.size === 0}
-              className="danger"
-            >
-              Sil
-            </button>
-            <button
-              onClick={() => {
-                setModal({ type: "assign" });
-                void loadAssignees();
-              }}
-              disabled={selected.size === 0}
-            >
-              Görev Ata
-            </button>
-          </div>
-          <div className="skt-stats">
-            <span>Toplam: {mapped.length}</span>
-            <span>Filtrelenen: {filtered.length}</span>
-            <span>Seçili: {selected.size}</span>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+        <input
+          className="filter-input"
+          placeholder="Ürün adı, barkod veya alt barkod"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select className="filter-input" value={category ?? ""} onChange={(e) => setCategory(e.target.value || null)}>
+          <option value="">Kategori: Tümü</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select className="filter-input" value={timeline} onChange={(e) => setTimeline(e.target.value as TimelineKey)}>
+          {timelineOptions.map((opt) => (
+            <option key={opt.key} value={opt.key}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <select className="filter-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}>
+          <option value="all">Durum: Tümü</option>
+          <option value="upcoming">Yaklaşan (≤7 gün)</option>
+          <option value="normal">Normal (&gt;7 gün)</option>
+          <option value="expired">Süresi geçmiş</option>
+        </select>
+      </div>
+    </div>
+  );
+
+  const filterPills = [
+    viewMode === "requests" ? { label: "📨 Şube Talepleri", tone: "info" as const } : null,
+    search.trim() ? { label: `Arama: ${search}` } : null,
+    category ? { label: `Kategori: ${category}` } : null,
+    timeline !== "all" ? { label: `Zaman: ${timelineOptions.find((t) => t.key === timeline)?.label ?? timeline}` } : null,
+    statusFilter !== "all" ? { label: `Durum: ${statusFilter}` } : null,
+  ].filter(Boolean) as { label: string; tone?: "info" | "success" | "warn" | "danger" | "muted" }[];
+
+  const inlineActionsBar = filtered.length > 0 ? (
+    <CardInlineActions>
+      <span style={{ fontWeight: 700 }}>Seçili: {selected.size}</span>
+      <button className="ghost" type="button" onClick={allSelected ? clearSelection : selectAllFiltered}>
+        {allSelected ? "Seçimi temizle" : "Filtreleneni seç"}
+      </button>
+    </CardInlineActions>
+  ) : null;
+
+  const cards = filtered.map((r) => {
+    const isExpired = r.daysLeft < 0;
+    const isSoon = !isExpired && r.daysLeft <= 7;
+    const tone: "danger" | "warn" | "success" = isExpired ? "danger" : isSoon ? "warn" : "success";
+
+    return (
+      <div key={r.id} style={{ ...cardStyles.row, border: selected.has(r.id) ? "1px solid rgba(124,58,237,0.5)" : cardStyles.row.border }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 220 }}>
+          <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleSelect(r.id)} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ fontWeight: 800 }}>{r.product}</div>
+            <div style={{ color: "var(--text-subtle)", fontSize: 13 }}>{r.brand ?? "-"}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              <SoftBadge tone="muted" label={`Barkod ${r.barcode}`} />
+              {r.altBarcodes.length ? <SoftBadge tone="muted" label={`Alt: ${r.altBarcodes.join(", ")}`} /> : null}
+            </div>
           </div>
         </div>
 
-        {loading ? <p>Yükleniyor...</p> : null}
-        {error ? <p className="error">{error}</p> : null}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <SoftBadge tone="info" label={`Kategori: ${r.category ?? "-"}`} />
+          <SoftBadge tone="info" label={`Şube: ${r.branch ?? "-"}`} />
+          <SoftBadge tone="muted" label={`Adet: ${r.quantity ?? "-"}`} />
+          {r.productStatus && (
+            <SoftBadge tone="warn" label={`📨 Talep: ${r.productStatus}`} />
+          )}
+        </div>
 
-        {!loading && !error ? (
-          <div className="table-wrapper">
-            <table className="skt-table">
-              <thead>
-                <tr>
-                  <th>
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={() => {
-                        if (allSelected) {
-                          setSelected(new Set());
-                        } else {
-                          setSelected(new Set(filtered.map((r) => r.id)));
-                        }
-                      }}
-                    />
-                  </th>
-                  <th>Ürün</th>
-                  <th>Barkod</th>
-                  <th>Alt Barkodlar</th>
-                  <th>Kategori</th>
-                  <th>Şube</th>
-                  <th>SKT</th>
-                  <th>Gün</th>
-                  <th>Adet</th>
-                  <th>Durum</th>
-                  <th>Not</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={11} className="empty">
-                      Kayıt bulunamadı.
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((r) => {
-                    const isExpired = r.daysLeft < 0;
-                    const isSoon = !isExpired && r.daysLeft <= 7;
-                    const checked = selected.has(r.id);
-                    return (
-                      <tr key={r.id} className={checked ? "row-selected" : ""}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={(e) => {
-                              const next = new Set(selected);
-                              if (e.target.checked) next.add(r.id);
-                              else next.delete(r.id);
-                              setSelected(next);
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <div className="cell-main">{r.product}</div>
-                          {r.brand ? <div className="cell-sub">{r.brand}</div> : null}
-                        </td>
-                        <td>{r.barcode}</td>
-                        <td className="cell-sub">{r.altBarcodes.length ? r.altBarcodes.join(", ") : "-"}</td>
-                        <td>{r.category ?? "-"}</td>
-                        <td>{r.branch ?? "-"}</td>
-                        <td>{new Date(r.expiry).toLocaleDateString("tr-TR")}</td>
-                        <td>
-                          <span className={isExpired ? "status-chip danger" : isSoon ? "status-chip warn" : "status-chip ok"}>
-                            {r.daysLeft}
-                          </span>
-                        </td>
-                        <td>{r.quantity ?? "-"}</td>
-                        <td>{isExpired ? "Süresi geçmiş" : isSoon ? "Yaklaşıyor" : "Normal"}</td>
-                        <td className="cell-sub">{r.notes || "-"}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+          <SoftBadge tone={tone} label={`SKT ${new Date(r.expiry).toLocaleDateString("tr-TR")}`} />
+          <SoftBadge tone={tone} label={`${r.daysLeft} gün`} />
+          <div style={{ color: "var(--text-subtle)", fontSize: 12, textAlign: "right", maxWidth: 320 }}>{r.notes || "-"}</div>
+          <CardInlineActions>
+            <CardActionButton tone="info" onClick={() => openEdit(r)} label="Düzenle" />
+            <CardActionButton
+              tone="muted"
+              onClick={() => {
+                setSelected(new Set([r.id]));
+                setModal({ type: "assign" });
+                void loadAssignees();
+              }}
+              label="Görev"
+            />
+            <CardActionButton
+              tone="danger"
+              onClick={() => {
+                if (!window.confirm("Bu kayıt silinsin mi?")) return;
+                void deleteSelected([r.id])
+                  .then(loadRecords)
+                  .catch((err) => setError((err as Error).message));
+              }}
+              label="Sil"
+            />
+          </CardInlineActions>
+        </div>
       </div>
+    );
+  });
+
+  return (
+    <CardListShell
+      title="SKT Kontrol"
+      description="Şube müdürü kendi şubesindeki SKT kayıtlarını izler, filtreler ve aksiyon alır."
+      stats={[
+        { label: "Toplam", value: mapped.length },
+        { label: "Talepler", value: requestCount },
+        { label: "Filtrelenen", value: filtered.length },
+        { label: "Seçili", value: selected.size },
+      ]}
+      actions={
+        <>
+          <CardActionButton tone="info" label="Yenile" onClick={() => void loadRecords()} disabled={loading} />
+          <CardActionButton tone="success" label="Yeni SKT" onClick={openCreate} />
+          <CardActionButton tone="info" label="Düzenle" onClick={() => openEdit()} disabled={selected.size !== 1} />
+          <CardActionButton
+            tone="muted"
+            label="Görev Ata"
+            onClick={() => {
+              if (selected.size === 0) return;
+              setModal({ type: "assign" });
+              void loadAssignees();
+            }}
+            disabled={selected.size === 0}
+          />
+          <CardActionButton
+            tone="danger"
+            label="Sil"
+            onClick={() => {
+              if (selected.size === 0) return;
+              if (!window.confirm("Seçili kayıtlar silinsin mi?")) return;
+              void deleteSelected()
+                .then(loadRecords)
+                .catch((err) => setError((err as Error).message));
+            }}
+            disabled={selected.size === 0}
+          />
+        </>
+      }
+      inlineActions={inlineActionsBar}
+      filterContent={filterContent}
+      pills={filterPills}
+    >
+      {loading ? <p>Yükleniyor...</p> : null}
+      {error ? <p className="error">{error}</p> : null}
+
+      {!loading && !error && filtered.length === 0 ? <p className="muted">Kayıt bulunamadı.</p> : null}
+
+      {!loading && !error ? cards : null}
 
       {modal ? (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -646,6 +728,6 @@ export default function SktPage() {
           </div>
         </div>
       ) : null}
-    </div>
+    </CardListShell>
   );
 }

@@ -8,11 +8,19 @@ export const metadata: Metadata = {
   title: "Yotech Web Panel | Giriş",
 };
 
-export default async function LoginPage() {
+type PageProps = {
+  searchParams?: { [key: string]: string | string[] | undefined } | Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function LoginPage({ searchParams }: PageProps) {
   const supabase = await getSupabaseServerClient();
   const { data: userResp } = await supabase.auth.getUser();
 
-  if (userResp?.user) {
+  const params = await Promise.resolve(searchParams ?? {});
+  const errorParam = typeof params === "object" && !Array.isArray(params) ? (params as any).error : undefined;
+  const roleBlocked = typeof errorParam === "string" && errorParam.length > 0;
+
+  if (userResp?.user && !roleBlocked) {
     redirect("/");
   }
 

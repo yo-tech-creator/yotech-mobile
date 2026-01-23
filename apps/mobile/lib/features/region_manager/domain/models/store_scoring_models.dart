@@ -110,6 +110,7 @@ class StoreScoringItem {
     required this.negativePoints,
     required this.order,
     required this.isRequired,
+    required this.allowComment,
   });
 
   final String id;
@@ -118,8 +119,19 @@ class StoreScoringItem {
   final double negativePoints;
   final int order;
   final bool isRequired;
+  final bool allowComment;
 
   factory StoreScoringItem.fromJson(Map<String, dynamic> json) {
+    final metadata = (json['metadata'] as Map<String, dynamic>?) ?? const {};
+    final allowCommentRaw = metadata['allowComment'] ??
+        metadata['allow_comment'] ??
+        json['allowComment'] ??
+        json['allow_comment'];
+    final allowComment = allowCommentRaw is bool
+        ? allowCommentRaw
+        : allowCommentRaw is String
+            ? allowCommentRaw.toLowerCase() == 'true'
+            : false;
     return StoreScoringItem(
       id: json['itemId'] as String? ?? '',
       label: json['label'] as String? ?? '',
@@ -127,6 +139,7 @@ class StoreScoringItem {
       negativePoints: (json['negativePoints'] as num?)?.toDouble() ?? 0,
       order: json['order'] as int? ?? 0,
       isRequired: json['isRequired'] as bool? ?? false,
+      allowComment: allowComment,
     );
   }
 }

@@ -4,7 +4,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 import type { Database } from "@/lib/types/database";
 
-async function requireGrandAdmin() {
+async function requireAllowed() {
   const supabase = (await getSupabaseServerClient()) as SupabaseClient<Database>;
   const { data: userResp, error: userError } = await supabase.auth.getUser();
 
@@ -14,15 +14,18 @@ async function requireGrandAdmin() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role")
+    .select("role, tenant_id")
     .eq("id", userResp.user.id)
-    .maybeSingle<{ role: string | null }>();
+    .maybeSingle<{ role: string | null; tenant_id: string | null }>();
 
-  if (profile?.role !== "grand_admin") {
-    return { error: NextResponse.json({ message: "Bu işlem için grand_admin olmalısınız" }, { status: 403 }) } as const;
+  const isGrand = profile?.role === "grand_admin";
+  const isFirma = profile?.role === "firma_admin" && profile.tenant_id;
+
+  if (!isGrand && !isFirma) {
+    return { error: NextResponse.json({ message: "Bu işlem için yetkiniz yok" }, { status: 403 }) } as const;
   }
 
-  return { supabase } as const;
+  return { supabase, profile } as const;
 }
 
 export async function GET(request: Request) {
@@ -30,8 +33,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: "Sunucu yapılandırması eksik" }, { status: 500 });
   }
 
-  const gate = await requireGrandAdmin();
+  const gate = await requireAllowed();
   if ("error" in gate) return gate.error;
+  const requesterTenant = gate.profile?.tenant_id ?? null;
 
   const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const url = new URL(request.url);
@@ -49,6 +53,11 @@ export async function GET(request: Request) {
 
   if (!tenantId) {
     return NextResponse.json({ message: "tenantId zorunlu" }, { status: 400 });
+  }
+
+  // Firma admin kendi tenant'ı dışında sorgu yapamasın
+  if (gate.profile?.role === "firma_admin" && requesterTenant && tenantId !== requesterTenant) {
+    return NextResponse.json({ message: "Bu firmayı görüntüleme yetkiniz yok" }, { status: 403 });
   }
 
   let query = supabaseAdmin
@@ -109,8 +118,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Sunucu yapılandırması eksik" }, { status: 500 });
   }
 
-  const gate = await requireGrandAdmin();
+  const gate = await requireAllowed();
   if ("error" in gate) return gate.error;
+  if (gate.profile?.role !== "grand_admin") {
+    return NextResponse.json({ message: "Bu işlem için grand_admin olmalısınız" }, { status: 403 });
+  }
 
   const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const body = await request.json().catch(() => null);
@@ -160,8 +172,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Sunucu yapılandırması eksik" }, { status: 500 });
   }
 
-  const gate = await requireGrandAdmin();
+  const gate = await requireAllowed();
   if ("error" in gate) return gate.error;
+  if (gate.profile?.role !== "grand_admin") {
+    return NextResponse.json({ message: "Bu işlem için grand_admin olmalısınız" }, { status: 403 });
+  }
 
   const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const body = await request.json().catch(() => null);
@@ -204,8 +219,11 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "Sunucu yapılandırması eksik" }, { status: 500 });
   }
 
-  const gate = await requireGrandAdmin();
+  const gate = await requireAllowed();
   if ("error" in gate) return gate.error;
+  if (gate.profile?.role !== "grand_admin") {
+    return NextResponse.json({ message: "Bu işlem için grand_admin olmalısınız" }, { status: 403 });
+  }
 
   const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const url = new URL(request.url);

@@ -14,6 +14,8 @@ import 'core/routing/app_router.dart';
 import 'core/localization/locale_controller.dart';
 import 'core/localization/localization_extensions.dart';
 import 'core/providers/shared_preferences_provider.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'package:yotech_mobile/l10n/app_localizations.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -64,11 +66,8 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     ref.watch(pushNotificationServiceProvider);
     final locale = ref.watch(localeControllerProvider);
-
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF4DA3FF), // daha açık mavi ton
-      brightness: Brightness.light,
-    );
+    final appTheme = ref.watch(appThemeControllerProvider);
+    final themeData = buildAppTheme(appTheme);
 
     return MaterialApp(
       onGenerateTitle: (context) => context.l10n.appTitle,
@@ -81,34 +80,7 @@ class MyApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: colorScheme,
-        // Griyi azaltıp daha açık, maviye çalan zemin
-        scaffoldBackgroundColor: const Color(0xFFF7FBFF),
-        appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFFF7FBFF),
-          foregroundColor: colorScheme.onSurface,
-          elevation: 0,
-        ),
-        cardTheme: CardThemeData(
-          color: const Color(0xFFF0F6FF), // hafif mavi dokunuş
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        bottomSheetTheme: BottomSheetThemeData(
-          backgroundColor: const Color(0xFFF7FBFF),
-          surfaceTintColor: colorScheme.primary.withAlpha((0.04 * 255).round()),
-        ),
-        sliderTheme: SliderThemeData(
-          thumbColor: colorScheme.primary,
-          activeTrackColor: colorScheme.primary,
-          inactiveTrackColor:
-              colorScheme.primary.withAlpha((0.2 * 255).round()),
-        ),
-      ),
+      theme: themeData,
       home: router.getInitialScreen(), // ✅ Auth state'e göre yönlendirme
       onGenerateRoute: AppRouter.onGenerateRoute,
     );

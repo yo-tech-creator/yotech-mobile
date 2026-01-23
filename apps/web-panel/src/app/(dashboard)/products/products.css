@@ -1,5 +1,10 @@
 .table-card {
   padding: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  color: var(--text);
 }
 
 .table-toolbar {
@@ -12,7 +17,7 @@
 
 .table-toolbar .toolbar-stat {
   font-size: 14px;
-  color: #555;
+  color: var(--muted);
 }
 
 .toolbar-spacer {
@@ -34,7 +39,7 @@
 
 .pager-label {
   font-size: 13px;
-  color: #555;
+  color: var(--muted);
 }
 
 .table-footer {
@@ -45,15 +50,16 @@
 
 .table-toolbar .ghost {
   background: transparent;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
+  color: var(--text);
 }
 
 .table-wrapper {
   overflow: auto;
-  border: 1px solid #e3e3e3;
+  border: 1px solid var(--card-border);
   border-radius: 8px;
 }
 
@@ -61,32 +67,36 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 900px;
+  color: var(--text);
 }
 
 .products-table th,
 .products-table td {
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--card-border);
   padding: 10px 12px;
   text-align: left;
   font-size: 14px;
 }
 
 .products-table thead th {
-  background: #fafafa;
+  background: var(--glass-bg);
   font-weight: 600;
+  color: var(--text);
 }
 
 .filter-row th {
-  background: #fff;
+  background: var(--card-bg);
 }
 
 .filter-input {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #d7d7d7;
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   font-size: 13px;
   box-sizing: border-box;
+  background: var(--card-bg);
+  color: var(--text);
 }
 
 .price-filter {
@@ -105,15 +115,15 @@
 }
 
 .status-chip.success {
-  background: #e8f6ef;
-  color: #1a7f43;
-  border: 1px solid #c6e9d4;
+  background: var(--pill-bg);
+  color: var(--text);
+  border: 1px solid var(--card-border);
 }
 
 .status-chip.muted {
-  background: #f4f4f5;
-  color: #555;
-  border: 1px solid #e3e3e3;
+  background: var(--pill-bg);
+  color: var(--muted);
+  border: 1px solid var(--card-border);
 }
 
 .cell-main {
@@ -122,13 +132,13 @@
 
 .cell-sub {
   font-size: 12px;
-  color: #666;
+  color: var(--muted);
   margin-top: 4px;
 }
 
 .empty {
   text-align: center;
-  color: #666;
+  color: var(--muted);
   padding: 18px;
 }
 

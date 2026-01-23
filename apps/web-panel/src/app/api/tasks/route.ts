@@ -35,15 +35,20 @@ export async function GET(request: Request) {
   const { supabase, profile, userId } = gate;
   const url = new URL(request.url);
   const scope = url.searchParams.get("scope") ?? "mine";
+  const includeArchived = url.searchParams.get("archived") === "true";
 
   let query = supabase
     .from("tasks")
-    .select("id, title, description, status, priority, due_date, completed_at, completion_percentage, branch_id, created_by, created_at, parent_task_id, task_assignees(user_id)")
+    .select("id, title, description, status, priority, due_date, completed_at, completion_percentage, branch_id, created_by, created_at, parent_task_id, is_archived, approved_at, approved_by, source_task_id, task_assignees(user_id)")
     .eq("tenant_id", profile.tenant_id)
     .order("created_at", { ascending: false });
 
   if (profile.branch_id) {
     query = query.eq("branch_id", profile.branch_id);
+  }
+
+  if (!includeArchived) {
+    query = query.eq("is_archived", false);
   }
 
   const { data, error } = await query;
@@ -212,6 +217,8 @@ export async function PATCH(request: Request) {
   }
 
   const now = new Date().toISOString();
+  const archive = body.archive === true;
+  const unarchive = body.unarchive === true;
 
   if (approve) {
     if (task.parent_task_id) {
@@ -225,11 +232,27 @@ export async function PATCH(request: Request) {
   if (hasCompletion) {
     update.completion_percentage = Math.round(completion);
     update.completed_at = completion >= 100 ? now : null;
+    // Durum otomatik güncelle
+    if (completion >= 100) {
+      update.status = "tamamlandi";
+    } else if (completion > 0) {
+      update.status = "devam_ediyor";
+    } else {
+      update.status = "atandi";
+    }
   }
   if (approve) {
     update.completion_percentage = 100;
     update.completed_at = now;
-    update.status = "tamamlandi";
+    update.status = "onaylandi";
+    update.approved_at = now;
+    update.approved_by = userId;
+  }
+  if (archive) {
+    update.is_archived = true;
+  }
+  if (unarchive) {
+    update.is_archived = false;
   }
 
   if (Object.keys(update).length === 0) {

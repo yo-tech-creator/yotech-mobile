@@ -1,5 +1,10 @@
 .table-card {
   padding: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  color: var(--text);
 }
 
 .table-toolbar {
@@ -12,22 +17,23 @@
 
 .table-toolbar .toolbar-stat {
   font-size: 14px;
-  color: #555;
+  color: var(--muted);
 }
 
 .table-toolbar .ghost,
 .ghost {
   background: transparent;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
+  color: var(--text);
 }
 
 .table-toolbar .primary,
 .primary {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff;
+  background: var(--button-gradient);
+  color: #f9fafb;
   border: none;
   border-radius: 6px;
   padding: 9px 14px;
@@ -44,7 +50,7 @@
 
 .table-wrapper {
   overflow: auto;
-  border: 1px solid #e3e3e3;
+  border: 1px solid var(--card-border);
   border-radius: 8px;
 }
 
@@ -52,37 +58,41 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 880px;
+  color: var(--text);
 }
 
 .merch-table th,
 .merch-table td {
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--card-border);
   padding: 10px 12px;
   text-align: left;
   font-size: 14px;
 }
 
 .merch-table thead th {
-  background: #fafafa;
+  background: var(--glass-bg);
   font-weight: 600;
+  color: var(--text);
 }
 
 .filter-row th {
-  background: #fff;
+  background: var(--card-bg);
 }
 
 .filter-input {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #d7d7d7;
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   font-size: 13px;
   box-sizing: border-box;
+  background: var(--card-bg);
+  color: var(--text);
 }
 
 .empty {
   text-align: center;
-  color: #666;
+  color: var(--muted);
   padding: 18px;
 }
 
@@ -105,8 +115,9 @@
 .modal-panel {
   width: 100%;
   max-width: 640px;
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 12px;
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--card-shadow);
   padding: 16px;
+  color: var(--text);
 }

@@ -8,6 +8,7 @@
 - Auth guard (web): Tenants sayfasında grand_admin zorunluluğu ve profil hatası yönlendirmesi.
 - Mobile başlatma: `.env` zorunlu SUPABASE_URL/ANON_KEY doğrulanıyor; Firebase & Supabase initialize; SharedPreferences Riverpod ile enjekte ediliyor; app theme/light color scheme ayarlandı.
 - Mobile yönlendirme: AppRouter, auth state’e göre grand_admin → panel, bolge_muduru → dashboard, diğer roller → HomeShell; hata state'i için retry butonu var.
+- Mobile form puanlama: Form açıklaması seçim kartında gösteriliyor, mobil kullanıcı açıklamayı görüyor.
 
 ## Yapılacak
 - Supabase uyarıları: Web panelde kalan `getSession`/`onAuthStateChange` kullanımlarını tarayıp `getUser` ile değiştir; uyarı loglarını temizle.

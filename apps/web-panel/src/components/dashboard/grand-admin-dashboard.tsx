@@ -10,6 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type OverviewStats = {
   totalTenants: number;
@@ -29,35 +30,13 @@ type TenantSummary = {
   userCount: number;
 };
 
-const quickActions = [
-  {
-    icon: Building,
-    title: "Yeni Firma Kaydı",
-    description: "Yeni bir tenant oluşturun, modülleri ve alt kullanıcıları tanımlayın.",
-  },
-  {
-    icon: Users,
-    title: "Kullanıcı Yetkileri",
-    description: "Firma, bölge ve mağaza rollerine göre erişim izinlerini güncelleyin.",
-  },
-  {
-    icon: Database,
-    title: "Supabase Yönetimi",
-    description: "Edge Function, RLS politikaları ve planlanan migrasyonları takip edin.",
-  },
-  {
-    icon: SquarePen,
-    title: "Modül Yetkilendirme",
-    description: "Tenant özelinde aktif modülleri seçerek panel ve mobil deneyimi şekillendirin.",
-  },
-];
-
 export function GrandAdminOverview() {
   const [stats, setStats] = useState<OverviewStats | null>(null);
   const [tenants, setTenants] = useState<TenantSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -104,6 +83,40 @@ export function GrandAdminOverview() {
 
   const tenantSummary = useMemo(() => tenants.slice(0, 10), [tenants]);
 
+  const quickActions = useMemo(
+    () => [
+      {
+        icon: Building,
+        title: "Yeni Firma Kaydı",
+        description: "Yeni bir tenant oluşturun, modülleri ve alt kullanıcıları tanımlayın.",
+        href: "/tenants",
+        badge: stats ? `${stats.totalTenants} toplam` : "Yükleniyor",
+      },
+      {
+        icon: Users,
+        title: "Kullanıcı Yetkileri",
+        description: "Firma, bölge ve mağaza rollerine göre erişim izinlerini güncelleyin.",
+        href: "/users",
+        badge: stats ? `${stats.totalUsers} kullanıcı` : "Yükleniyor",
+      },
+      {
+        icon: Database,
+        title: "Supabase Yönetimi",
+        description: "Edge Function, RLS politikaları ve planlanan migrasyonları takip edin.",
+        href: "/supabase",
+        badge: updatedAt ? new Date(updatedAt).toLocaleTimeString() : "Güncel",
+      },
+      {
+        icon: SquarePen,
+        title: "Modül Yetkilendirme",
+        description: "Tenant bazlı modül erişimini yönetin ve mobil/panel modüllerini açıp kapatın.",
+        href: "/modules",
+        badge: stats ? `${stats.activeTenants} aktif` : "-",
+      },
+    ],
+    [stats, updatedAt]
+  );
+
   return (
     <>
       <header className="page-header">
@@ -147,12 +160,18 @@ export function GrandAdminOverview() {
       <section className="card">
         <h3>Modül İzin Çerçevesi</h3>
         <p>
-          Tenant bazlı modül erişimi bu bölümden yönetilir. Yakında Supabase fonksiyon çağrıları ile
-          senkronize edilecek.
+          Tenant bazlı modül erişimi bu bölümden yönetilir. Aşağıdaki kısayollar canlı sayfalara
+          yönlendirir; Supabase fonksiyonları ve RLS politikaları ile senkronize çalışır.
         </p>
         <div className="quick-actions">
           {quickActions.map((action) => (
-            <div key={action.title} className="quick-action">
+            <button
+              key={action.title}
+              type="button"
+              className="quick-action"
+              onClick={() => router.push(action.href as typeof action.href)}
+              style={{ textAlign: "left" }}
+            >
               <span className="icon-pill">
                 <action.icon size={18} />
               </span>
@@ -160,7 +179,8 @@ export function GrandAdminOverview() {
                 <strong>{action.title}</strong>
                 <span>{action.description}</span>
               </div>
-            </div>
+              <span className="badge" style={{ marginLeft: "auto" }}>{action.badge}</span>
+            </button>
           ))}
         </div>
       </section>

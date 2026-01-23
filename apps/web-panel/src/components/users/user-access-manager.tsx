@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/types/database";
 
 type Tenant = Pick<Database["public"]["Tables"]["tenants"]["Row"], "id" | "code" | "name" | "active">;
@@ -17,27 +18,41 @@ const ROLES = [
   { value: "sube_muduru", label: "Şube Müdürü" },
 ];
 
-const TABLE_COLS = [
-  "minmax(120px, 1.05fr)",
-  "minmax(120px, 1.05fr)",
-  "minmax(140px, 1.15fr)",
-  "minmax(120px, 1fr)",
-  "minmax(200px, 1.6fr)",
-  "minmax(150px, 1.1fr)",
-  "minmax(90px, 0.7fr)",
-  "minmax(140px, 0.85fr)",
-].join(" ");
-const TABLE_COLUMN_DIVIDER = "1px solid #d1d5db";
-const TABLE_CELL_STYLE = {
-  display: "flex",
+const CARD_ROW_STYLE = {
+  display: "grid",
+  gridTemplateColumns: "1.4fr 1fr auto",
+  gap: "12px",
   alignItems: "center",
-  padding: "0 8px",
+  padding: "14px",
+  borderRadius: 14,
+  border: "1px solid var(--surface-strong-border)",
+  background: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+  boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
 };
-const TABLE_HEAD_CELL_STYLE = {
-  ...TABLE_CELL_STYLE,
-  justifyContent: "center" as const,
-  textAlign: "center" as const,
-  fontWeight: 600,
+
+const ROLE_BADGE_STYLE: Record<string, React.CSSProperties> = {
+  grand_admin: { background: "rgba(79, 70, 229, 0.16)", color: "#1e1b4b", border: "1px solid rgba(79,70,229,0.45)" },
+  firma_admin: { background: "rgba(16, 185, 129, 0.16)", color: "#065f46", border: "1px solid rgba(16,185,129,0.38)" },
+  bolge_muduru: { background: "rgba(234,179,8,0.16)", color: "#713f12", border: "1px solid rgba(234,179,8,0.38)" },
+  sube_muduru: { background: "rgba(14,165,233,0.16)", color: "#0f355a", border: "1px solid rgba(14,165,233,0.42)" },
+  personel: { background: "rgba(148,163,184,0.18)", color: "#1f2937", border: "1px solid rgba(148,163,184,0.38)" },
+};
+
+const STATUS_PILL = {
+  active: { background: "rgba(34,197,94,0.16)", color: "#166534", border: "1px solid rgba(34,197,94,0.38)" },
+  passive: { background: "rgba(248,113,113,0.16)", color: "#7f1d1d", border: "1px solid rgba(248,113,113,0.4)" },
+};
+
+const AVATAR_STYLE = {
+  width: 42,
+  height: 42,
+  borderRadius: "50%",
+  background: "linear-gradient(135deg, #7c3aed, #2563eb)",
+  color: "#fff",
+  display: "grid",
+  placeItems: "center" as const,
+  fontWeight: 800,
+  letterSpacing: 0.4,
 };
 const SORT_OPTIONS = [
   { value: "name_asc", label: "İsim A-Z" },
@@ -45,6 +60,126 @@ const SORT_OPTIONS = [
   { value: "branch_asc", label: "Şube A-Z" },
   { value: "branch_desc", label: "Şube Z-A" },
 ];
+
+const ROLE_FILTER_OPTIONS = [
+  { value: "", label: "Tüm roller" },
+  { value: "grand_admin", label: "Grand Admin" },
+  { value: "firma_admin", label: "Firma Admin" },
+  { value: "bolge_muduru", label: "Bölge Müdürü" },
+  { value: "sube_muduru", label: "Şube Müdürü" },
+  { value: "personel", label: "Personel" },
+];
+
+const HEADER_CARD_STYLE = {
+  display: "flex",
+  flexWrap: "wrap" as const,
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  padding: "14px",
+  borderRadius: 14,
+  background: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+  border: "1px solid var(--surface-strong-border)",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+};
+
+const HEADER_SELECT_BOX_STYLE = {
+  display: "flex",
+  flexDirection: "column" as const,
+  gap: "6px",
+  padding: "10px 12px",
+  borderRadius: 10,
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid var(--surface-strong-border)",
+  minWidth: "240px",
+};
+
+const TENANT_PILL_STYLE = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  padding: "8px 12px",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  fontWeight: 600,
+  color: "var(--text-strong)",
+};
+
+const FILTER_CARD_STYLE = {
+  display: "flex",
+  flexDirection: "column" as const,
+  gap: "12px",
+  padding: "16px",
+  marginBottom: "12px",
+  borderRadius: 16,
+  background: "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 14px 36px rgba(0,0,0,0.18)",
+};
+
+const FILTER_FIELD_STYLE = {
+  display: "flex",
+  flexDirection: "column" as const,
+  gap: "6px",
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.12)",
+  background: "rgba(255,255,255,0.06)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 6px 18px rgba(0,0,0,0.08)",
+};
+
+const FILTER_PILL_STYLE = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "6px 10px",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.1)",
+  border: "1px solid rgba(255,255,255,0.2)",
+  fontSize: 12,
+  fontWeight: 700,
+  color: "var(--text-strong)",
+};
+
+const INPUT_STYLE = {
+  width: "100%",
+  borderRadius: 10,
+  border: "1px solid rgba(255,255,255,0.28)",
+  background: "rgba(255,255,255,0.22)",
+  padding: "11px 12px",
+  color: "var(--text-strong)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14), 0 6px 16px rgba(0,0,0,0.08)",
+};
+
+const ACTION_BUTTON = {
+  padding: "10px 14px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.22)",
+  background: "linear-gradient(135deg, #4f9cff, #7f5dff)",
+  color: "#fff",
+  fontWeight: 700,
+  boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
+};
+
+const ACTION_BUTTON_GHOST = {
+  padding: "10px 14px",
+  borderRadius: 12,
+  border: "1px solid rgba(255,255,255,0.22)",
+  background: "rgba(255,255,255,0.08)",
+  color: "var(--text-strong)",
+  fontWeight: 700,
+  boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+};
+
+const ACTION_BUTTON_DANGER = {
+  padding: "10px 14px",
+  borderRadius: 12,
+  border: "1px solid rgba(248,113,113,0.4)",
+  background: "linear-gradient(135deg, rgba(248,113,113,0.16), rgba(248,113,113,0.32))",
+  color: "#7f1d1d",
+  fontWeight: 800,
+  boxShadow: "0 10px 26px rgba(248,113,113,0.2)",
+};
 
 export function UserAccessManager() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -60,9 +195,8 @@ export function UserAccessManager() {
   const [draft, setDraft] = useState<Partial<UserRow> | null>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
   const [branchFilter, setBranchFilter] = useState<string>("");
+  const [roleFilter, setRoleFilter] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [sortKey, setSortKey] = useState<(typeof SORT_OPTIONS)[number]["value"]>("name_asc");
   const [pageSize, setPageSize] = useState<number>(100);
@@ -104,18 +238,7 @@ export function UserAccessManager() {
     </div>
   );
 
-  const [createForm, setCreateForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    role: "sube_muduru",
-    branch_id: "",
-    phone: "",
-    employee_code: "",
-    position: "",
-    active: true,
-    password: "",
-  });
+  const router = useRouter();
 
   const branchLookup = useMemo(() => {
     const map = new Map<string, Branch>();
@@ -123,9 +246,43 @@ export function UserAccessManager() {
     return map;
   }, [branches]);
 
+  const handleOpenCreate = () => {
+    if (!selectedTenantId) return;
+    const url = `/users/new${selectedTenantId ? `?tenantId=${selectedTenantId}` : ""}`;
+    router.push(url);
+  };
+
+  const activeFilters = useMemo(() => {
+    const items: string[] = [];
+    if (branchFilter) {
+      const branchName = branchLookup.get(branchFilter)?.name ?? "Şube";
+      items.push(`Şube: ${branchName}`);
+    }
+    if (roleFilter) {
+      const roleLabel = ROLE_FILTER_OPTIONS.find((r) => r.value === roleFilter)?.label ?? roleFilter;
+      items.push(`Rol: ${roleLabel}`);
+    }
+    if (searchTerm.trim()) {
+      items.push(`Arama: ${searchTerm.trim()}`);
+    }
+    const sortLabel = SORT_OPTIONS.find((opt) => opt.value === sortKey)?.label;
+    if (sortLabel && sortKey !== "name_asc") {
+      items.push(`Sıralama: ${sortLabel}`);
+    }
+    return items;
+  }, [branchFilter, roleFilter, searchTerm, sortKey, branchLookup]);
+
+  const clearFilters = () => {
+    setBranchFilter("");
+    setRoleFilter("");
+    setSearchTerm("");
+    setSortKey("name_asc");
+    setPage(1);
+  };
+
   useEffect(() => {
     setPage(1);
-  }, [branchFilter, searchTerm, sortKey, pageSize, selectedTenantId]);
+  }, [branchFilter, roleFilter, searchTerm, sortKey, pageSize, selectedTenantId]);
 
   useEffect(() => {
     void loadTenants();
@@ -161,6 +318,7 @@ export function UserAccessManager() {
       const params = new URLSearchParams();
       params.set("tenantId", tenantId);
       if (branchFilter) params.set("branchId", branchFilter);
+      if (roleFilter) params.set("role", roleFilter);
       if (searchTerm.trim()) params.set("search", searchTerm.trim());
       params.set("sort", sortKey);
       params.set("page", String(page));
@@ -196,7 +354,12 @@ export function UserAccessManager() {
     const controller = new AbortController();
     void loadUsers(selectedTenantId, { signal: controller.signal });
     return () => controller.abort();
-  }, [selectedTenantId, branchFilter, searchTerm, sortKey, pageSize, page]);
+  }, [selectedTenantId, branchFilter, roleFilter, searchTerm, sortKey, pageSize, page]);
+
+  const filteredUsers = useMemo(() => {
+    if (!roleFilter) return users;
+    return users.filter((u) => u.role === roleFilter);
+  }, [users, roleFilter]);
 
   const handleUpdate = async (id: string, patch: Partial<UserRow>) => {
     setSavingId(id);
@@ -228,58 +391,16 @@ export function UserAccessManager() {
     setMessage({ type: "success", text: "Kullanıcı silindi" });
   };
 
-  const handleCreate = async () => {
-    if (!selectedTenantId) return false;
-    setMessage(null);
-    const payload = {
-      ...createForm,
-      tenant_id: selectedTenantId,
-      branch_id: createForm.branch_id || null,
-    };
-    const res = await fetch("/api/admin/user-directory/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setMessage({ type: "error", text: body.message ?? "Kullanıcı eklenemedi" });
-      return false;
-    }
-    const data = (await res.json()) as { id: string };
-    setUsers((prev) => [
-      ...prev,
-      {
-        id: data.id,
-        tenant_id: selectedTenantId,
-        branch_id: createForm.branch_id || null,
-        role: createForm.role,
-        first_name: createForm.first_name,
-        last_name: createForm.last_name,
-        email: createForm.email,
-        phone: createForm.phone,
-        employee_code: createForm.employee_code,
-        position: createForm.position,
-        active: createForm.active,
-      } as UserRow,
-    ]);
-    setCreateForm({
-      first_name: "",
-      last_name: "",
-      email: "",
-      role: "sube_muduru",
-      branch_id: "",
-      phone: "",
-      employee_code: "",
-      position: "",
-      active: true,
-      password: "",
-    });
-    setMessage({ type: "success", text: "Kullanıcı eklendi" });
-    return true;
+  const selectedTenant = tenants.find((t) => t.id === selectedTenantId);
+  const createCtaLabel = "+ Personel Ekle";
+
+  const getInitials = (u: UserRow) => {
+    const first = u.first_name?.[0] ?? "";
+    const last = u.last_name?.[0] ?? "";
+    return (first + last || "?").toUpperCase();
   };
 
-  const selectedTenant = tenants.find((t) => t.id === selectedTenantId);
+  const roleLabel = (role: string | null | undefined) => ROLES.find((r) => r.value === role)?.label ?? role ?? "-";
 
   const startEdit = (user: UserRow) => {
     setEditingId(user.id);
@@ -316,25 +437,42 @@ export function UserAccessManager() {
         <p>Firma seçin; sağ tık veya uzun basarak satır bazlı düzenleyin.</p>
       </header>
 
-      <div className="card">
-        <div className="controls" style={{ justifyContent: "space-between", gap: "12px" }}>
-          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <label>
-              Firma
-              <select value={selectedTenantId} onChange={(e) => setSelectedTenantId(e.target.value)}>
-                {tenants.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.code})
-                  </option>
-                ))}
-              </select>
-            </label>
-            {selectedTenant ? <span>Seçilen: {selectedTenant.name}</span> : null}
-          </div>
-          <button type="button" className="primary" onClick={() => setShowCreateModal(true)} disabled={!selectedTenantId}>
-            Personel Ekle
-          </button>
+      <div className="card" style={HEADER_CARD_STYLE}>
+        <div style={{ display: "flex", gap: "14px", alignItems: "center", flexWrap: "wrap" }}>
+          <label style={HEADER_SELECT_BOX_STYLE}>
+            <span style={{ fontSize: 12, fontWeight: 700 }}>Firma seç</span>
+            <select value={selectedTenantId} onChange={(e) => setSelectedTenantId(e.target.value)} style={{ ...INPUT_STYLE, minWidth: 240 }}>
+              {tenants.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} ({t.code})
+                </option>
+              ))}
+            </select>
+          </label>
+          {selectedTenant ? (
+            <div style={TENANT_PILL_STYLE}>
+              <span style={{ opacity: 0.7, fontSize: 12 }}>Seçilen</span>
+              <span>{selectedTenant.name}</span>
+            </div>
+          ) : null}
         </div>
+        <button
+          type="button"
+          className="primary"
+          onClick={handleOpenCreate}
+          disabled={!selectedTenantId}
+          style={{
+            padding: "12px 16px",
+            borderRadius: 12,
+            fontWeight: 700,
+            boxShadow: "0 12px 30px rgba(0,0,0,0.2)",
+            background: "linear-gradient(135deg, #4f9cff, #7f5dff)",
+            border: "1px solid rgba(255,255,255,0.22)",
+            color: "#fff",
+          }}
+        >
+          {createCtaLabel}
+        </button>
         {message ? <p className={`alert alert-${message.type}`}>{message.text}</p> : null}
       </div>
 
@@ -345,87 +483,96 @@ export function UserAccessManager() {
             <span>Yükleniyor...</span>
           ) : (
             <span>
-              {total} kayıt
+              {filteredUsers.length} kayıt
             </span>
           )}
         </div>
-        <div className="controls" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginBottom: "12px" }}>
-          <label>
-            Şube filtresi
-            <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
-              <option value="">Tümü</option>
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name} ({b.code})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            İsim / e-posta ara
-            <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="İsim veya e-posta" />
-          </label>
-          <label>
-            Sırala
-            <select value={sortKey} onChange={(e) => setSortKey(e.target.value as (typeof SORT_OPTIONS)[number]["value"])}>
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Sayfa başına kayıt
-            <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
-              {[10, 100, 500].map((size) => (
-                <option key={size} value={size}>
-                  {size} kullanıcı
-                </option>
-              ))}
-            </select>
-          </label>
+        <div style={FILTER_CARD_STYLE}>
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "14px", alignItems: "center" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "var(--text-strong)" }}>Filtreler</span>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+                  {activeFilters.length ? (
+                    activeFilters.map((tag) => (
+                      <span key={tag} style={FILTER_PILL_STYLE}>
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{ color: "var(--text-weak)", fontSize: 13 }}>Aktif filtre yok</span>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                <span style={{ color: "var(--text-weak)", fontSize: 13 }}>
+                  Gösterilen {filteredUsers.length} / {total}
+                </span>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  disabled={!activeFilters.length && sortKey === "name_asc" && !searchTerm.trim() && !branchFilter && !roleFilter}
+                  style={ACTION_BUTTON_GHOST}
+                >
+                  Filtreleri temizle
+                </button>
+              </div>
+            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px", alignItems: "end" }}>
+            <label style={FILTER_FIELD_STYLE}>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>Şube filtresi</span>
+              <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} style={INPUT_STYLE}>
+                <option value="">Tümü</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.code})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label style={FILTER_FIELD_STYLE}>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>Rol filtresi</span>
+              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} style={INPUT_STYLE}>
+                {ROLE_FILTER_OPTIONS.map((r) => (
+                  <option key={r.value || "all"} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label style={FILTER_FIELD_STYLE}>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>İsim / e-posta ara</span>
+              <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="İsim veya e-posta" style={INPUT_STYLE} />
+            </label>
+            <label style={FILTER_FIELD_STYLE}>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>Sırala</span>
+              <select value={sortKey} onChange={(e) => setSortKey(e.target.value as (typeof SORT_OPTIONS)[number]["value"])} style={INPUT_STYLE}>
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label style={FILTER_FIELD_STYLE}>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>Sayfa başına kayıt</span>
+              <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={INPUT_STYLE}>
+                {[10, 100, 500].map((size) => (
+                  <option key={size} value={size}>
+                    {size} kullanıcı
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
         {renderPagination()}
-        <div
-          className="table dense"
-          style={{
-            gap: "0",
-            border: "1px solid #e5e7eb",
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-            width: "100%",
-          }}
-        >
-          <div
-            className="table-row table-head"
-            style={{
-              display: "grid",
-              gridTemplateColumns: TABLE_COLS,
-              alignItems: "center",
-              padding: "10px 12px",
-              background: "#f8fafc",
-              borderBottom: "1px solid #e5e7eb",
-              columnGap: "0",
-            }}
-          >
-            <div style={{ ...TABLE_HEAD_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>Ad</div>
-            <div style={{ ...TABLE_HEAD_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>Soyad</div>
-            <div style={{ ...TABLE_HEAD_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>Şube</div>
-            <div style={{ ...TABLE_HEAD_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>Rol</div>
-            <div style={{ ...TABLE_HEAD_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>Email</div>
-            <div style={{ ...TABLE_HEAD_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>Telefon</div>
-            <div style={{ ...TABLE_HEAD_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>Aktif</div>
-            <div style={TABLE_HEAD_CELL_STYLE}>İşlem</div>
-          </div>
-          {users.map((u, idx) => {
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%" }}>
+          {filteredUsers.map((u) => {
             const isEditing = editingId === u.id;
             const rowDraft = isEditing && draft ? (draft as UserRow) : u;
             return (
               <div
                 key={u.id}
-                className="table-row"
                 onContextMenu={(e) => {
                   e.preventDefault();
                   startEdit(u);
@@ -433,66 +580,101 @@ export function UserAccessManager() {
                 onPointerDown={() => handleLongPressStart(u)}
                 onPointerUp={handleLongPressEnd}
                 onPointerLeave={handleLongPressEnd}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: TABLE_COLS,
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "10px 12px",
-                  background: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
-                  borderBottom: "1px solid #e5e7eb",
-                }}
+                style={CARD_ROW_STYLE}
               >
-                <div style={{ ...TABLE_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>
-                  {isEditing ? <input value={rowDraft.first_name ?? ""} onChange={(e) => setDraft((p) => ({ ...p, first_name: e.target.value }))} /> : <span>{u.first_name}</span>}
+                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                  <div style={AVATAR_STYLE}>{getInitials(u)}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      {isEditing ? (
+                        <>
+                          <input
+                            value={rowDraft.first_name ?? ""}
+                            onChange={(e) => setDraft((p) => ({ ...p, first_name: e.target.value }))}
+                            style={{ width: 140 }}
+                          />
+                          <input
+                            value={rowDraft.last_name ?? ""}
+                            onChange={(e) => setDraft((p) => ({ ...p, last_name: e.target.value }))}
+                            style={{ width: 140 }}
+                          />
+                        </>
+                      ) : (
+                        <div style={{ fontWeight: 700, fontSize: 15 }}>
+                          {u.first_name} {u.last_name}
+                        </div>
+                      )}
+                      <span
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          ...(ROLE_BADGE_STYLE[u.role] ?? ROLE_BADGE_STYLE.personel),
+                        }}
+                      >
+                        {roleLabel(u.role)}
+                      </span>
+                      <span
+                        style={{
+                          padding: "5px 10px",
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          ...(u.active ? STATUS_PILL.active : STATUS_PILL.passive),
+                        }}
+                      >
+                        {u.active ? "Aktif" : "Pasif"}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", color: "var(--text-muted)" }}>
+                      {isEditing ? (
+                        <select value={rowDraft.branch_id ?? ""} onChange={(e) => setDraft((p) => ({ ...p, branch_id: e.target.value || null }))}>
+                          <option value="">(Merkez)</option>
+                          {branches.map((b) => (
+                            <option key={b.id} value={b.id}>
+                              {b.name} ({b.code})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span style={{ fontWeight: 600 }}>{u.branch_id ? branchLookup.get(u.branch_id)?.name ?? "Şube" : "Merkez"}</span>
+                      )}
+                      <span style={{ fontSize: 12, opacity: 0.7 }}>{u.employee_code ? `Sicil: ${u.employee_code}` : "Sicil yok"}</span>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ ...TABLE_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>
-                  {isEditing ? <input value={rowDraft.last_name ?? ""} onChange={(e) => setDraft((p) => ({ ...p, last_name: e.target.value }))} /> : <span>{u.last_name}</span>}
-                </div>
-                <div style={{ ...TABLE_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>
+
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 12, opacity: 0.7 }}>Email</span>
+                    {isEditing ? (
+                      <input value={rowDraft.email ?? ""} onChange={(e) => setDraft((p) => ({ ...p, email: e.target.value }))} />
+                    ) : (
+                      <span style={{ fontWeight: 600 }}>{u.email}</span>
+                    )}
+                  </label>
+                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 12, opacity: 0.7 }}>Telefon</span>
+                    {isEditing ? (
+                      <input value={rowDraft.phone ?? ""} onChange={(e) => setDraft((p) => ({ ...p, phone: e.target.value }))} />
+                    ) : (
+                      <span style={{ fontWeight: 600 }}>{u.phone}</span>
+                    )}
+                  </label>
                   {isEditing ? (
-                    <select value={rowDraft.branch_id ?? ""} onChange={(e) => setDraft((p) => ({ ...p, branch_id: e.target.value || null }))}>
-                      <option value="">(Merkez)</option>
-                      {branches.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name} ({b.code})
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span>{u.branch_id ? branchLookup.get(u.branch_id)?.name ?? "Şube" : "Merkez"}</span>
-                  )}
-                </div>
-                <div style={{ ...TABLE_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>
-                  {isEditing ? (
-                    <select value={rowDraft.role ?? "sube_muduru"} onChange={(e) => setDraft((p) => ({ ...p, role: e.target.value }))}>
-                      {ROLES.map((r) => (
-                        <option key={r.value} value={r.value}>
-                          {r.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span>{u.role}</span>
-                  )}
-                </div>
-                <div style={{ ...TABLE_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>{isEditing ? <input value={rowDraft.email ?? ""} onChange={(e) => setDraft((p) => ({ ...p, email: e.target.value }))} /> : <span>{u.email}</span>}</div>
-                <div style={{ ...TABLE_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>{isEditing ? <input value={rowDraft.phone ?? ""} onChange={(e) => setDraft((p) => ({ ...p, phone: e.target.value }))} /> : <span>{u.phone}</span>}</div>
-                <div style={{ ...TABLE_CELL_STYLE, borderRight: TABLE_COLUMN_DIVIDER }}>
-                  {isEditing ? (
-                    <label className="checkbox">
+                    <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       <input
                         type="checkbox"
                         checked={!!rowDraft.active}
                         onChange={(e) => setDraft((p) => ({ ...p, active: e.target.checked }))}
                       />
-                      Aktif
+                      <span style={{ fontSize: 12 }}>Aktif</span>
                     </label>
-                  ) : (
-                    <span>{u.active ? "Aktif" : "Pasif"}</span>
-                  )}
+                  ) : null}
                 </div>
-                <div className="actions" style={{ gap: "6px", justifyContent: "center" }}>
+
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", alignItems: "center", flexWrap: "wrap" }}>
                   {isEditing ? (
                     <>
                       <button type="button" className="primary" onClick={commitEdit} disabled={savingId === u.id}>
@@ -502,8 +684,16 @@ export function UserAccessManager() {
                     </>
                   ) : (
                     <>
-                      <button type="button" onClick={() => startEdit(u)}>Düzenle</button>
-                      <button type="button" className="danger" onClick={() => handleDelete(u.id)} disabled={deletingId === u.id}>
+                      <button type="button" onClick={() => startEdit(u)} style={ACTION_BUTTON_GHOST}>
+                        Düzenle
+                      </button>
+                      <button
+                        type="button"
+                        className="danger"
+                        onClick={() => handleDelete(u.id)}
+                        disabled={deletingId === u.id}
+                        style={ACTION_BUTTON_DANGER}
+                      >
                         {deletingId === u.id ? "Siliniyor" : "Sil"}
                       </button>
                     </>
@@ -516,88 +706,7 @@ export function UserAccessManager() {
         {renderPagination()}
       </div>
 
-      {showCreateModal ? (
-        <div className="modal-backdrop">
-          <div className="modal">
-            <h3>Personel Ekle</h3>
-            <div className="grid two" style={{ maxHeight: "60vh", overflow: "auto" }}>
-              <label>
-                Ad
-                <input value={createForm.first_name} onChange={(e) => setCreateForm((p) => ({ ...p, first_name: e.target.value }))} />
-              </label>
-              <label>
-                Soyad
-                <input value={createForm.last_name} onChange={(e) => setCreateForm((p) => ({ ...p, last_name: e.target.value }))} />
-              </label>
-              <label>
-                Email
-                <input value={createForm.email} onChange={(e) => setCreateForm((p) => ({ ...p, email: e.target.value }))} />
-              </label>
-              <label>
-                Telefon
-                <input value={createForm.phone} onChange={(e) => setCreateForm((p) => ({ ...p, phone: e.target.value }))} />
-              </label>
-              <label>
-                Rol
-                <select value={createForm.role} onChange={(e) => setCreateForm((p) => ({ ...p, role: e.target.value }))}>
-                  {ROLES.map((r) => (
-                    <option key={r.value} value={r.value}>
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Şube
-                <select value={createForm.branch_id} onChange={(e) => setCreateForm((p) => ({ ...p, branch_id: e.target.value }))}>
-                  <option value="">(Merkez)</option>
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name} ({b.code})
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Sicil / Kod
-                <input value={createForm.employee_code} onChange={(e) => setCreateForm((p) => ({ ...p, employee_code: e.target.value }))} />
-              </label>
-              <label>
-                Pozisyon
-                <input value={createForm.position} onChange={(e) => setCreateForm((p) => ({ ...p, position: e.target.value }))} />
-              </label>
-              <label>
-                Parola (opsiyonel)
-                <input value={createForm.password} onChange={(e) => setCreateForm((p) => ({ ...p, password: e.target.value }))} />
-              </label>
-              <label className="checkbox" style={{ alignItems: "center" }}>
-                <input
-                  type="checkbox"
-                  checked={createForm.active}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, active: e.target.checked }))}
-                />
-                Aktif
-              </label>
-            </div>
-            <div className="actions" style={{ justifyContent: "flex-end", gap: "8px", marginTop: "12px" }}>
-              <button type="button" onClick={() => setShowCreateModal(false)}>
-                Vazgeç
-              </button>
-              <button
-                type="button"
-                className="primary"
-                onClick={async () => {
-                  const ok = await handleCreate();
-                  if (ok) setShowCreateModal(false);
-                }}
-                disabled={!selectedTenantId}
-              >
-                Kaydet
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* Personel ekleme artık /users/new sayfasında yapılacak. */}
     </div>
   );
 }

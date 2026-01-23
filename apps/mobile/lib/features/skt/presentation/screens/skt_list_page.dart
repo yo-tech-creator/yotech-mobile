@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +7,8 @@ import '../../domain/models/skt_record_model.dart';
 import '../../domain/providers/skt_providers.dart';
 import 'package:yotech_mobile/shared/widgets/barcode_scanner_page.dart';
 import 'package:yotech_mobile/shared/widgets/product_search_results_list.dart';
+import 'skt_date_scanner_page.dart';
+import 'skt_live_scanner_page.dart';
 
 const List<int> _alarmDayOptions = [1, 2, 3, 5, 7, 14];
 const List<String> _requestTypeOptions = <String>[
@@ -48,9 +49,6 @@ class _SktListPageState extends ConsumerState<SktListPage> {
     final categoriesAsync = ref.watch(sktCategoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SKT Takip'),
-      ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         child: Column(
@@ -181,19 +179,61 @@ class _SktListPageState extends ConsumerState<SktListPage> {
       );
     }
 
+    // Durum istatistikleri
+    final now = DateTime.now();
+    final expiredCount =
+        records.where((r) => r.statusAt(now) == SktRecordStatus.expired).length;
+    final upcomingCount = records
+        .where((r) => r.statusAt(now) == SktRecordStatus.upcoming)
+        .length;
+
     return RefreshIndicator(
       onRefresh: () => ref.refresh(sktRecordsProvider.future),
-      child: ListView.separated(
-        itemCount: records.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
+      child: ListView.builder(
+        itemCount: records.length + 1, // +1 for header
         itemBuilder: (context, index) {
-          final record = records[index];
-          final status = record.statusAt(DateTime.now());
-          return _RecordCard(
-            record: record,
-            status: status,
-            colors: colors,
-            onTap: () => _showRecordActions(context, record),
+          if (index == 0) {
+            // Header with stats
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  _MiniStatBadge(
+                    count: records.length,
+                    label: 'Toplam',
+                    color: colors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  if (expiredCount > 0)
+                    _MiniStatBadge(
+                      count: expiredCount,
+                      label: 'Geçmiş',
+                      color: colors.error,
+                    ),
+                  if (expiredCount > 0) const SizedBox(width: 8),
+                  if (upcomingCount > 0)
+                    _MiniStatBadge(
+                      count: upcomingCount,
+                      label: 'Yaklaşan',
+                      color: colors.tertiary,
+                    ),
+                ],
+              ),
+            );
+          }
+
+          final record = records[index - 1];
+          final status = record.statusAt(now);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: index == records.length ? 16 : 12,
+            ),
+            child: _RecordCard(
+              record: record,
+              status: status,
+              colors: colors,
+              onTap: () => _showRecordActions(context, record),
+            ),
           );
         },
       ),
@@ -203,7 +243,8 @@ class _SktListPageState extends ConsumerState<SktListPage> {
   void _showRecordActions(BuildContext context, SktRecordModel record) {
     final status = record.statusAt(DateTime.now());
     final colors = Theme.of(context).colorScheme;
-    final statusColor = _statusColor(status, colors);
+    final daysLeft = record.daysUntil(DateTime.now());
+    final expiryColor = _getExpiryColor(daysLeft, colors);
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -240,7 +281,7 @@ class _SktListPageState extends ConsumerState<SktListPage> {
                   title: Text('Durum: ${_statusLabel(status)}'),
                   subtitle: Text(
                     'SKT: ${_formatDate(record.expiryDate)}',
-                    style: TextStyle(color: statusColor),
+                    style: TextStyle(color: expiryColor),
                   ),
                 ),
                 const Divider(),
@@ -258,6 +299,17 @@ class _SktListPageState extends ConsumerState<SktListPage> {
                   onTap: () {
                     Navigator.pop(ctx);
                     _showAlarmSettingsSheet(context, record);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.send, color: colors.primary),
+                  title: const Text('Yöneticiye Talep İlet'),
+                  subtitle: record.productStatus != null
+                      ? Text('Mevcut: ${record.productStatus}')
+                      : const Text('İndirim, teşhir veya tedarik talebi'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showRequestSheet(context, record);
                   },
                 ),
                 ListTile(
@@ -352,6 +404,46 @@ class _SktListPageState extends ConsumerState<SktListPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _showRequestSheet(
+      BuildContext context, SktRecordModel record) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final selectedRequest = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => _RequestTypeSheet(
+        record: record,
+        currentRequest: record.productStatus,
+      ),
+    );
+
+    if (selectedRequest == null || !mounted) {
+      return;
+    }
+
+    // Update the record with the new request
+    try {
+      await ref.read(sktRepositoryProvider).updateRecord(
+            recordId: record.id,
+            expiryDate: record.expiryDate,
+            quantity: record.quantity,
+            productStatus: selectedRequest,
+            notes: record.notes,
+            alarmDaysBefore: record.alarmDaysBefore,
+          );
+      ref.invalidate(sktRecordsProvider);
+      await ref.read(sktRecordsProvider.future);
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Talep iletildi: $selectedRequest')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Hata: $e')),
+      );
+    }
   }
 
   String _alarmLabelForDays(int days) {
@@ -469,6 +561,51 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
+class _MiniStatBadge extends StatelessWidget {
+  const _MiniStatBadge({
+    required this.count,
+    required this.label,
+    required this.color,
+  });
+
+  final int count;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            count.toString(),
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _RecordCard extends StatelessWidget {
   const _RecordCard({
     required this.record,
@@ -484,140 +621,227 @@ class _RecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _statusColor(status, colors);
     final now = DateTime.now();
     final daysLeft = record.daysUntil(now);
+    // Dinamik renk: gün sayısına göre mavi → turuncu → kırmızı
+    final expiryColor = _getExpiryColor(daysLeft, colors);
     final statusText = _statusLabel(status);
     final dateText = _formatDate(record.expiryDate);
 
-    return Material(
-      elevation: 1,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+    return Container(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        onLongPress: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                record.productName,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 6),
-              if (record.productCategory != null &&
-                  record.productCategory!.isNotEmpty) ...[
-                Row(
-                  children: [
-                    Icon(Icons.category_outlined,
-                        size: 16, color: colors.outline),
-                    const SizedBox(width: 4),
-                    Text(record.productCategory!),
-                  ],
-                ),
-                const SizedBox(height: 6),
-              ],
-              Row(
-                children: [
-                  Icon(Icons.store, size: 16, color: colors.outline),
-                  const SizedBox(width: 4),
-                  Text(record.branchName),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Icon(Icons.qr_code, size: 16, color: colors.outline),
-                  const SizedBox(width: 4),
-                  Text(record.barcode),
-                ],
-              ),
-              if (record.altBarcodes.isNotEmpty) ...[
-                const SizedBox(height: 6),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors.surface,
+            expiryColor.withValues(alpha: 0.05),
+          ],
+        ),
+        border: Border.all(
+          color: expiryColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: expiryColor.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          onLongPress: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.qr_code_2, size: 16, color: colors.outline),
-                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        'Alt barkodlar: ${record.altBarcodes.join(', ')}',
+                        record.productName,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            expiryColor,
+                            expiryColor.withValues(alpha: 0.8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: expiryColor.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        statusText,
+                        style: TextStyle(
+                          color: colors.surface,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ],
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, size: 16, color: statusColor),
-                  const SizedBox(width: 4),
-                  Text('SKT: $dateText', style: TextStyle(color: statusColor)),
-                  const Spacer(),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      statusText,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                const SizedBox(height: 8),
+                if (record.productCategory != null &&
+                    record.productCategory!.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      Icon(Icons.category_outlined,
+                          size: 16, color: colors.outline),
+                      const SizedBox(width: 4),
+                      Text(record.productCategory!),
+                    ],
                   ),
+                  const SizedBox(height: 6),
                 ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Icon(Icons.inventory_2_outlined,
-                      size: 16, color: colors.outline),
-                  const SizedBox(width: 4),
-                  Text('Adet: ${record.quantity}'),
-                  const Spacer(),
-                  Text(
-                    daysLeft < 0
-                        ? '${daysLeft.abs()} gün gecikmiş'
-                        : '$daysLeft gün kaldı',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: statusColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ],
-              ),
-              if (record.productStatus != null &&
-                  record.productStatus!.isNotEmpty) ...[
+                Row(
+                  children: [
+                    Icon(Icons.store, size: 16, color: colors.outline),
+                    const SizedBox(width: 4),
+                    Text(record.branchName),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Icon(Icons.assignment_outlined,
-                        size: 16, color: colors.outline),
+                    Icon(Icons.qr_code, size: 16, color: colors.outline),
                     const SizedBox(width: 4),
-                    Text('Talep: ${record.productStatus!}'),
+                    Text(record.barcode),
                   ],
                 ),
-              ],
-              if (record.notes != null && record.notes!.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  record.notes!,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: colors.onSurfaceVariant),
+                if (record.altBarcodes.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.qr_code_2, size: 16, color: colors.outline),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          'Alt barkodlar: ${record.altBarcodes.join(', ')}',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 10),
+                // SKT Progress Bar
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: expiryColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.event, size: 20, color: expiryColor),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Son Kullanma: $dateText',
+                              style: TextStyle(
+                                color: expiryColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              daysLeft < 0
+                                  ? '${daysLeft.abs()} gün geçmiş!'
+                                  : daysLeft == 0
+                                      ? 'Bugün doluyor!'
+                                      : '$daysLeft gün kaldı',
+                              style: TextStyle(
+                                color: expiryColor.withValues(alpha: 0.8),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: colors.outlineVariant,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.inventory_2,
+                                size: 14, color: colors.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${record.quantity} adet',
+                              style: TextStyle(
+                                color: colors.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                if (record.productStatus != null &&
+                    record.productStatus!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.assignment_outlined,
+                          size: 16, color: colors.outline),
+                      const SizedBox(width: 4),
+                      Text('Talep: ${record.productStatus!}'),
+                    ],
+                  ),
+                ],
+                if (record.notes != null && record.notes!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    record.notes!,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -700,27 +924,67 @@ class _SktCreateSheetState extends ConsumerState<_SktCreateSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Yeni SKT Kaydı',
-                    style: theme.textTheme.titleMedium,
+              // Modern Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withValues(alpha: 0.8),
+                    ],
                   ),
-                  const Spacer(),
-                  if (_isSubmitting)
-                    const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.add_box_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
-                ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Yeni SKT Kaydı',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Barkod veya ürün adıyla arayın',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_isSubmitting)
+                      const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Barkod, alt barkod veya ürün adını arayın, kaydı tamamlayın.',
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               TextField(
                 controller: _searchCtrl,
                 focusNode: _searchFocus,
@@ -803,29 +1067,86 @@ class _SktCreateSheetState extends ConsumerState<_SktCreateSheet> {
                 },
               ),
               const SizedBox(height: 16),
-              GestureDetector(
-                onTap: _isSubmitting ? null : _pickExpiryDate,
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Son kullanma tarihi',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_month,
-                          color: theme.colorScheme.primary, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        _expiryDate == null
-                            ? 'Tarih seçin'
-                            : _formatDate(_expiryDate!),
-                      ),
-                      const Spacer(),
-                      const Icon(Icons.edit_calendar, size: 18),
-                    ],
-                  ),
+              // Date picker section with scan option
+              Text(
+                'Son Kullanma Tarihi',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: _isSubmitting ? null : _pickExpiryDate,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _expiryDate != null
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.outline,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          color: _expiryDate != null
+                              ? theme.colorScheme.primary
+                                  .withValues(alpha: 0.05)
+                              : null,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_month,
+                              color: _expiryDate != null
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outline,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _expiryDate == null
+                                  ? 'Tarih seçin'
+                                  : _formatDate(_expiryDate!),
+                              style: TextStyle(
+                                color: _expiryDate != null
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.onSurfaceVariant,
+                                fontWeight: _expiryDate != null
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // OCR Scan Button
+                  Tooltip(
+                    message: 'SKT tarihini kameradan oku',
+                    child: InkWell(
+                      onTap: _isSubmitting ? null : _scanExpiryDate,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.document_scanner_outlined,
+                          color: theme.colorScheme.onSecondaryContainer,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               TextField(
@@ -975,45 +1296,16 @@ class _SktCreateSheetState extends ConsumerState<_SktCreateSheet> {
     final now = DateTime.now();
     final normalizedNow = DateTime(now.year, now.month, now.day);
     final initial = _expiryDate ?? normalizedNow.add(const Duration(days: 1));
-    DateTime tempDate = initial;
 
-    final picked = await showModalBottomSheet<DateTime>(
+    final picked = await showDatePicker(
       context: context,
-      useSafeArea: true,
-      builder: (ctx) {
-        return SizedBox(
-          height: 320,
-          child: Column(
-            children: [
-              Expanded(
-                child: CupertinoDatePicker(
-                  initialDateTime: initial,
-                  minimumDate: normalizedNow,
-                  maximumDate: normalizedNow.add(const Duration(days: 365)),
-                  mode: CupertinoDatePickerMode.date,
-                  onDateTimeChanged: (value) => tempDate = value,
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: const Text('İptal'),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(tempDate),
-                      child: const Text('Onayla'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+      locale: Localizations.localeOf(context),
+      initialDate: initial,
+      firstDate: normalizedNow,
+      lastDate: normalizedNow.add(const Duration(days: 730)),
+      helpText: 'Son kullanma tarihi seçin',
+      cancelText: 'İptal',
+      confirmText: 'Seç',
     );
 
     if (picked == null || !mounted) {
@@ -1022,6 +1314,100 @@ class _SktCreateSheetState extends ConsumerState<_SktCreateSheet> {
 
     setState(() {
       _expiryDate = DateTime(picked.year, picked.month, picked.day);
+    });
+  }
+
+  Future<void> _scanExpiryDate() async {
+    final colors = Theme.of(context).colorScheme;
+
+    // Kullanıcıya tarama yöntemi seçtir
+    final method = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'SKT Tarihini Nasıl Okuyalım?',
+                  style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                // Canlı Tarama
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.videocam, color: colors.primary),
+                  ),
+                  title: const Text('Canlı Tarama'),
+                  subtitle:
+                      const Text('Kamerayı ürüne tutun, otomatik algılansın'),
+                  trailing: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Önerilen',
+                      style: TextStyle(color: Colors.white, fontSize: 11),
+                    ),
+                  ),
+                  onTap: () => Navigator.pop(ctx, 'live'),
+                ),
+                const SizedBox(height: 8),
+                // Fotoğraf Çek
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.secondaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.camera_alt, color: colors.secondary),
+                  ),
+                  title: const Text('Fotoğraf Çek'),
+                  subtitle: const Text('Fotoğraf çekin veya galeriden seçin'),
+                  onTap: () => Navigator.pop(ctx, 'photo'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (!mounted || method == null) return;
+
+    DateTime? scannedDate;
+
+    if (method == 'live') {
+      scannedDate = await Navigator.of(context).push<DateTime>(
+        MaterialPageRoute(builder: (_) => const SktLiveScannerPage()),
+      );
+    } else {
+      scannedDate = await Navigator.of(context).push<DateTime>(
+        MaterialPageRoute(builder: (_) => const SktDateScannerPage()),
+      );
+    }
+
+    if (!mounted || scannedDate == null) {
+      return;
+    }
+
+    setState(() {
+      _expiryDate = scannedDate;
     });
   }
 
@@ -1695,28 +2081,55 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.inventory_outlined, size: 48, color: colors.outline),
-        const SizedBox(height: 12),
-        Text(
-          'Kayıt bulunamadı',
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(color: colors.onSurfaceVariant),
+    return Container(
+      padding: const EdgeInsets.all(32),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: colors.outlineVariant.withValues(alpha: 0.5),
         ),
-        const SizedBox(height: 4),
-        Text(
-          'Filtreleri değiştirerek yeniden deneyebilirsiniz.',
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: colors.onSurfaceVariant),
-          textAlign: TextAlign.center,
-        ),
-      ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.inventory_2_outlined,
+              size: 48,
+              color: colors.primary,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'SKT Kaydı Bulunamadı',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Seçili filtrelere uygun kayıt yok.\nFiltreleri değiştirmeyi veya yeni kayıt eklemeyi deneyin.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Icon(
+            Icons.touch_app_outlined,
+            size: 24,
+            color: colors.outline,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1775,14 +2188,30 @@ String _statusLabel(SktRecordStatus status) {
   }
 }
 
-Color _statusColor(SktRecordStatus status, ColorScheme colors) {
-  switch (status) {
-    case SktRecordStatus.normal:
-      return colors.primary;
-    case SktRecordStatus.upcoming:
-      return colors.tertiary;
-    case SktRecordStatus.expired:
-      return colors.error;
+/// SKT tarihine göre gradyan renk hesapla
+/// 30+ gün = mavi, 14-30 arası = mavi→turuncu, 7-14 = turuncu, 0-7 = turuncu→kırmızı, <0 = kırmızı
+Color _getExpiryColor(int daysLeft, ColorScheme colors) {
+  const blueColor = Color(0xFF2196F3);
+  const orangeColor = Color(0xFFFF9800);
+  const redColor = Color(0xFFE53935);
+
+  if (daysLeft < 0) {
+    // Süresi dolmuş - kırmızı
+    return redColor;
+  } else if (daysLeft <= 7) {
+    // 0-7 gün arası: turuncu → kırmızı
+    final t = 1.0 - (daysLeft / 7.0);
+    return Color.lerp(orangeColor, redColor, t)!;
+  } else if (daysLeft <= 14) {
+    // 7-14 gün arası: turuncu
+    return orangeColor;
+  } else if (daysLeft <= 30) {
+    // 14-30 gün arası: mavi → turuncu
+    final t = 1.0 - ((daysLeft - 14) / 16.0);
+    return Color.lerp(blueColor, orangeColor, t)!;
+  } else {
+    // 30+ gün - mavi (normal)
+    return blueColor;
   }
 }
 
@@ -1822,4 +2251,224 @@ String _formatDate(DateTime date) {
   final day = date.day.toString().padLeft(2, '0');
   final month = date.month.toString().padLeft(2, '0');
   return '$day.$month.${date.year}';
+}
+
+/// Talep tipi seçim bottom sheet
+class _RequestTypeSheet extends StatefulWidget {
+  const _RequestTypeSheet({
+    required this.record,
+    this.currentRequest,
+  });
+
+  final SktRecordModel record;
+  final String? currentRequest;
+
+  @override
+  State<_RequestTypeSheet> createState() => _RequestTypeSheetState();
+}
+
+class _RequestTypeSheetState extends State<_RequestTypeSheet> {
+  String? _selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = widget.currentRequest;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final daysLeft = widget.record.daysUntil(DateTime.now());
+    final expiryColor = _getExpiryColor(daysLeft, colors);
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.send, color: colors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Yöneticiye Talep İlet',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        widget.record.productName,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // SKT bilgisi
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: expiryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.event, size: 18, color: expiryColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SKT: ${_formatDate(widget.record.expiryDate)}',
+                    style: TextStyle(
+                      color: expiryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    daysLeft < 0
+                        ? '${daysLeft.abs()} gün geçmiş'
+                        : '$daysLeft gün kaldı',
+                    style: TextStyle(
+                      color: expiryColor.withValues(alpha: 0.8),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Talep Türü Seçin',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Request type options
+            ..._requestTypeOptions.map((option) => _RequestOptionTile(
+                  title: option,
+                  icon: _getRequestIcon(option),
+                  isSelected: _selectedType == option,
+                  onTap: () => setState(() => _selectedType = option),
+                )),
+            const SizedBox(height: 16),
+            // Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Vazgeç'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: _selectedType != null
+                        ? () => Navigator.pop(context, _selectedType)
+                        : null,
+                    icon: const Icon(Icons.send, size: 18),
+                    label: const Text('Gönder'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getRequestIcon(String option) {
+    if (option.contains('İndirim')) return Icons.discount;
+    if (option.contains('Teşhir')) return Icons.storefront;
+    if (option.contains('Distribütör')) return Icons.local_shipping;
+    return Icons.info_outline;
+  }
+}
+
+class _RequestOptionTile extends StatelessWidget {
+  const _RequestOptionTile({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color:
+            isSelected ? colors.primaryContainer : colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected ? colors.primary : colors.outlineVariant,
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected ? colors.primary : colors.onSurfaceVariant,
+                  size: 22,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: isSelected ? colors.primary : colors.onSurface,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  Icon(Icons.check_circle, color: colors.primary, size: 22),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

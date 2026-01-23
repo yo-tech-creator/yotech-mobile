@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogPanel } from "@tremor/react";
 import { toast } from "sonner";
+import { CardActionButton, CardInlineActions, CardListShell, SoftBadge, cardStyles } from "@/components/ui/card-list";
 import "./personnel.css";
 
 type Branch = { id: string; name: string };
@@ -39,8 +40,11 @@ export default function PersonnelPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editUser, setEditUser] = useState<UserRow | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [filters, setFilters] = useState(emptyFilters);
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [currentBranchId, setCurrentBranchId] = useState<string | null>(null);
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -52,8 +56,21 @@ export default function PersonnelPage() {
   });
 
   useEffect(() => {
+    fetchProfile();
     fetchAll();
   }, []);
+
+  async function fetchProfile() {
+    try {
+      const res = await fetch("/api/me");
+      if (!res.ok) return;
+      const body = (await res.json()) as { role?: string | null; branch_id?: string | null };
+      setCurrentRole(body.role ?? null);
+      if (body.branch_id) setCurrentBranchId(body.branch_id);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   async function fetchAll() {
     setLoading(true);
@@ -67,6 +84,9 @@ export default function PersonnelPage() {
       setBranches(branchJson.branches ?? []);
       if (!form.branch_id && usersJson.branchId) {
         setForm((prev) => ({ ...prev, branch_id: usersJson.branchId ?? "" }));
+      }
+      if (!currentBranchId && usersJson.branchId) {
+        setCurrentBranchId(usersJson.branchId);
       }
     } catch (error) {
       console.error(error);
@@ -89,28 +109,39 @@ export default function PersonnelPage() {
     setFilters((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function handleCreate() {
+  function resetForm() {
+    setForm({ first_name: "", last_name: "", email: "", phone: "", position: "", branch_id: "", role: ROLE_OPTIONS[1].value });
+    setEditUser(null);
+  }
+
+  const cancelInlineEdit = () => {
+    resetForm();
+  };
+
+  async function handleSave() {
     if (!form.email || !form.branch_id) {
       toast.error("Email ve şube zorunlu");
       return;
     }
+    const payload = { ...form };
+    const isEdit = Boolean(editUser);
     try {
       const res = await fetch("/api/personnel", {
-        method: "POST",
+        method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(isEdit ? { id: editUser?.id, ...payload } : payload),
       });
       if (!res.ok) {
         const detail = await res.json().catch(() => null);
-        throw new Error(detail?.message || "Kayıt başarısız");
+        throw new Error(detail?.message || (isEdit ? "Güncelleme başarısız" : "Kayıt başarısız"));
       }
-      toast.success("Personel eklendi");
+      toast.success(isEdit ? "Güncellendi" : "Personel eklendi");
       setDialogOpen(false);
-      setForm({ ...form, first_name: "", last_name: "", email: "", phone: "", position: "" });
+      resetForm();
       fetchAll();
     } catch (error) {
       console.error(error);
-      toast.error("Kayıt başarısız");
+      toast.error(isEdit ? "Güncelleme başarısız" : "Kayıt başarısız");
     }
   }
 
@@ -131,25 +162,6 @@ export default function PersonnelPage() {
     }
   }
 
-  async function handleUpdate(user: UserRow, updates: Partial<UserRow>) {
-    try {
-      const res = await fetch("/api/personnel", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: user.id, branch_id: updates.branch_id, role: updates.role, position: updates.position }),
-      });
-      if (!res.ok) {
-        const detail = await res.json().catch(() => null);
-        throw new Error(detail?.message || "Güncelleme başarısız");
-      }
-      toast.success("Güncellendi");
-      fetchAll();
-    } catch (error) {
-      console.error(error);
-      toast.error("Güncelleme başarısız");
-    }
-  }
-
   const filtered = useMemo(() => {
     const match = (target: string | null | undefined, term: string) => (target ?? "").toLowerCase().includes(term.toLowerCase().trim());
 
@@ -160,170 +172,182 @@ export default function PersonnelPage() {
       if (filters.position && !match(u.position, filters.position)) return false;
       if (filters.role && u.role !== filters.role) return false;
       if (filters.branch && u.branch_id !== filters.branch) return false;
+      // Bölge müdürü firma adminini görmesin
+      if (currentRole === "bolge_muduru" && u.role === "firma_admin") return false;
+
       return true;
     });
-  }, [filters, users]);
+  }, [filters, users, currentRole]);
 
-  if (loading) {
-    return <div className="flex h-full items-center justify-center text-sm text-gray-600">Yükleniyor…</div>;
-  }
+  const filterContent = (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+      <input className="filter-input" placeholder="Ad / Soyad" value={filters.name} onChange={(e) => handleFilter("name", e.target.value)} />
+      <input className="filter-input" placeholder="E-posta" value={filters.email} onChange={(e) => handleFilter("email", e.target.value)} />
+      <input className="filter-input" placeholder="Telefon" value={filters.phone} onChange={(e) => handleFilter("phone", e.target.value)} />
+      <input className="filter-input" placeholder="Pozisyon" value={filters.position} onChange={(e) => handleFilter("position", e.target.value)} />
+      <select className="filter-input" value={filters.role} onChange={(e) => handleFilter("role", e.target.value)}>
+        <option value="">Tümü</option>
+        {ROLE_OPTIONS.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <select className="filter-input" value={filters.branch} onChange={(e) => handleFilter("branch", e.target.value)}>
+        <option value="">Tümü</option>
+        {branches.map((branch) => (
+          <option key={branch.id} value={branch.id}>
+            {branch.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const filterPills = [
+    filters.name ? { label: `Ad: ${filters.name}` } : null,
+    filters.email ? { label: `E-posta: ${filters.email}` } : null,
+    filters.phone ? { label: `Telefon: ${filters.phone}` } : null,
+    filters.position ? { label: `Pozisyon: ${filters.position}` } : null,
+    filters.role ? { label: `Rol: ${filters.role}` } : null,
+    filters.branch ? { label: `Şube: ${branches.find((b) => b.id === filters.branch)?.name ?? filters.branch}` } : null,
+  ].filter(Boolean) as { label: string; tone?: "info" | "success" | "warn" | "danger" | "muted" }[];
+
+  const canEdit = (user: UserRow) => {
+    if (currentRole === "grand_admin" || currentRole === "firma_admin") return true;
+    if (currentRole === "bolge_muduru") {
+      // Bölge müdürü için branch bilgisi yoksa geniş izin ver; varsa şube eşleşmesini kontrol et.
+      if (!currentBranchId) return true;
+      return user.branch_id === currentBranchId;
+    }
+    if (currentRole === "sube_muduru" && currentBranchId && user.branch_id === currentBranchId) return true;
+    return false;
+  };
+
+  const canDelete = (user: UserRow) => {
+    if (currentRole !== "sube_muduru") return false;
+    if (!currentBranchId || user.branch_id !== currentBranchId) return false;
+    if (user.role === "sube_muduru") return false;
+    return true;
+  };
+
+  const cards = filtered.map((user) => {
+    const roleLabel = ROLE_OPTIONS.find((r) => r.value === user.role)?.label || "Görev yok";
+    const branchLabel = branches.find((b) => b.id === user.branch_id)?.name ?? "Şube yok";
+    const positionLabel = user.position && user.position.trim() ? user.position.trim() : "Pozisyon yok";
+
+    return (
+      <div key={user.id} style={{ ...cardStyles.row, alignItems: "flex-start", padding: "16px 18px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ fontWeight: 800 }}>{fullName(user)}</div>
+          <div style={{ color: "var(--text-subtle)", fontSize: 13 }}>{user.email ?? "-"}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <SoftBadge tone="muted" label={user.phone ?? "-"} />
+            <SoftBadge tone="info" label={`Pozisyon: ${positionLabel}`} />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <SoftBadge tone="success" label={roleLabel} />
+          <SoftBadge tone="muted" label={branchLabel} />
+          <SoftBadge tone="info" label={positionLabel} />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+          <CardInlineActions>
+            {canEdit(user) ? (
+              <CardActionButton
+                tone="info"
+                onClick={() => {
+                  setEditUser(user);
+                  setForm({
+                    first_name: user.first_name ?? "",
+                    last_name: user.last_name ?? "",
+                    email: user.email ?? "",
+                    phone: user.phone ?? "",
+                    position: user.position ?? "",
+                    branch_id: user.branch_id ?? currentBranchId ?? "",
+                    role: user.role ?? ROLE_OPTIONS[1].value,
+                  });
+                }}
+                label="Düzenle"
+              />
+            ) : null}
+            {canDelete(user) ? <CardActionButton tone="danger" onClick={() => setDeleteId(user.id)} label="Sil" /> : null}
+          </CardInlineActions>
+        </div>
+
+        {editUser?.id === user.id ? (
+          <div
+            style={{
+              marginTop: 10,
+              width: "100%",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 10,
+            }}
+          >
+            <input className="filter-input" placeholder="Ad" value={form.first_name} onChange={(e) => handleChange("first_name", e.target.value)} />
+            <input className="filter-input" placeholder="Soyad" value={form.last_name} onChange={(e) => handleChange("last_name", e.target.value)} />
+            <input className="filter-input" placeholder="E-posta" value={form.email} onChange={(e) => handleChange("email", e.target.value)} />
+            <input className="filter-input" placeholder="Telefon" value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} />
+            <input className="filter-input" placeholder="Pozisyon" value={form.position} onChange={(e) => handleChange("position", e.target.value)} />
+            <select className="filter-input" value={form.role} onChange={(e) => handleChange("role", e.target.value)}>
+              {ROLE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <select className="filter-input" value={form.branch_id} onChange={(e) => handleChange("branch_id", e.target.value)}>
+              <option value="">Şube seç</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <CardActionButton tone="success" label="Kaydet" onClick={handleSave} />
+              <CardActionButton tone="muted" label="İptal" onClick={cancelInlineEdit} />
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
+  });
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <h2>Personel</h2>
-        <p>Şube personelini görüntüle, ekle ve güncelle.</p>
-      </header>
+    <CardListShell
+      title="Personel"
+      description="Şube personelini görüntüle, ekle ve güncelle."
+      stats={[
+        { label: "Toplam", value: users.length },
+        { label: "Filtrelenen", value: filtered.length },
+      ]}
+      actions={
+        <>
+          <CardActionButton tone="muted" label="Filtreleri sıfırla" onClick={() => setFilters(emptyFilters)} />
+          <CardActionButton
+            tone="success"
+            label="Personel Ekle"
+            onClick={() => {
+              resetForm();
+              setDialogOpen(true);
+            }}
+          />
+        </>
+      }
+      filterContent={filterContent}
+      pills={filterPills}
+    >
+      {loading ? <p>Yükleniyor...</p> : null}
 
-      <div className="card table-card">
-        <div className="table-toolbar">
-          <div className="toolbar-stat">Toplam: {users.length}</div>
-          <div className="toolbar-stat">Filtrelenen: {filtered.length}</div>
-          <button className="ghost" onClick={() => setFilters(emptyFilters)} type="button">
-            Filtreleri sıfırla
-          </button>
-          <button className="primary" onClick={() => setDialogOpen(true)} type="button">
-            Personel Ekle
-          </button>
-        </div>
+      {!loading && filtered.length === 0 ? <p className="muted">Kayıt bulunamadı.</p> : null}
 
-        <div className="table-wrapper">
-          <table className="personnel-table">
-            <thead>
-              <tr>
-                <th>Ad Soyad</th>
-                <th>E-posta</th>
-                <th>Telefon</th>
-                <th>Görev</th>
-                <th>Şube</th>
-                <th>Pozisyon</th>
-                <th className="text-right">İşlemler</th>
-              </tr>
-              <tr className="filter-row">
-                <th>
-                  <input
-                    className="filter-input"
-                    placeholder="Ad / Soyad"
-                    value={filters.name}
-                    onChange={(e) => handleFilter("name", e.target.value)}
-                  />
-                </th>
-                <th>
-                  <input
-                    className="filter-input"
-                    placeholder="E-posta"
-                    value={filters.email}
-                    onChange={(e) => handleFilter("email", e.target.value)}
-                  />
-                </th>
-                <th>
-                  <input
-                    className="filter-input"
-                    placeholder="Telefon"
-                    value={filters.phone}
-                    onChange={(e) => handleFilter("phone", e.target.value)}
-                  />
-                </th>
-                <th>
-                  <select
-                    className="filter-input"
-                    value={filters.role}
-                    onChange={(e) => handleFilter("role", e.target.value)}
-                  >
-                    <option value="">Tümü</option>
-                    {ROLE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </th>
-                <th>
-                  <select
-                    className="filter-input"
-                    value={filters.branch}
-                    onChange={(e) => handleFilter("branch", e.target.value)}
-                  >
-                    <option value="">Tümü</option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </th>
-                <th>
-                  <input
-                    className="filter-input"
-                    placeholder="Pozisyon"
-                    value={filters.position}
-                    onChange={(e) => handleFilter("position", e.target.value)}
-                  />
-                </th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="empty">
-                    Kayıt bulunamadı.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((user) => (
-                  <tr key={user.id}>
-                    <td className="font-semibold">{fullName(user)}</td>
-                    <td>{user.email ?? "-"}</td>
-                    <td>{user.phone ?? "-"}</td>
-                    <td>
-                      <select
-                        className="filter-input"
-                        value={user.role ?? ""}
-                        onChange={(e) => handleUpdate(user, { role: e.target.value })}
-                      >
-                        {ROLE_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        className="filter-input"
-                        value={user.branch_id ?? ""}
-                        onChange={(e) => handleUpdate(user, { branch_id: e.target.value })}
-                      >
-                        {branches.map((branch) => (
-                          <option key={branch.id} value={branch.id}>
-                            {branch.name}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        className="filter-input"
-                        value={user.position ?? ""}
-                        onChange={(e) => handleUpdate(user, { position: e.target.value })}
-                        placeholder="Pozisyon"
-                      />
-                    </td>
-                    <td className="text-right">
-                      <button className="danger ghost" onClick={() => setDeleteId(user.id)} type="button">
-                        Sil
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {!loading ? <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>{cards}</div> : null}
 
-      <Dialog open={dialogOpen} onClose={setDialogOpen} static={true}>
+      <Dialog open={dialogOpen && !editUser} onClose={setDialogOpen} static={true}>
         <DialogPanel className="space-y-4 sm:max-w-lg">
           <div>
             <p className="text-lg font-semibold">Yeni Personel</p>
@@ -380,7 +404,7 @@ export default function PersonnelPage() {
             <button className="ghost" onClick={() => setDialogOpen(false)} type="button">
               İptal
             </button>
-            <button className="primary" onClick={handleCreate} type="button">
+            <button className="primary" onClick={handleSave} type="button">
               Kaydet
             </button>
           </div>
@@ -403,6 +427,6 @@ export default function PersonnelPage() {
           </div>
         </DialogPanel>
       </Dialog>
-    </div>
+    </CardListShell>
   );
 }

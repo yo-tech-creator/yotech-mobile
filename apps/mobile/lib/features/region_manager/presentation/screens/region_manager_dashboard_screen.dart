@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,7 +17,7 @@ import '../../domain/providers/region_manager_providers.dart';
 import '../../data/region_manager_task_repository.dart';
 import '../../../settings/presentation/screens/personal_info_page.dart';
 import '../../../settings/presentation/screens/settings_page.dart';
-import 'store_scoring_screen.dart';
+import 'rm_forms_hub_page.dart';
 import '../../../requests/data/request_repository.dart';
 import '../../../requests/domain/models/branch_request.dart';
 import '../../../requests/domain/models/request_category.dart';
@@ -143,6 +144,11 @@ class _RegionManagerDashboardScreenState
           )
         : null;
 
+    // Get region name from first branch if available
+    final regionName = branchesForActions.isNotEmpty
+        ? (branchesForActions.first.regionName ?? 'Bölge')
+        : 'Bölge';
+
     return CustomBackButton(
       onBackPressed: _handleBackPressed,
       child: Scaffold(
@@ -151,6 +157,9 @@ class _RegionManagerDashboardScreenState
           onNavigateToSettings: _openSettings,
           onNavigateToPersonnel: _openPersonnelTab,
           onNavigateToStoreScoring: _openStoreScoring,
+          managerName: managerName,
+          regionName: regionName,
+          branchCount: branchesForActions.length,
         ),
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -165,15 +174,20 @@ class _RegionManagerDashboardScreenState
           title: branchSelectorButton,
           centerTitle: true,
           actions: [
+            // Notification button
+            IconButton(
+              tooltip: 'Bildirimler',
+              icon: const Badge(
+                isLabelVisible: true,
+                label: Text('3'),
+                child: Icon(Icons.notifications_outlined),
+              ),
+              onPressed: () => _showNotifications(context),
+            ),
             IconButton(
               tooltip: 'Profil',
               icon: const Icon(Icons.person_outline),
               onPressed: _openProfile,
-            ),
-            IconButton(
-              tooltip: 'Ayarlar',
-              icon: const Icon(Icons.settings_outlined),
-              onPressed: _openSettings,
             ),
             const SizedBox(width: 8),
           ],
@@ -1720,6 +1734,44 @@ class _RegionManagerDashboardScreenState
     final hasActiveBranch = activeBranch != null;
     final content = <Widget>[];
 
+    // Welcome header with date
+    content.addAll([
+      _WelcomeHeader(managerName: managerName),
+      const SizedBox(height: 16),
+    ]);
+
+    // Quick actions row
+    content.addAll([
+      _QuickActionsRow(
+        onTapRequests: () => setState(() {
+          _primaryTabIndex = 1;
+          _currentTabIndex = 1;
+        }),
+        onTapTasks: () => setState(() {
+          _primaryTabIndex = 2;
+          _currentTabIndex = 2;
+        }),
+        onTapTransfers: () => setState(() {
+          _primaryTabIndex = 3;
+          _currentTabIndex = 3;
+        }),
+        onTapPersonnel: _openPersonnelTab,
+      ),
+      const SizedBox(height: 16),
+    ]);
+
+    // Branch overview stats
+    if (branches.isNotEmpty) {
+      content.addAll([
+        _BranchOverviewCard(
+          branches: branches,
+          activeBranch: activeBranch,
+          onSelectBranch: () => _openBranchSelector(branches),
+        ),
+        const SizedBox(height: 16),
+      ]);
+    }
+
     if (hasActiveBranch) {
       content.addAll([
         _VisitOverviewCard(
@@ -1756,6 +1808,9 @@ class _RegionManagerDashboardScreenState
 
     content.add(_buildTodoOverviewSection());
 
+    // Add bottom padding for FAB
+    content.add(const SizedBox(height: 80));
+
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -1786,7 +1841,7 @@ class _RegionManagerDashboardScreenState
 
   void _openStoreScoring() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const StoreScoringScreen()),
+      MaterialPageRoute(builder: (_) => const RmFormsHubPage()),
     );
   }
 
@@ -1795,6 +1850,15 @@ class _RegionManagerDashboardScreenState
       return;
     }
     setState(() => _currentTabIndex = 4);
+  }
+
+  void _showNotifications(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => const _NotificationCenterSheet(),
+    );
   }
 
   Future<void> _openBranchSelector(List<ManagedBranch> branches) async {
@@ -4276,70 +4340,311 @@ class _RegionManagerNavigationDrawer extends StatelessWidget {
     required this.onNavigateToSettings,
     required this.onNavigateToPersonnel,
     required this.onNavigateToStoreScoring,
+    required this.managerName,
+    required this.regionName,
+    required this.branchCount,
   });
 
   final VoidCallback onNavigateToProfile;
   final VoidCallback onNavigateToSettings;
   final VoidCallback onNavigateToPersonnel;
   final VoidCallback onNavigateToStoreScoring;
+  final String managerName;
+  final String regionName;
+  final int branchCount;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Drawer(
-      child: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+      child: Column(
+        children: [
+          // Modern gradient header
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.primary.withValues(alpha: 0.7),
+                  colorScheme.tertiary.withValues(alpha: 0.6),
+                ],
               ),
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: Text(
-                  'Bölge Yöneticisi',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile avatar with status indicator
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
+                          child: Text(
+                            managerName.isNotEmpty
+                                ? managerName.substring(0, 1).toUpperCase()
+                                : 'B',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      managerName.isNotEmpty ? managerName : 'Bölge Müdürü',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          regionName.isNotEmpty ? regionName : 'Bölge',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Stats chips
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _DrawerStatChip(
+                          icon: Icons.store,
+                          label: '$branchCount Şube',
+                        ),
+                        const _DrawerStatChip(
+                          icon: Icons.verified_user_outlined,
+                          label: 'Bölge Müdürü',
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.people_alt_outlined),
-              title: const Text('Personeller'),
-              onTap: () {
-                Navigator.of(context).pop();
-                onNavigateToPersonnel();
-              },
+          ),
+          // Menu items
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                _DrawerMenuItem(
+                  icon: Icons.dashboard_outlined,
+                  selectedIcon: Icons.dashboard,
+                  title: 'Kontrol Paneli',
+                  subtitle: 'Günlük özet ve istatistikler',
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.people_alt_outlined,
+                  selectedIcon: Icons.people_alt,
+                  title: 'Personeller',
+                  subtitle: 'Şube personel yönetimi',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onNavigateToPersonnel();
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.fact_check_outlined,
+                  selectedIcon: Icons.fact_check,
+                  title: 'Mağaza Puanlama',
+                  subtitle: 'Denetim ve form işlemleri',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onNavigateToStoreScoring();
+                  },
+                ),
+                const Divider(indent: 16, endIndent: 16),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Text(
+                    'Hesap',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.person_outline,
+                  selectedIcon: Icons.person,
+                  title: 'Profilim',
+                  subtitle: 'Kişisel bilgiler',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onNavigateToProfile();
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.settings_outlined,
+                  selectedIcon: Icons.settings,
+                  title: 'Ayarlar',
+                  subtitle: 'Uygulama tercihleri',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onNavigateToSettings();
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.fact_check_outlined),
-              title: const Text('Mağaza Puanlama'),
-              onTap: () {
-                Navigator.of(context).pop();
-                onNavigateToStoreScoring();
-              },
+          ),
+          // Footer
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: const Text('Profilim'),
-              onTap: () {
-                Navigator.of(context).pop();
-                onNavigateToProfile();
-              },
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'YoTech v2.0',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Ayarlar'),
-              onTap: () {
-                Navigator.of(context).pop();
-                onNavigateToSettings();
-              },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DrawerStatChip extends StatelessWidget {
+  const _DrawerStatChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DrawerMenuItem extends StatelessWidget {
+  const _DrawerMenuItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          color: colorScheme.primary,
+          size: 22,
         ),
       ),
+      title: Text(
+        title,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: colorScheme.onSurfaceVariant,
+      ),
+      onTap: onTap,
     );
   }
 }
@@ -4507,57 +4812,243 @@ class _VisitOverviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: const Icon(Icons.storefront, color: Colors.white),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isCheckedIn
+              ? Colors.green.withValues(alpha: 0.5)
+              : colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: isCheckedIn ? 2 : 1,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: isCheckedIn
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.green.withValues(alpha: 0.08),
+                    Colors.green.withValues(alpha: 0.02),
+                  ],
+                )
+              : null,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Branch avatar with status indicator
+                  Stack(
                     children: [
-                      Text(
-                        branchName,
-                        style: Theme.of(context).textTheme.titleMedium,
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              colorScheme.primary,
+                              colorScheme.primary.withValues(alpha: 0.7),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(
+                          Icons.storefront,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
-                      Text('Şube Müdürü: $managerName'),
-                      Text('Planlanan ziyaret: $scheduledWindow'),
+                      if (isCheckedIn)
+                        Positioned(
+                          right: -2,
+                          bottom: -2,
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.surface,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
-                ),
-                FilledButton(
-                  onPressed: onToggle,
-                  child: Text(isCheckedIn ? 'Çıkış' : 'Giriş'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: [
-                const Chip(
-                  avatar: Icon(Icons.route, size: 18),
-                  label: Text('Günlük rota: 3. ziyaret'),
-                ),
-                Chip(
-                  avatar: const Icon(Icons.access_time, size: 18),
-                  label: Text(
-                    visitDuration == null
-                        ? 'Süre başlamadı'
-                        : 'Süre: ${visitDuration!.inMinutes} dk',
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          branchName,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.person_outline,
+                              size: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Şube Müdürü: $managerName',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.schedule_outlined,
+                              size: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Planlanan: $scheduledWindow',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            )
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Status badges row
+              Row(
+                children: [
+                  const _VisitBadge(
+                    icon: Icons.route,
+                    label: 'Günlük rota',
+                    value: '3. ziyaret',
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(width: 8),
+                  _VisitBadge(
+                    icon: Icons.timer_outlined,
+                    label: 'Süre',
+                    value: visitDuration == null
+                        ? 'Başlamadı'
+                        : '${visitDuration!.inMinutes} dk',
+                    color: isCheckedIn ? Colors.green : Colors.grey,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Action button
+              SizedBox(
+                width: double.infinity,
+                child: isCheckedIn
+                    ? OutlinedButton.icon(
+                        onPressed: onToggle,
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Ziyareti Sonlandır'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange,
+                          side: const BorderSide(color: Colors.orange),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      )
+                    : FilledButton.icon(
+                        onPressed: onToggle,
+                        icon: const Icon(Icons.login),
+                        label: const Text('Ziyareti Başlat'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VisitBadge extends StatelessWidget {
+  const _VisitBadge({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -4628,27 +5119,120 @@ class _ScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    // Determine score color based on value
+    Color scoreColor;
+    String scoreLabel;
+    if (value >= 80) {
+      scoreColor = Colors.green;
+      scoreLabel = 'Mükemmel';
+    } else if (value >= 60) {
+      scoreColor = Colors.orange;
+      scoreLabel = 'İyi';
+    } else {
+      scoreColor = Colors.red;
+      scoreLabel = 'Gelişmeli';
+    }
+
     return Card(
-      child: Padding(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Container(
         padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withValues(alpha: 0.08),
+              color.withValues(alpha: 0.02),
+            ],
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scoreColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    scoreLabel,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: scoreColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
-            Text(label, style: Theme.of(context).textTheme.titleMedium),
-            Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              label,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 12),
-            Text('$value / 100',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Text(
+                  '$value',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  ' / 100',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: value / 100,
-              color: color,
-              backgroundColor: color.withValues(alpha: 0.15),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: value / 100,
+                color: color,
+                backgroundColor: color.withValues(alpha: 0.15),
+                minHeight: 6,
+              ),
             ),
           ],
         ),
@@ -5745,6 +6329,664 @@ class _TodoCreationSheetState extends State<_TodoCreationSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ===== NEW ENHANCED UI WIDGETS =====
+
+/// Welcome header with greeting and date
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader({required this.managerName});
+
+  final String managerName;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final now = DateTime.now();
+    final greeting = _getGreeting(now.hour);
+    final firstName = managerName.split(' ').first;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primaryContainer,
+            colorScheme.primaryContainer.withValues(alpha: 0.7),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$greeting 👋',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color:
+                        colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  firstName.isNotEmpty ? firstName : 'Bölge Müdürü',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _formatDate(now),
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Animated icon
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withValues(alpha: 0.3),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.sunny,
+              size: 32,
+              color: colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getGreeting(int hour) {
+    if (hour < 6) return 'İyi geceler';
+    if (hour < 12) return 'Günaydın';
+    if (hour < 18) return 'İyi günler';
+    return 'İyi akşamlar';
+  }
+
+  String _formatDate(DateTime date) {
+    const days = [
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar'
+    ];
+    const months = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık'
+    ];
+    final dayName = days[date.weekday - 1];
+    final monthName = months[date.month - 1];
+    return '$dayName, ${date.day} $monthName';
+  }
+}
+
+/// Quick action buttons row
+class _QuickActionsRow extends StatelessWidget {
+  const _QuickActionsRow({
+    required this.onTapRequests,
+    required this.onTapTasks,
+    required this.onTapTransfers,
+    required this.onTapPersonnel,
+  });
+
+  final VoidCallback onTapRequests;
+  final VoidCallback onTapTasks;
+  final VoidCallback onTapTransfers;
+  final VoidCallback onTapPersonnel;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _QuickActionButton(
+            icon: Icons.assignment_outlined,
+            label: 'Talepler',
+            color: Colors.blue,
+            onTap: onTapRequests,
+          ),
+          const SizedBox(width: 12),
+          _QuickActionButton(
+            icon: Icons.fact_check_outlined,
+            label: 'Görevler',
+            color: Colors.orange,
+            onTap: onTapTasks,
+          ),
+          const SizedBox(width: 12),
+          _QuickActionButton(
+            icon: Icons.local_shipping_outlined,
+            label: 'Sevkler',
+            color: Colors.green,
+            onTap: onTapTransfers,
+          ),
+          const SizedBox(width: 12),
+          _QuickActionButton(
+            icon: Icons.people_outlined,
+            label: 'Personel',
+            color: Colors.purple,
+            onTap: onTapPersonnel,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  const _QuickActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 85,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withValues(alpha: 0.15),
+                color.withValues(alpha: 0.08),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Branch overview card with stats
+class _BranchOverviewCard extends StatelessWidget {
+  const _BranchOverviewCard({
+    required this.branches,
+    required this.activeBranch,
+    required this.onSelectBranch,
+  });
+
+  final List<ManagedBranch> branches;
+  final ManagedBranch? activeBranch;
+  final VoidCallback onSelectBranch;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.store,
+                    color: colorScheme.onSecondaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Şube Özeti',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        activeBranch != null
+                            ? '${activeBranch!.name} seçili'
+                            : 'Tüm şubeler',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: onSelectBranch,
+                  icon: const Icon(Icons.swap_horiz, size: 18),
+                  label: const Text('Değiştir'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Branch stats grid
+            Row(
+              children: [
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.store_outlined,
+                    value: '${branches.length}',
+                    label: 'Toplam Şube',
+                    color: Colors.blue,
+                  ),
+                ),
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.people_outlined,
+                    value: '${branches.length * 5}', // Placeholder
+                    label: 'Personel',
+                    color: Colors.purple,
+                  ),
+                ),
+                const Expanded(
+                  child: _StatItem(
+                    icon: Icons.pending_actions,
+                    value: '12', // Placeholder
+                    label: 'Bekleyen',
+                    color: Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+            if (branches.length > 1) ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              // Mini branch list
+              SizedBox(
+                height: 36,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: math.min(branches.length, 5),
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final branch = branches[index];
+                    final isActive = activeBranch?.id == branch.id;
+                    return ActionChip(
+                      label: Text(branch.name),
+                      avatar: isActive
+                          ? Icon(
+                              Icons.check_circle,
+                              size: 16,
+                              color: colorScheme.primary,
+                            )
+                          : null,
+                      backgroundColor:
+                          isActive ? colorScheme.primaryContainer : null,
+                      onPressed: onSelectBranch,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Notification center bottom sheet
+class _NotificationCenterSheet extends StatelessWidget {
+  const _NotificationCenterSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    // Sample notifications
+    const notifications = [
+      _NotificationItem(
+        icon: Icons.assignment,
+        title: 'Yeni talep geldi',
+        message: 'Merkez şubesinden malzeme talebi',
+        time: '5 dk önce',
+        color: Colors.blue,
+        isUnread: true,
+      ),
+      _NotificationItem(
+        icon: Icons.check_circle,
+        title: 'Görev tamamlandı',
+        message: 'Stok sayımı başarıyla tamamlandı',
+        time: '1 saat önce',
+        color: Colors.green,
+        isUnread: true,
+      ),
+      _NotificationItem(
+        icon: Icons.local_shipping,
+        title: 'Sevk onaylandı',
+        message: 'Batı şubesine sevk onayınız alındı',
+        time: '3 saat önce',
+        color: Colors.orange,
+        isUnread: false,
+      ),
+    ];
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Bildirimler',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${notifications.where((n) => n.isUnread).length} yeni',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text('Tümünü oku'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...notifications.map((notification) => _NotificationTile(
+                  notification: notification,
+                )),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Tüm bildirimleri gör'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationItem {
+  const _NotificationItem({
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.time,
+    required this.color,
+    required this.isUnread,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final String time;
+  final Color color;
+  final bool isUnread;
+}
+
+class _NotificationTile extends StatelessWidget {
+  const _NotificationTile({required this.notification});
+
+  final _NotificationItem notification;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: notification.isUnread
+            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: notification.isUnread
+            ? Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.3),
+              )
+            : null,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: notification.color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              notification.icon,
+              color: notification.color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        notification.title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: notification.isUnread
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (notification.isUnread)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notification.message,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notification.time,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

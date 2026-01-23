@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:yotech_mobile/features/break_tracking/break_tracking.dart';
 import 'package:yotech_mobile/features/skt/domain/models/skt_record_model.dart';
@@ -18,6 +18,7 @@ import 'package:yotech_mobile/features/inventory_transfer/presentation/screens/i
 import 'package:yotech_mobile/features/merch/presentation/screens/merch_screen.dart';
 import 'package:yotech_mobile/features/tasks/presentation/screens/branch_tasks_page.dart';
 import 'package:yotech_mobile/features/requests/presentation/screens/requests_hub_page.dart';
+import 'package:yotech_mobile/features/forms/presentation/screens/forms_hub_page.dart';
 
 class FeatureKeys {
   static const skt = 'skt';
@@ -96,17 +97,19 @@ class HomeShell extends ConsumerStatefulWidget {
   ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-const double kMinSheetSize = 0.12;
+const double kMinSheetSize = 0.15;
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   final DraggableScrollableController _sheetCtrl =
       DraggableScrollableController();
   List<String> _order = <String>[];
   String? _activePageKey;
+  String? _tenantName;
 
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         await _sheetCtrl.animateTo(
@@ -115,8 +118,33 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           curve: Curves.easeOut,
         );
       } catch (_) {}
+      // Post frame callback içinde yükle - ref hazır olur
+      _loadShortcutOrder();
+      _loadTenantName();
     });
-    _loadShortcutOrder();
+  }
+
+  Future<void> _loadTenantName() async {
+    final authState = ref.read(authProvider);
+    await authState.whenOrNull(
+      authenticated: (user) async {
+        try {
+          // get_personal_profile RPC'si tenant_name döndürüyor
+          final response = await Supabase.instance.client.rpc(
+              'get_personal_profile',
+              params: {'p_user_id': user.id}).maybeSingle();
+          debugPrint(
+              'Profile response tenant_name: ${response?['tenant_name']}');
+          if (response != null && mounted) {
+            setState(() {
+              _tenantName = response['tenant_name'] as String?;
+            });
+          }
+        } catch (e) {
+          debugPrint('Tenant name yüklenemedi: $e');
+        }
+      },
+    );
   }
 
   Future<void> _loadShortcutOrder() async {
@@ -172,6 +200,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           (route) => false,
         );
       });
+    }
+  }
+
+  String _getActivePageTitle() {
+    switch (_activePageKey) {
+      case FeatureKeys.skt:
+        return 'SKT Takibi';
+      case 'depo':
+        return 'Depolar Arası Sevk';
+      case FeatureKeys.merchandising:
+        return 'Merchandising';
+      case FeatureKeys.forms:
+        return 'Formlar';
+      case FeatureKeys.shifts:
+        return 'Vardiya';
+      case FeatureKeys.announcements:
+        return 'Duyurular';
+      case FeatureKeys.tasks:
+        return 'Görevler';
+      case FeatureKeys.requests:
+        return 'Talepler';
+      case FeatureKeys.timeAttendance:
+        return 'Puantaj';
+      default:
+        return 'Ana Sayfa';
     }
   }
 
@@ -269,11 +322,92 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     },
               child: Scaffold(
                 extendBody: true,
+                appBar: AppBar(
+                  titleSpacing: 16,
+                  title: Row(
+                    children: [
+                      // Sol: Firma adı - tıklanınca ana sayfaya git
+                      GestureDetector(
+                        onTap: () {
+                          if (_activePageKey != null) {
+                            setState(() => _activePageKey = null);
+                          }
+                        },
+                        child: Text(
+                          _tenantName ?? '',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: _activePageKey != null
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Orta: Sayfa adı badge
+                      Expanded(
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer
+                                  .withAlpha(180),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              _getActivePageTitle(),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    // Profil butonu
+                    IconButton(
+                      icon: Icon(
+                        Icons.account_circle,
+                        size: 32,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      tooltip: 'Profil ve Ayarlar',
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SettingsPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                ),
                 body: Stack(
                   children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      child: _buildActivePage(),
+                    // Ana içeriğe alt bar yüksekliği kadar padding ekle
+                    Positioned.fill(
+                      bottom: (MediaQuery.of(context).size.height *
+                              kMinSheetSize) -
+                          MediaQuery.of(context)
+                              .viewPadding
+                              .bottom, // Alt bar'ın kapalı yüksekliği (sistem padding çıkarılmış)
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 150),
+                        child: _buildActivePage(),
+                      ),
                     ),
                     Align(
                       alignment: Alignment.bottomCenter,
@@ -287,34 +421,22 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                               .clamp(1, 10);
                           const headerHeight = 56.0;
                           const itemHeight = 88.0;
-                          // height reserved for the profile row area
-                          const profileAreaHeight = 64.0;
-                          // minimal extra padding so profile sits near screen bottom
-                          const otherPadding = 8.0;
-                          final desiredPixels = headerHeight +
-                              rows * itemHeight +
-                              profileAreaHeight +
-                              otherPadding;
+                          const otherPadding = 16.0;
+                          final desiredPixels =
+                              headerHeight + rows * itemHeight + otherPadding;
                           // Limit how tall the sheet can grow on small devices.
-                          // Keep feature-area visible but ensure profile snap is a
-                          // small additional increment above it.
                           var computedMax = (desiredPixels / screenH)
                               .clamp(kMinSheetSize + 0.05, 0.45)
                               .toDouble();
                           if (computedMax < kMinSheetSize + 0.05) {
                             computedMax = kMinSheetSize + 0.05;
                           }
-                          final computedProfile = (desiredPixels / screenH)
-                              .clamp(computedMax + 0.01, 0.60)
-                              .toDouble();
 
                           return _BottomSheet(
                             controller: _sheetCtrl,
                             entries: entries,
-                            displayName: '${user.name} ${user.surname}',
                             minSize: kMinSheetSize,
                             maxSize: computedMax,
-                            profileSize: computedProfile,
                             onReorder: (oldIndex, newIndex) {
                               setState(() {
                                 final item = _order.removeAt(oldIndex);
@@ -322,55 +444,18 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                               });
                               _persistOrder();
                             },
-                            onTap: (key) async {
-                              try {
-                                if (_sheetCtrl.size > kMinSheetSize + 0.01) {
-                                  await _sheetCtrl.animateTo(
-                                    kMinSheetSize,
-                                    duration: const Duration(milliseconds: 140),
-                                    curve: Curves.easeOut,
-                                  );
-                                }
-                              } catch (_) {}
+                            onTap: (key) {
+                              // Önce sayfayı aç
                               _openFeature(key);
-                            },
-                            onProfileTap: () async {
-                              try {
-                                final navigator =
-                                    Navigator.of(context, rootNavigator: true);
-                                if (_sheetCtrl.size > kMinSheetSize + 0.01) {
-                                  await _sheetCtrl.animateTo(
-                                    kMinSheetSize,
-                                    duration: const Duration(milliseconds: 140),
-                                    curve: Curves.easeOut,
-                                  );
+
+                              // Bar'ı animasyonsuz direkt kapat
+                              if (_sheetCtrl.size > kMinSheetSize + 0.01) {
+                                try {
+                                  _sheetCtrl.jumpTo(kMinSheetSize);
+                                } catch (_) {
+                                  // Controller disposed olabilir
                                 }
-                                if (!mounted) return;
-                                await navigator.push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SettingsPage(),
-                                  ),
-                                );
-                              } catch (_) {}
-                            },
-                            onSettingsTap: () async {
-                              try {
-                                final navigator =
-                                    Navigator.of(context, rootNavigator: true);
-                                if (_sheetCtrl.size > kMinSheetSize + 0.01) {
-                                  await _sheetCtrl.animateTo(
-                                    kMinSheetSize,
-                                    duration: const Duration(milliseconds: 140),
-                                    curve: Curves.easeOut,
-                                  );
-                                }
-                                if (!mounted) return;
-                                await navigator.push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SettingsPage(),
-                                  ),
-                                );
-                              } catch (_) {}
+                              }
                             },
                           );
                         },
@@ -410,34 +495,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       case FeatureKeys.merchandising:
         return const MerchScreen();
       case FeatureKeys.forms:
-        return const ModuleDemoPage(
-          key: ValueKey('forms'),
-          title: 'Form Yönetimi',
-          tagline: 'Dinamik form düzenleme ve yanıt toplama',
-          description:
-              'Mağaza denetimlerinden kalite kontrol listelerine kadar her şey blok tabanlı form editörü ile hazırlanıyor.',
-          icon: Icons.assignment,
-          highlights: [
-            DemoHighlight(
-              title: 'Şablon Kütüphanesi',
-              description:
-                  'Hazır soru bloklarını sürükle-bırak ile yeniden kullanın, zorunlu alanlar anında işaretlenir.',
-              icon: Icons.library_books,
-            ),
-            DemoHighlight(
-              title: 'Onay Akışları',
-              description:
-                  'Form gönderildikten sonra bölge müdürü veya kalite ekibi aynı karttan inceleme yapar.',
-              icon: Icons.verified,
-            ),
-            DemoHighlight(
-              title: 'Offline Kayıt',
-              description:
-                  'Saha zayıf bağlantıdayken bile cevaplar saklanır, internet geldiğinde otomatik gönderilir.',
-              icon: Icons.offline_bolt,
-            ),
-          ],
-        );
+        return const FormsHubPage();
       case FeatureKeys.shifts:
         return const ShiftsHubPage();
       case FeatureKeys.announcements:
@@ -566,26 +624,18 @@ class _BottomSheet extends StatefulWidget {
   const _BottomSheet({
     required this.controller,
     required this.entries,
-    required this.displayName,
     required this.minSize,
     required this.maxSize,
-    this.profileSize,
     required this.onReorder,
     required this.onTap,
-    required this.onProfileTap,
-    required this.onSettingsTap,
   });
 
   final DraggableScrollableController controller;
   final List<FeatureEntry> entries;
-  final String displayName;
   final double minSize;
   final double maxSize;
-  final double? profileSize;
   final void Function(int oldIndex, int newIndex) onReorder;
   final void Function(String key) onTap;
-  final VoidCallback onProfileTap;
-  final VoidCallback onSettingsTap;
 
   @override
   State<_BottomSheet> createState() => _BottomSheetState();
@@ -593,7 +643,6 @@ class _BottomSheet extends StatefulWidget {
 
 class _BottomSheetState extends State<_BottomSheet> {
   bool _isExpanded = false;
-  bool _showProfileFooter = false;
 
   @override
   void initState() {
@@ -603,18 +652,14 @@ class _BottomSheetState extends State<_BottomSheet> {
 
   void _onSheetChanged() {
     final size = widget.controller.size;
-    developer.log('BottomSheet size changed: $size', name: 'home_shell');
     // Raise expanded threshold slightly so the closed state reliably
     // shows the horizontal strip (avoids tiny size deltas flipping to
     // expanded view).
     final expanded = size > (widget.minSize + 0.08);
-    final profileSnap = widget.profileSize ?? widget.maxSize;
-    final showProfileFooter = size >= (profileSnap - 0.01);
 
-    if (expanded != _isExpanded || showProfileFooter != _showProfileFooter) {
+    if (expanded != _isExpanded) {
       setState(() {
         _isExpanded = expanded;
-        _showProfileFooter = showProfileFooter;
       });
     }
   }
@@ -631,14 +676,8 @@ class _BottomSheetState extends State<_BottomSheet> {
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
 
-    // Allow dragging straight to the profile snap so the footer can appear
-    // on the first pull.
-    final maxChild = widget.profileSize ?? widget.maxSize;
-    final snapList = <double>[widget.minSize];
-    final profileSnap = widget.profileSize ?? widget.maxSize;
-    if ((profileSnap - widget.minSize).abs() > 0.001) {
-      snapList.add(profileSnap);
-    }
+    // Tek snap noktası: minSize ve maxSize
+    final snapList = <double>[widget.minSize, widget.maxSize];
 
     var sheetDragActive = false;
 
@@ -647,23 +686,17 @@ class _BottomSheetState extends State<_BottomSheet> {
       expand: false,
       initialChildSize: widget.minSize,
       minChildSize: widget.minSize,
-      maxChildSize: maxChild,
+      maxChildSize: widget.maxSize,
       snap: true,
       snapSizes: snapList,
       builder: (context, scrollCtrl) {
-        const double headerHeight = 15.0;
-        final snapTargets = snapList;
         void handleDragUpdate(DragUpdateDetails details) {
           final screenH = MediaQuery.of(context).size.height;
           const deltaScale = 0.8;
           final dy = details.delta.dy;
           final deltaFraction = -dy / screenH * deltaScale;
           final newSize = (widget.controller.size + deltaFraction)
-              .clamp(widget.minSize, maxChild);
-          developer.log(
-            'drag update dy=$dy cur=${widget.controller.size} new=$newSize',
-            name: 'home_shell.drag',
-          );
+              .clamp(widget.minSize, widget.maxSize);
           try {
             widget.controller.jumpTo(newSize);
           } catch (_) {}
@@ -671,19 +704,34 @@ class _BottomSheetState extends State<_BottomSheet> {
 
         Future<void> handleDragEnd(DragEndDetails details) async {
           final current = widget.controller.size;
-          double closest = snapTargets.first;
-          for (final s in snapTargets) {
-            if ((s - current).abs() < (closest - current).abs()) {
-              closest = s;
+          final velocity = details.velocity.pixelsPerSecond.dy;
+
+          // Velocity threshold - hızlı kaydırmada yöne göre snap yap
+          const velocityThreshold = 200.0;
+
+          // Layout geçiş threshold'u ile aynı: minSize + 0.08
+          final expandThreshold = widget.minSize + 0.08;
+
+          double target;
+          if (velocity > velocityThreshold) {
+            // Aşağı hızlı kaydırma - kapat
+            target = widget.minSize;
+          } else if (velocity < -velocityThreshold) {
+            // Yukarı hızlı kaydırma - aç
+            target = widget.maxSize;
+          } else {
+            // Yavaş kaydırma - threshold'a göre karar ver
+            // Layout geçişiyle uyumlu olması için aynı threshold kullan
+            if (current > expandThreshold) {
+              target = widget.maxSize;
+            } else {
+              target = widget.minSize;
             }
           }
-          developer.log(
-            'drag end velocity=${details.velocity.pixelsPerSecond.dy} current=$current target=$closest',
-            name: 'home_shell.drag',
-          );
+
           try {
             await widget.controller.animateTo(
-              closest,
+              target,
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutCubic,
             );
@@ -711,148 +759,72 @@ class _BottomSheetState extends State<_BottomSheet> {
           await handleDragEnd(details);
         }
 
-        return SafeArea(
-          top: false,
-          child: Material(
-            elevation: 16,
-            shadowColor: Colors.black.withAlpha((0.3 * 255).round()),
-            color: color.primaryContainer.withAlpha((0.95 * 255).round()),
-            clipBehavior: Clip.antiAlias,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            child: Column(
-              children: [
-                GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onVerticalDragUpdate: handleDragUpdate,
-                  onVerticalDragEnd: handleDragEnd,
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: headerHeight,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        width: 44,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: color.onPrimaryContainer
-                              .withAlpha((0.4 * 255).round()),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
+        // viewPadding.bottom değerini bir kere al
+        final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+
+        return Material(
+          elevation: 16,
+          shadowColor: Colors.black.withAlpha((0.3 * 255).round()),
+          color: color.primaryContainer.withAlpha((0.95 * 255).round()),
+          clipBehavior: Clip.antiAlias,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: Column(
+            children: [
+              // Sürükleme tutamacı - kompakt
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onVerticalDragUpdate: handleDragUpdate,
+                onVerticalDragEnd: handleDragEnd,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: color.onPrimaryContainer
+                            .withAlpha((0.4 * 255).round()),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
                 ),
-                Expanded(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onVerticalDragUpdate: handleContentDragUpdate,
-                    onVerticalDragEnd: handleContentDragEnd,
-                    child: CustomScrollView(
-                      controller: scrollCtrl,
-                      physics: const ClampingScrollPhysics(),
-                      slivers: [
-                        if (_isExpanded)
-                          _ReorderableGridSliver(
-                            entries: widget.entries,
-                            onReorder: widget.onReorder,
-                            onTap: widget.onTap,
-                          )
-                        else
-                          // When collapsed, show the full list in a horizontally
-                          // scrolling strip so users can access all shortcuts.
-                          _HorizontalIconList(
-                            entries: widget.entries,
-                            onTap: widget.onTap,
-                            onVerticalDragUpdate: handleContentDragUpdate,
-                            onVerticalDragEnd: handleContentDragEnd,
-                          ),
-                        // Profile/footer area is shown once the sheet reaches
-                        // the full snap (profileSnap). Visibility is tracked by
-                        // _showProfileFooter.
-                        // profile/footer removed from slivers to prevent inner
-                        // scrolling from revealing it. The footer will be
-                        // rendered below the scroll area as a sibling widget.
-                      ],
-                    ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onVerticalDragUpdate: handleContentDragUpdate,
+                  onVerticalDragEnd: handleContentDragEnd,
+                  child: CustomScrollView(
+                    controller: scrollCtrl,
+                    physics: _isExpanded
+                        ? const ClampingScrollPhysics()
+                        : const NeverScrollableScrollPhysics(),
+                    slivers: [
+                      if (_isExpanded)
+                        _ReorderableGridSliver(
+                          entries: widget.entries,
+                          onReorder: widget.onReorder,
+                          onTap: widget.onTap,
+                        )
+                      else
+                        // When collapsed, show the full list in a horizontally
+                        // scrolling strip so users can access all shortcuts.
+                        _HorizontalIconList(
+                          entries: widget.entries,
+                          onTap: widget.onTap,
+                          onVerticalDragUpdate: handleContentDragUpdate,
+                          onVerticalDragEnd: handleContentDragEnd,
+                        ),
+                    ],
                   ),
                 ),
-                // Render the profile/footer area as a sibling below the
-                // scroll area. It should not be part of the scrollable
-                // slivers so inner content scrolling cannot reveal it.
-                if (widget.profileSize != null)
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    child: _showProfileFooter
-                        ? Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                height: 1,
-                                color: color.onPrimaryContainer
-                                    .withAlpha((0.1 * 255).round()),
-                              ),
-                              Container(
-                                // Provide enough height for the profile row and
-                                // include bottom safe area padding so the footer
-                                // sits above system UI.
-                                height: 64 +
-                                    MediaQuery.of(context).viewPadding.bottom,
-                                padding: EdgeInsets.only(
-                                  left: 16,
-                                  right: 16,
-                                  bottom:
-                                      MediaQuery.of(context).viewPadding.bottom,
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  elevation: 0,
-                                  child: InkWell(
-                                    onTap: widget.onProfileTap,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12),
-                                      child: Row(
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundColor:
-                                                color.primaryContainer,
-                                            child: Icon(
-                                              Icons.person,
-                                              color: color.onPrimaryContainer,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              widget.displayName,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                color: color.onSurface,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            onPressed: widget.onSettingsTap,
-                                            icon: Icon(
-                                              Icons.settings,
-                                              color: color.onSurface,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-              ],
-            ),
+              ),
+              // Alt sistem UI için boşluk - ekstra padding ekle
+              SizedBox(height: bottomPadding + 4),
+            ],
           ),
         );
       },
@@ -881,12 +853,12 @@ class _HorizontalIconList extends StatelessWidget {
         onVerticalDragUpdate: onVerticalDragUpdate,
         onVerticalDragEnd: onVerticalDragEnd,
         child: SizedBox(
-          height: 72,
+          height: 58,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              const itemWidth = 84.0;
-              const spacing = 8.0;
-              const padding = 32.0; // 16 px left + 16 px right
+              const itemWidth = 72.0;
+              const spacing = 6.0;
+              const padding = 24.0; // 12 px left + 12 px right
               final totalWidth = entries.isEmpty
                   ? 0
                   : (entries.length * itemWidth) +
@@ -896,7 +868,7 @@ class _HorizontalIconList extends StatelessWidget {
 
               if (fitsWithoutScroll) {
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+                  padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
                   child: Align(
                     alignment: Alignment.center,
                     child: Wrap(
@@ -920,7 +892,7 @@ class _HorizontalIconList extends StatelessWidget {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+                padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
                 itemCount: entries.length,
                 separatorBuilder: (_, __) => const SizedBox(width: spacing),
                 itemBuilder: (context, i) {
@@ -953,24 +925,24 @@ class _CompactFlexible extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 6),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(entry.icon, color: c.primary, size: 22),
-            const SizedBox(height: 4),
+            Icon(entry.icon, color: c.primary, size: 18),
+            const SizedBox(height: 2),
             Text(
               entry.title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 9,
                 fontWeight: FontWeight.w600,
                 color: c.onSurface,
               ),
@@ -1145,38 +1117,411 @@ class _GridTile extends StatelessWidget {
   }
 }
 
-class HomeDashboard extends ConsumerWidget {
+class HomeDashboard extends ConsumerStatefulWidget {
   const HomeDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeDashboard> createState() => _HomeDashboardState();
+}
+
+class _HomeDashboardState extends ConsumerState<HomeDashboard> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final authState = ref.watch(authProvider);
     final recordsAsync = ref.watch(sktRecordsProvider);
+
+    final user = authState.maybeWhen(
+      authenticated: (u) => u,
+      orElse: () => null,
+    );
 
     Future<void> handleRefresh() async {
       ref.invalidate(sktRecordsProvider);
       await ref.read(sktRecordsProvider.future);
     }
 
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Ana Sayfa')),
+      backgroundColor: colorScheme.surface,
       body: RefreshIndicator(
         onRefresh: handleRefresh,
-        child: ListView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Hızlı Bakış',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+          slivers: [
+            // Hoş geldin başlık
+            SliverToBoxAdapter(
+              child: _WelcomeHeader(userName: user?.name ?? 'Kullanıcı'),
+            ),
+
+            // Hızlı İstatistikler
+            SliverToBoxAdapter(
+              child: _QuickStatsSection(recordsAsync: recordsAsync),
+            ),
+
+            // Mola Durumu Kartı
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: _BreakStatusCard(),
+              ),
+            ),
+
+            // SKT Uyarıları
+            SliverToBoxAdapter(
+              child: _SktAlertsCard(recordsAsync: recordsAsync),
+            ),
+
+            // Görev Özeti
+            const SliverToBoxAdapter(
+              child: _TasksSummaryCard(),
+            ),
+
+            // Hızlı Bildirimler
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: InventoryQuickNotificationsCard(),
+              ),
+            ),
+
+            // Duyurular
+            const SliverToBoxAdapter(
+              child: _AnnouncementsCard(),
+            ),
+
+            // Alt boşluk (bottom bar için)
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 100),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Hoş geldin başlığı
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader({required this.userName});
+
+  final String userName;
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 6) return 'İyi geceler';
+    if (hour < 12) return 'Günaydın';
+    if (hour < 18) return 'İyi günler';
+    return 'İyi akşamlar';
+  }
+
+  String _getMotivationalText() {
+    final hour = DateTime.now().hour;
+    final weekday = DateTime.now().weekday;
+
+    if (weekday == 1) return 'Yeni bir hafta, yeni fırsatlar! 💪';
+    if (weekday == 5) return 'Cuma enerjisi! Son hamle 🎯';
+    if (hour < 10) return 'Güne enerjik başla! ☀️';
+    if (hour < 14) return 'Verimli bir öğle diliyoruz 🚀';
+    if (hour < 18) return 'Bitiş çizgisi yakın! 🏁';
+    return 'Bugün de harika işler çıkardın! 🌟';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primary,
+            colorScheme.primary.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_getGreeting()},',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onPrimary.withValues(alpha: 0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      userName,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.waving_hand_rounded,
+                  color: colorScheme.onPrimary,
+                  size: 28,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.onPrimary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _getMotivationalText(),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hızlı istatistikler
+class _QuickStatsSection extends StatelessWidget {
+  const _QuickStatsSection({required this.recordsAsync});
+
+  final AsyncValue<List<SktRecordModel>> recordsAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return recordsAsync.when(
+      data: (records) {
+        final now = DateTime.now();
+        final expiredCount = records.where((r) => r.daysUntil(now) < 0).length;
+        final warningCount = records.where((r) {
+          final days = r.daysUntil(now);
+          return days >= 0 && days <= 7;
+        }).length;
+        final totalCount = records.length;
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  icon: Icons.warning_amber_rounded,
+                  value: expiredCount.toString(),
+                  label: 'SKT Geçmiş',
+                  color: colorScheme.error,
+                  bgColor: colorScheme.errorContainer,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  icon: Icons.schedule_rounded,
+                  value: warningCount.toString(),
+                  label: 'Yaklaşan',
+                  color: colorScheme.tertiary,
+                  bgColor: colorScheme.tertiaryContainer,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  icon: Icons.inventory_2_rounded,
+                  value: totalCount.toString(),
+                  label: 'Toplam SKT',
+                  color: colorScheme.primary,
+                  bgColor: colorScheme.primaryContainer,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Row(
+          children: List.generate(
+            3,
+            (_) => Expanded(
+              child: Container(
+                margin: EdgeInsets.only(right: _ < 2 ? 12 : 0),
+                height: 90,
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+          ),
+        ),
+      ),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+    required this.bgColor,
+  });
+
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+  final Color bgColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Mola durumu kartı
+class _BreakStatusCard extends ConsumerWidget {
+  const _BreakStatusCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.coffee_rounded,
+                    color: colorScheme.secondary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mola Takibi',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Günlük mola durumunuz',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ShiftsHubPage(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                  label: const Text('Detay'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             BreakQuickActionCard(
               onViewHistory: () {
                 Navigator.of(context).push(
@@ -1186,15 +1531,403 @@ class HomeDashboard extends ConsumerWidget {
                 );
               },
             ),
-            const SizedBox(height: 16),
-            SktAlertSection(recordsAsync: recordsAsync),
-            const SizedBox(height: 20),
-            const _AnnouncementsPlaceholder(),
-            const SizedBox(height: 12),
-            const InventoryQuickNotificationsCard(),
-            const SizedBox(height: 24),
-            const SizedBox(height: 80),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// SKT Uyarıları kartı
+class _SktAlertsCard extends StatelessWidget {
+  const _SktAlertsCard({required this.recordsAsync});
+
+  final AsyncValue<List<SktRecordModel>> recordsAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.calendar_month_rounded,
+                      color: colorScheme.error,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'SKT Takibi',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SktListPage(),
+                        ),
+                      );
+                    },
+                    child: const Text('Tümünü Gör'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              recordsAsync.when(
+                data: (records) => _buildRecordsList(context, records),
+                loading: () => const SizedBox(
+                  height: 80,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (e, _) => Text(
+                  'Yüklenemedi: $e',
+                  style: TextStyle(color: colorScheme.error),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordsList(BuildContext context, List<SktRecordModel> records) {
+    final theme = Theme.of(context);
+    final now = DateTime.now();
+
+    final alerts = records.where((r) {
+      final days = r.daysUntil(now);
+      return days <= 7;
+    }).toList()
+      ..sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+
+    if (alerts.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.check_circle_outline_rounded,
+              color: theme.colorScheme.secondary,
+              size: 32,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Harika! Yaklaşan veya geçmiş SKT ürünü bulunmuyor.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final preview = alerts.take(4).toList();
+
+    return Column(
+      children: preview.asMap().entries.map((entry) {
+        final record = entry.value;
+        final isLast = entry.key == preview.length - 1;
+        return _SktAlertItem(
+          record: record,
+          showDivider: !isLast,
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _SktAlertItem extends StatelessWidget {
+  const _SktAlertItem({
+    required this.record,
+    this.showDivider = true,
+  });
+
+  final SktRecordModel record;
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final now = DateTime.now();
+    final daysLeft = record.daysUntil(now);
+
+    Color statusColor;
+    String statusText;
+    IconData statusIcon;
+
+    if (daysLeft < 0) {
+      statusColor = colorScheme.error;
+      statusText = 'Geçti';
+      statusIcon = Icons.error_rounded;
+    } else if (daysLeft == 0) {
+      statusColor = colorScheme.tertiary;
+      statusText = 'Bugün';
+      statusIcon = Icons.today_rounded;
+    } else {
+      statusColor = colorScheme.secondary;
+      statusText = '$daysLeft gün';
+      statusIcon = Icons.schedule_rounded;
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(statusIcon, color: statusColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      record.productName,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      '${record.branchName} · ${record.quantity} adet',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  statusText,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+      ],
+    );
+  }
+}
+
+/// Görev özeti kartı
+class _TasksSummaryCard extends ConsumerWidget {
+  const _TasksSummaryCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const BranchTasksPage(),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    Icons.checklist_rounded,
+                    color: colorScheme.primary,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Görevlerim',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Şube görevlerini görüntüle ve yönet',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: colorScheme.onSurfaceVariant,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Duyurular kartı
+class _AnnouncementsCard extends StatelessWidget {
+  const _AnnouncementsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.campaign_rounded,
+                      color: colorScheme.tertiary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Duyurular',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Henüz yeni duyuru bulunmuyor. Genel merkez duyuruları burada görüntülenecek.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1369,48 +2102,6 @@ class _SktAlertTile extends StatelessWidget {
           color: fg,
           fontWeight: FontWeight.w600,
           fontSize: 12,
-        ),
-      ),
-    );
-  }
-}
-
-class _AnnouncementsPlaceholder extends StatelessWidget {
-  const _AnnouncementsPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Duyurular',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.campaign_outlined,
-                      color: theme.colorScheme.primary),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Bu alanı kurum içi duyurular ve mağaza odaklı haberler için kullanacağız. İçerik hazır olduğunda otomatik olarak listelenecek.',
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-          ),
         ),
       ),
     );

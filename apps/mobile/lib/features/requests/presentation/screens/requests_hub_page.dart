@@ -7,7 +7,6 @@ import '../../data/request_repository.dart';
 import '../../domain/models/branch_request.dart';
 import '../../domain/models/equipment_request_type.dart';
 import '../../domain/models/malfunction_issue_type.dart';
-import '../../domain/models/request_category.dart';
 import '../../domain/models/request_status.dart';
 import 'request_form_page.dart';
 import '../widgets/request_category_theme.dart';
@@ -19,7 +18,23 @@ class RequestsHubPage extends ConsumerStatefulWidget {
   ConsumerState<RequestsHubPage> createState() => _RequestsHubPageState();
 }
 
-class _RequestsHubPageState extends ConsumerState<RequestsHubPage> {
+class _RequestsHubPageState extends ConsumerState<RequestsHubPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  RequestStatus? _statusFilter; // null = tümü
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   Future<void> _refresh() {
     return ref.refresh(personalRequestsProvider.future);
   }
@@ -68,44 +83,210 @@ class _RequestsHubPageState extends ConsumerState<RequestsHubPage> {
           authenticated: (user) => user,
           orElse: () => null,
         );
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final bottomPadding =
         MediaQuery.of(context).viewPadding.bottom + kBottomNavigationBarHeight;
 
     const categories = RequestCategoryThemes.values;
 
+    // İstatistikler
+    final stats = requestsAsync.maybeWhen(
+      data: (requests) {
+        final pending =
+            requests.where((r) => r.status == RequestStatus.pending).length;
+        final inProgress =
+            requests.where((r) => r.status == RequestStatus.inProgress).length;
+        final resolved =
+            requests.where((r) => r.status == RequestStatus.resolved).length;
+        return (pending: pending, inProgress: inProgress, resolved: resolved);
+      },
+      orElse: () => (pending: 0, inProgress: 0, resolved: 0),
+    );
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Talepler'),
-      ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: CustomScrollView(
           slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-              sliver: SliverToBoxAdapter(
-                child: Text(
-                  'Talep Kategorileri',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+            // Header Card
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colors.primary,
+                      colors.primary.withValues(alpha: 0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.primary.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.support_agent,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Talep Merkezi',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'İhtiyaçlarınızı hızlıca iletin',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Stats Row - tıklanabilir filtreler
+                    Row(
+                      children: [
+                        _MiniStat(
+                          count: stats.pending,
+                          label: 'Bekleyen',
+                          color: Colors.amber,
+                          isSelected: _statusFilter == RequestStatus.pending,
+                          onTap: () => setState(() {
+                            _statusFilter =
+                                _statusFilter == RequestStatus.pending
+                                    ? null
+                                    : RequestStatus.pending;
+                          }),
+                        ),
+                        const SizedBox(width: 12),
+                        _MiniStat(
+                          count: stats.inProgress,
+                          label: 'İşlemde',
+                          color: Colors.blue.shade300,
+                          isSelected: _statusFilter == RequestStatus.inProgress,
+                          onTap: () => setState(() {
+                            _statusFilter =
+                                _statusFilter == RequestStatus.inProgress
+                                    ? null
+                                    : RequestStatus.inProgress;
+                          }),
+                        ),
+                        const SizedBox(width: 12),
+                        _MiniStat(
+                          count: stats.resolved,
+                          label: 'Çözüldü',
+                          color: Colors.green.shade300,
+                          isSelected: _statusFilter == RequestStatus.resolved,
+                          onTap: () => setState(() {
+                            _statusFilter =
+                                _statusFilter == RequestStatus.resolved
+                                    ? null
+                                    : RequestStatus.resolved;
+                          }),
+                        ),
+                      ],
+                    ),
+                    // Seçili filtre göstergesi
+                    if (_statusFilter != null) ...[
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () => setState(() => _statusFilter = null),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.filter_list,
+                                  color: Colors.white, size: 16),
+                              SizedBox(width: 6),
+                              Text(
+                                'Filtreyi Kaldır',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(Icons.close, color: Colors.white, size: 14),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.9,
+
+            // Kategori Başlığı
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.category_outlined,
+                        size: 20, color: colors.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Yeni Talep Oluştur',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
+              ),
+            ),
+
+            // Kategori Kartları - Yatay Kaydırmalı
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 140,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: categories.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
                     final definition = categories[index];
-                    return _RequestCategoryCard(
+                    return _CategoryCard(
                       definition: definition,
                       onTap: user?.branchId == null
                           ? null
@@ -133,67 +314,110 @@ class _RequestsHubPageState extends ConsumerState<RequestsHubPage> {
                             },
                     );
                   },
-                  childCount: categories.length,
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-              sliver: SliverToBoxAdapter(
-                child: Text(
-                  'Son Taleplerim',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+
+            // Son Taleplerim Başlığı
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.history, size: 20, color: colors.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Son Taleplerim',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    requestsAsync.maybeWhen(
+                      data: (requests) => Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colors.primaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${requests.length} talep',
+                          style: TextStyle(
+                            color: colors.onPrimaryContainer,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
               ),
             ),
+
+            // Talep Listesi
             requestsAsync.when(
               data: (requests) {
-                if (requests.isEmpty) {
-                  return const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: _EmptyStateCard(
-                        message:
-                            'Henüz talep oluşturmadınız. Üstteki kategorilerden birini seçerek başlayabilirsiniz.',
-                      ),
+                // Filtreleme uygula
+                final filteredRequests = _statusFilter == null
+                    ? requests
+                    : requests.where((r) => r.status == _statusFilter).toList();
+
+                if (filteredRequests.isEmpty) {
+                  return SliverToBoxAdapter(
+                    child: _EmptyState(
+                      icon: _statusFilter != null
+                          ? Icons.filter_list_off
+                          : Icons.inbox_outlined,
+                      title: _statusFilter != null
+                          ? 'Sonuç Bulunamadı'
+                          : 'Henüz Talep Yok',
+                      message: _statusFilter != null
+                          ? 'Bu durumdaki talep bulunamadı.\nFiltreyi kaldırmak için yukarıdaki butona tıklayın.'
+                          : 'Yukarıdaki kategorilerden birini seçerek\nilk talebinizi oluşturabilirsiniz.',
                     ),
                   );
                 }
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final request = requests[index];
-                      final definition =
-                          RequestCategoryThemes.of(request.category);
-                      return _RequestListTile(
-                        request: request,
-                        definition: definition,
-                        onTap: () => _showRequestDetails(request),
-                      );
-                    },
-                    childCount: requests.length,
+
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final request = filteredRequests[index];
+                        final definition =
+                            RequestCategoryThemes.of(request.category);
+                        return _RequestCard(
+                          request: request,
+                          definition: definition,
+                          onTap: () => _showRequestDetails(request),
+                        );
+                      },
+                      childCount: filteredRequests.length,
+                    ),
                   ),
                 );
               },
               loading: () => const SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              ),
-              error: (error, _) => SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _EmptyStateCard(
-                    message:
-                        'Talepleriniz yüklenirken bir hata oluştu. Yeniden denemek için aşağı kaydırın.\n$error',
+                  padding: EdgeInsets.symmetric(vertical: 48),
+                  child: Center(
+                    child: CircularProgressIndicator(),
                   ),
                 ),
               ),
+              error: (error, _) => SliverToBoxAdapter(
+                child: _EmptyState(
+                  icon: Icons.error_outline,
+                  title: 'Bir Hata Oluştu',
+                  message: 'Talepler yüklenirken sorun oluştu.\n$error',
+                  isError: true,
+                ),
+              ),
             ),
+
             SliverToBoxAdapter(
               child: SizedBox(height: bottomPadding + 16),
             ),
@@ -204,13 +428,66 @@ class _RequestsHubPageState extends ConsumerState<RequestsHubPage> {
   }
 }
 
-enum _RequestDetailsResult {
-  cancelled,
-  edit,
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({
+    required this.count,
+    required this.label,
+    required this.color,
+    this.isSelected = false,
+    this.onTap,
+  });
+
+  final int count;
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Colors.white.withValues(alpha: 0.35)
+                : Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+            border:
+                isSelected ? Border.all(color: Colors.white, width: 2) : null,
+          ),
+          child: Column(
+            children: [
+              Text(
+                count.toString(),
+                style: TextStyle(
+                  color: color,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _RequestCategoryCard extends StatelessWidget {
-  const _RequestCategoryCard({
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({
     required this.definition,
     this.onTap,
   });
@@ -221,48 +498,320 @@ class _RequestCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: definition.color.withValues(alpha: 0.12),
-          border: Border.all(color: definition.color.withValues(alpha: 0.4)),
-        ),
+      child: Container(
+        width: 150,
         padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              definition.color.withValues(alpha: 0.15),
+              definition.color.withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: definition.color.withValues(alpha: 0.3),
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              backgroundColor: definition.color,
-              foregroundColor: Colors.white,
-              child: Icon(definition.icon),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              definition.title,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              definition.description,
-              style: theme.textTheme.bodySmall,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: definition.color,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: definition.color.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                definition.icon,
+                color: Colors.white,
+                size: 22,
+              ),
             ),
             const Spacer(),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Icon(
-                Icons.arrow_forward_rounded,
-                color: definition.color,
+            Text(
+              definition.title,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Text(
+                  'Oluştur',
+                  style: TextStyle(
+                    color: definition.color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 14,
+                  color: definition.color,
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _RequestCard extends StatelessWidget {
+  const _RequestCard({
+    required this.request,
+    required this.definition,
+    required this.onTap,
+  });
+
+  final BranchRequest request;
+  final RequestCategoryThemeData definition;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final statusInfo = _getStatusInfo(request.status, colors);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colors.outlineVariant.withValues(alpha: 0.5),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Category Icon
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: definition.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  definition.icon,
+                  color: definition.color,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      definition.title,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: colors.outline,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDate(request.createdAt),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Status Badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusInfo.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      statusInfo.icon,
+                      size: 14,
+                      color: statusInfo.color,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      statusInfo.label,
+                      style: TextStyle(
+                        color: statusInfo.color,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _StatusInfo _getStatusInfo(RequestStatus status, ColorScheme colors) {
+    switch (status) {
+      case RequestStatus.pending:
+        return _StatusInfo(
+          color: Colors.amber.shade700,
+          icon: Icons.hourglass_empty,
+          label: 'Bekliyor',
+        );
+      case RequestStatus.inProgress:
+        return const _StatusInfo(
+          color: Colors.blue,
+          icon: Icons.sync,
+          label: 'İşlemde',
+        );
+      case RequestStatus.resolved:
+        return const _StatusInfo(
+          color: Colors.green,
+          icon: Icons.check_circle_outline,
+          label: 'Çözüldü',
+        );
+      case RequestStatus.cancelled:
+        return const _StatusInfo(
+          color: Colors.grey,
+          icon: Icons.cancel_outlined,
+          label: 'İptal',
+        );
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final local = date.toLocal();
+    return '${local.day.toString().padLeft(2, '0')}.${local.month.toString().padLeft(2, '0')}.${local.year}';
+  }
+}
+
+class _StatusInfo {
+  const _StatusInfo({
+    required this.color,
+    required this.icon,
+    required this.label,
+  });
+
+  final Color color;
+  final IconData icon;
+  final String label;
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.isError = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final iconColor = isError ? colors.error : colors.primary;
+
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 48,
+              color: iconColor,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _RequestDetailsResult {
+  cancelled,
+  edit,
 }
 
 class _RequestDetailsSheet extends ConsumerStatefulWidget {
@@ -479,32 +1028,20 @@ class _RequestDetailsSheetState extends ConsumerState<_RequestDetailsSheet> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
-  }
-
   String _formatDateTime(DateTime date) {
-    final formattedDate = _formatDate(date.toLocal());
-    final hour = date.toLocal().hour.toString().padLeft(2, '0');
-    final minute = date.toLocal().minute.toString().padLeft(2, '0');
-    return '$formattedDate $hour:$minute';
-  }
-
-  String? _formatLeaveRange(Map<String, dynamic> payload) {
-    final startIso = payload['start_date'] as String?;
-    final endIso = payload['end_date'] as String?;
-    final start = startIso == null ? null : DateTime.tryParse(startIso);
-    final end = endIso == null ? null : DateTime.tryParse(endIso);
-    if (start == null || end == null) {
-      return null;
-    }
-    return '${_formatDate(start.toLocal())} - ${_formatDate(end.toLocal())}';
+    final local = date.toLocal();
+    final day = local.day.toString().padLeft(2, '0');
+    final month = local.month.toString().padLeft(2, '0');
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '$day.$month.${local.year} $hour:$minute';
   }
 
   @override
   Widget build(BuildContext context) {
     final request = widget.request;
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final definition = RequestCategoryThemes.of(request.category);
     final attachmentReferences = _attachmentReferences;
     final payload = request.payload ?? const <String, dynamic>{};
@@ -512,17 +1049,10 @@ class _RequestDetailsSheetState extends ConsumerState<_RequestDetailsSheet> {
         MalfunctionIssueTypeX.maybeFromValue(
                 payload['malfunction_type'] as String?)
             ?.label;
-    final malfunctionDescription =
-        payload['malfunction_type_description'] as String?;
     final equipmentLabel = payload['equipment_type_label'] as String? ??
         EquipmentRequestTypeX.maybeFromValue(
                 payload['equipment_type'] as String?)
             ?.label;
-    final equipmentDescription =
-        payload['equipment_type_description'] as String?;
-    final leaveRangeText = widget.request.category == RequestCategory.leave
-        ? _formatLeaveRange(payload)
-        : null;
 
     final canModify = _canModify;
 
@@ -543,222 +1073,210 @@ class _RequestDetailsSheetState extends ConsumerState<_RequestDetailsSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: theme.dividerColor,
+                      color: colors.outlineVariant,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                // Header with gradient
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        definition.color.withValues(alpha: 0.15),
+                        definition.color.withValues(alpha: 0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: definition.color.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: definition.color,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          definition.icon,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              request.title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              definition.title,
+                              style: TextStyle(
+                                color: definition.color,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 16),
+
+                // Status and Date
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      backgroundColor: definition.color,
-                      foregroundColor: Colors.white,
-                      child: Icon(definition.icon),
+                    Expanded(
+                      child: _DetailItem(
+                        icon: Icons.flag_outlined,
+                        label: 'Durum',
+                        value: request.status.label,
+                        valueColor: _getStatusColor(request.status),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            request.title,
-                            style: theme.textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              Chip(
-                                backgroundColor:
-                                    definition.color.withValues(alpha: 0.15),
-                                label: Text(
-                                  definition.title,
-                                  style: TextStyle(
-                                    color: definition.color,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              _StatusChip(status: request.status),
-                            ],
-                          ),
-                        ],
+                      child: _DetailItem(
+                        icon: Icons.access_time,
+                        label: 'Oluşturulma',
+                        value: _formatDateTime(request.createdAt),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                _buildLabelValue(context, 'Durum', request.status.label),
-                _buildLabelValue(
-                  context,
-                  'Oluşturma Zamanı',
-                  _formatDateTime(request.createdAt),
-                ),
-                _buildLabelValue(
-                  context,
-                  'Son Güncelleme',
-                  _formatDateTime(request.updatedAt),
-                ),
-                if (request.targetDepartment != null &&
-                    request.targetDepartment!.isNotEmpty)
-                  _buildLabelValue(
-                    context,
-                    'Hedef Birim',
-                    request.targetDepartment!,
+                const SizedBox(height: 12),
+
+                if (malfunctionLabel != null)
+                  _DetailItem(
+                    icon: Icons.warning_amber_outlined,
+                    label: 'Arıza Türü',
+                    value: malfunctionLabel,
+                  ),
+                if (equipmentLabel != null)
+                  _DetailItem(
+                    icon: Icons.build_outlined,
+                    label: 'Ekipman Türü',
+                    value: equipmentLabel,
                   ),
                 if (request.description != null &&
                     request.description!.isNotEmpty)
-                  _buildLabelValue(
-                    context,
-                    'Açıklama',
-                    request.description!,
+                  _DetailItem(
+                    icon: Icons.notes_outlined,
+                    label: 'Açıklama',
+                    value: request.description!,
                   ),
-                if (request.category == RequestCategory.malfunction &&
-                    malfunctionLabel != null)
-                  _buildLabelValue(
-                    context,
-                    'Arıza Kategorisi',
-                    malfunctionLabel,
+                if (request.targetDepartment != null &&
+                    request.targetDepartment!.isNotEmpty)
+                  _DetailItem(
+                    icon: Icons.business_outlined,
+                    label: 'Hedef Birim',
+                    value: request.targetDepartment!,
                   ),
-                if (request.category == RequestCategory.malfunction &&
-                    malfunctionDescription != null &&
-                    malfunctionDescription.isNotEmpty)
-                  _buildLabelValue(
-                    context,
-                    'Kategori Açıklaması',
-                    malfunctionDescription,
-                  ),
-                if (request.category == RequestCategory.equipment &&
-                    equipmentLabel != null)
-                  _buildLabelValue(
-                    context,
-                    'Ekipman Kategorisi',
-                    equipmentLabel,
-                  ),
-                if (request.category == RequestCategory.equipment &&
-                    equipmentDescription != null &&
-                    equipmentDescription.isNotEmpty)
-                  _buildLabelValue(
-                    context,
-                    'Kategori Açıklaması',
-                    equipmentDescription,
-                  ),
-                if (leaveRangeText != null)
-                  _buildLabelValue(
-                    context,
-                    'İzin Aralığı',
-                    leaveRangeText,
-                  ),
+
+                // Attachments
                 if (attachmentReferences.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Text(
-                    'Görseller',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                    'Ekler (${attachmentReferences.length})',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: attachmentReferences.map((reference) {
-                      return FutureBuilder<String?>(
-                        future: _getAttachmentUrl(reference),
-                        builder: (context, snapshot) {
-                          final resolvedUrl = snapshot.data;
-                          Widget child;
-                          if (snapshot.connectionState !=
-                              ConnectionState.done) {
-                            child = Container(
-                              width: 96,
-                              height: 96,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              alignment: Alignment.center,
-                              child: const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            );
-                          } else if (resolvedUrl == null ||
-                              resolvedUrl.isEmpty) {
-                            child = Container(
-                              width: 96,
-                              height: 96,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Icon(Icons.broken_image_outlined),
-                            );
-                          } else {
-                            child = ClipRRect(
+                  SizedBox(
+                    height: 80,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: attachmentReferences.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final reference = attachmentReferences[index];
+                        return FutureBuilder<String?>(
+                          future: _getAttachmentUrl(reference),
+                          builder: (context, snapshot) {
+                            return InkWell(
+                              onTap: () => _openAttachmentReference(reference),
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                resolvedUrl,
-                                width: 96,
-                                height: 96,
-                                fit: BoxFit.cover,
+                              child: Container(
+                                width: 80,
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: snapshot.hasData &&
+                                          snapshot.data != null
+                                      ? DecorationImage(
+                                          image: NetworkImage(snapshot.data!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: snapshot.connectionState ==
+                                        ConnectionState.waiting
+                                    ? const Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        ),
+                                      )
+                                    : snapshot.hasError || snapshot.data == null
+                                        ? const Icon(Icons.image_outlined)
+                                        : null,
                               ),
                             );
-                          }
-
-                          return GestureDetector(
-                            onTap: resolvedUrl == null || resolvedUrl.isEmpty
-                                ? () => _openAttachmentReference(reference)
-                                : () => _openImage(resolvedUrl),
-                            child: child,
-                          );
-                        },
-                      );
-                    }).toList(growable: false),
-                  ),
-                ] else if ((payload['attachment_count'] as int? ?? 0) > 0) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    'Ek görseller mevcut ancak şu anda yüklenemiyor.',
-                    style: theme.textTheme.bodySmall,
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: canModify ? _handleEdit : null,
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Talebi Güncelle'),
+
+                // Actions
+                if (canModify) ...[
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _isCancelling ? null : _handleCancel,
+                          icon: _isCancelling
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.cancel_outlined),
+                          label: const Text('İptal Et'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: colors.error,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed:
-                            canModify && !_isCancelling ? _handleCancel : null,
-                        icon: _isCancelling
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.cancel_outlined),
-                        label: Text(_isCancelling
-                            ? 'İptal ediliyor...'
-                            : 'Talebi İptal Et'),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: _handleEdit,
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('Düzenle'),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -767,186 +1285,72 @@ class _RequestDetailsSheetState extends ConsumerState<_RequestDetailsSheet> {
     );
   }
 
-  Widget _buildLabelValue(BuildContext context, String label, String value) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.bodySmall
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: theme.textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RequestListTile extends StatelessWidget {
-  const _RequestListTile({
-    required this.request,
-    required this.definition,
-    this.onTap,
-  });
-
-  final BranchRequest request;
-  final RequestCategoryThemeData definition;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final subtitle = <String>[];
-    if (request.category == RequestCategory.malfunction) {
-      final typeValue = request.payload?['malfunction_type'] as String?;
-      final typeLabel =
-          MalfunctionIssueTypeX.maybeFromValue(typeValue)?.label ??
-              request.payload?['malfunction_type_label'] as String?;
-      if (typeLabel != null && typeLabel.isNotEmpty) {
-        subtitle.add('Arıza Kategorisi: $typeLabel');
-      }
-    }
-    if (request.category == RequestCategory.equipment) {
-      final typeValue = request.payload?['equipment_type'] as String?;
-      final typeLabel =
-          EquipmentRequestTypeX.maybeFromValue(typeValue)?.label ??
-              request.payload?['equipment_type_label'] as String?;
-      if (typeLabel != null && typeLabel.isNotEmpty) {
-        subtitle.add('Ekipman Kategorisi: $typeLabel');
-      }
-    }
-
-    if (request.category == RequestCategory.malfunction ||
-        request.category == RequestCategory.equipment) {
-      final attachments = request.payload?['attachments'];
-      if (attachments is List && attachments.isNotEmpty) {
-        subtitle.add('Ek görsel: ${attachments.length} adet');
-      } else {
-        final attachmentCount =
-            request.payload?['attachment_count'] as int? ?? 0;
-        if (attachmentCount > 0) {
-          subtitle.add('Ek görsel: $attachmentCount adet');
-        }
-      }
-    }
-    if (request.description != null && request.description!.isNotEmpty) {
-      subtitle.add(request.description!);
-    }
-    if (request.targetDepartment != null &&
-        request.targetDepartment!.isNotEmpty) {
-      subtitle.add('Birim: ${request.targetDepartment}');
-    }
-    if (request.category == RequestCategory.leave && request.payload != null) {
-      final start = request.payload?['start_date'] as String?;
-      final end = request.payload?['end_date'] as String?;
-      if (start != null && end != null) {
-        subtitle.add('İzin Aralığı: ${_formatDateRange(start, end)}');
-      }
-    }
-
-    return Card(
-      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: definition.color,
-          foregroundColor: Colors.white,
-          child: Icon(definition.icon),
-        ),
-        title: Text(request.title),
-        subtitle: subtitle.isEmpty
-            ? null
-            : Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(subtitle.join('\n')),
-              ),
-        onTap: onTap,
-        trailing: _StatusChip(status: request.status),
-      ),
-    );
-  }
-
-  String _formatDateRange(String startIso, String endIso) {
-    final start = DateTime.tryParse(startIso)?.toLocal();
-    final end = DateTime.tryParse(endIso)?.toLocal();
-    if (start == null || end == null) {
-      return 'Belirtilmedi';
-    }
-    return '${_formatDate(start)} - ${_formatDate(end)}';
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
-  }
-}
-
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.status});
-
-  final RequestStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    late final Color background;
-    late final Color foreground;
-
+  Color _getStatusColor(RequestStatus status) {
     switch (status) {
       case RequestStatus.pending:
-        background = colorScheme.secondaryContainer;
-        foreground = colorScheme.onSecondaryContainer;
-        break;
+        return Colors.amber.shade700;
       case RequestStatus.inProgress:
-        background = colorScheme.tertiaryContainer;
-        foreground = colorScheme.onTertiaryContainer;
-        break;
+        return Colors.blue;
       case RequestStatus.resolved:
-        background = Colors.green.withValues(alpha: 0.16);
-        foreground = Colors.green.shade800;
-        break;
+        return Colors.green;
       case RequestStatus.cancelled:
-        background = Colors.grey.withValues(alpha: 0.16);
-        foreground = Colors.grey.shade700;
-        break;
+        return Colors.grey;
     }
-
-    return Chip(
-      label: Text(status.label),
-      backgroundColor: background,
-      labelStyle: TextStyle(color: foreground, fontWeight: FontWeight.w600),
-    );
   }
 }
 
-class _EmptyStateCard extends StatelessWidget {
-  const _EmptyStateCard({required this.message});
+class _DetailItem extends StatelessWidget {
+  const _DetailItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
 
-  final String message;
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.info_outline),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: colors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: valueColor,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

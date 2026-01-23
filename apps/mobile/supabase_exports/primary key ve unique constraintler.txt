@@ -1,15 +1,15 @@
 [
   {
     "table_name": "announcement_reads",
-    "column_name": "announcement_id",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "announcement_reads_announcement_id_user_id_key"
-  },
-  {
-    "table_name": "announcement_reads",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "announcement_reads_pkey"
+  },
+  {
+    "table_name": "announcement_reads",
+    "column_name": "announcement_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "announcement_reads_announcement_id_user_id_key"
   },
   {
     "table_name": "announcement_reads",
@@ -240,6 +240,18 @@
     "constraint_name": "regions_tenant_id_code_key"
   },
   {
+    "table_name": "shift_pattern_drafts",
+    "column_name": "user_id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "shift_pattern_drafts_pkey"
+  },
+  {
+    "table_name": "shift_pattern_drafts",
+    "column_name": "tenant_id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "shift_pattern_drafts_pkey"
+  },
+  {
     "table_name": "shifts",
     "column_name": "tenant_id",
     "constraint_type": "UNIQUE",
@@ -337,15 +349,15 @@
   },
   {
     "table_name": "store_scoring_session_items",
-    "column_name": "id",
-    "constraint_type": "PRIMARY KEY",
-    "constraint_name": "store_scoring_session_items_pkey"
-  },
-  {
-    "table_name": "store_scoring_session_items",
     "column_name": "session_id",
     "constraint_type": "UNIQUE",
     "constraint_name": "store_scoring_session_items_session_id_item_id_key"
+  },
+  {
+    "table_name": "store_scoring_session_items",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "store_scoring_session_items_pkey"
   },
   {
     "table_name": "store_scoring_session_items",
@@ -361,15 +373,15 @@
   },
   {
     "table_name": "task_assignees",
-    "column_name": "id",
-    "constraint_type": "PRIMARY KEY",
-    "constraint_name": "task_assignees_pkey"
-  },
-  {
-    "table_name": "task_assignees",
     "column_name": "task_id",
     "constraint_type": "UNIQUE",
     "constraint_name": "task_assignees_task_id_user_id_key"
+  },
+  {
+    "table_name": "task_assignees",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "task_assignees_pkey"
   },
   {
     "table_name": "task_assignees",
@@ -409,15 +421,15 @@
   },
   {
     "table_name": "tenants",
-    "column_name": "code",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "tenants_code_key"
-  },
-  {
-    "table_name": "tenants",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "tenants_pkey"
+  },
+  {
+    "table_name": "tenants",
+    "column_name": "code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "tenants_code_key"
   },
   {
     "table_name": "todos",
@@ -427,27 +439,27 @@
   },
   {
     "table_name": "users",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "users_pkey"
+  },
+  {
+    "table_name": "users",
     "column_name": "email",
     "constraint_type": "UNIQUE",
     "constraint_name": "users_email_key"
   },
   {
     "table_name": "users",
-    "column_name": "id",
-    "constraint_type": "PRIMARY KEY",
-    "constraint_name": "users_pkey"
-  },
-  {
-    "table_name": "users",
-    "column_name": "id",
-    "constraint_type": "PRIMARY KEY",
-    "constraint_name": "users_pkey"
-  },
-  {
-    "table_name": "users",
     "column_name": "tenant_id",
     "constraint_type": "UNIQUE",
     "constraint_name": "users_tenant_id_employee_code_key"
+  },
+  {
+    "table_name": "users",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "users_pkey"
   },
   {
     "table_name": "users",

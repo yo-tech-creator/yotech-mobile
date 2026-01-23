@@ -86,19 +86,46 @@ class PushNotificationService {
         return;
       }
 
-      final payload = {
-        'user_id': user.id,
-        'tenant_id': user.tenantId,
-        'token': resolvedToken,
-        'platform': Platform.isIOS
-            ? 'ios'
-            : Platform.isAndroid
-                ? 'android'
-                : 'other',
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      };
+      final now = DateTime.now().toUtc().toIso8601String();
 
-      await _client.from('device_tokens').upsert(payload, onConflict: 'token');
+      // Önce bu kullanıcının mevcut token kaydını kontrol et
+      final existing = await _client
+          .from('device_tokens')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('token', resolvedToken)
+          .maybeSingle();
+
+      if (existing != null) {
+        // Token zaten var, sadece güncelle
+        await _client.from('device_tokens').update({
+          'updated_at': now,
+          'last_seen_at': now,
+        }).eq('id', existing['id']);
+      } else {
+        // Yeni token, ekle
+        // Önce bu token'ı kullanan eski kayıtları sil (cihaz değişmiş olabilir)
+        await _client
+            .from('device_tokens')
+            .delete()
+            .eq('user_id', user.id)
+            .neq('token', resolvedToken);
+
+        // Şimdi yeni token'ı ekle
+        await _client.from('device_tokens').insert({
+          'user_id': user.id,
+          'tenant_id': user.tenantId,
+          'token': resolvedToken,
+          'platform': Platform.isIOS
+              ? 'ios'
+              : Platform.isAndroid
+                  ? 'android'
+                  : 'other',
+          'updated_at': now,
+          'last_seen_at': now,
+        });
+      }
+
       _lastRegisteredToken = resolvedToken;
     } catch (e) {
       debugPrint('Token kaydı başarısız: $e');
