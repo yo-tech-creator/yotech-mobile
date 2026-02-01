@@ -10,7 +10,7 @@ import 'package:yotech_mobile/features/skt/domain/providers/skt_providers.dart';
 import 'package:yotech_mobile/features/skt/presentation/screens/skt_list_page.dart';
 import 'package:yotech_mobile/core/features/feature_repo.dart';
 import 'package:yotech_mobile/features/auth/presentation/screens/login_screen.dart';
-import 'package:yotech_mobile/features/settings/presentation/screens/settings_page.dart';
+import 'package:yotech_mobile/features/settings/presentation/screens/profile_page.dart';
 import 'package:yotech_mobile/shared/widgets/custom_back_button.dart';
 import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
 import 'package:yotech_mobile/features/inventory_transfer/presentation/providers/inventory_transfer_provider.dart';
@@ -19,6 +19,8 @@ import 'package:yotech_mobile/features/merch/presentation/screens/merch_screen.d
 import 'package:yotech_mobile/features/tasks/presentation/screens/branch_tasks_page.dart';
 import 'package:yotech_mobile/features/requests/presentation/screens/requests_hub_page.dart';
 import 'package:yotech_mobile/features/forms/presentation/screens/forms_hub_page.dart';
+import 'package:yotech_mobile/features/announcements/presentation/screens/announcements_page.dart';
+import 'package:yotech_mobile/features/visual_audit/visual_audit.dart';
 
 class FeatureKeys {
   static const skt = 'skt';
@@ -34,6 +36,7 @@ class FeatureKeys {
   static const merchandising = 'merchandising';
   static const profile = 'profile';
   static const requests = 'requests';
+  static const visualAudit = 'visual_audit';
 }
 
 class ShortcutOrderStore {
@@ -85,6 +88,8 @@ FeatureEntry _entryFor(String key) {
       return FeatureEntry(key, 'Puantaj', Icons.fingerprint);
     case FeatureKeys.profile:
       return FeatureEntry(key, 'Profil', Icons.person);
+    case FeatureKeys.visualAudit:
+      return FeatureEntry(key, 'Görsel Denetim', Icons.camera_alt_rounded);
     default:
       return FeatureEntry(key, key, Icons.extension);
   }
@@ -195,6 +200,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       await ref.read(authProvider.notifier).logout();
       if (!mounted) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const LoginScreen()),
           (route) => false,
@@ -223,6 +229,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         return 'Talepler';
       case FeatureKeys.timeAttendance:
         return 'Puantaj';
+      case FeatureKeys.visualAudit:
+        return 'Görsel Denetim';
       default:
         return 'Ana Sayfa';
     }
@@ -269,6 +277,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               if (showRequests) FeatureKeys.requests,
               if (has(FeatureKeys.timeAttendance)) FeatureKeys.timeAttendance,
               if (has(FeatureKeys.shifts)) FeatureKeys.shifts,
+              if (has(FeatureKeys.visualAudit)) FeatureKeys.visualAudit,
             ];
 
             List<String> normalized(List<String> list) {
@@ -387,7 +396,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                       onPressed: () {
                         Navigator.of(context, rootNavigator: true).push(
                           MaterialPageRoute(
-                            builder: (_) => const SettingsPage(),
+                            builder: (_) => const ProfilePage(),
                           ),
                         );
                       },
@@ -499,38 +508,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       case FeatureKeys.shifts:
         return const ShiftsHubPage();
       case FeatureKeys.announcements:
-        return const ModuleDemoPage(
-          key: ValueKey('ann'),
-          title: 'Duyurular',
-          tagline: 'Firma içi yayın ve takip',
-          description:
-              'Genel merkez metin, görsel veya video duyurularını segment bazlı yayınlayıp okunma oranını izler.',
-          icon: Icons.campaign,
-          highlights: [
-            DemoHighlight(
-              title: 'Segment Bazlı Gönderim',
-              description:
-                  'Tenant, bölge veya rol seçerek yalnızca ilgili personele mesaj gönderin.',
-              icon: Icons.segment,
-            ),
-            DemoHighlight(
-              title: 'Okundu Takibi',
-              description:
-                  'Kimlerin duyuruyu açtığı gerçek zamanlı grafikte görünür.',
-              icon: Icons.visibility,
-            ),
-            DemoHighlight(
-              title: 'Zengin İçerik',
-              description:
-                  'PDF, video veya bağlantı ekleyip tek karttan paylaşın.',
-              icon: Icons.attach_file,
-            ),
-          ],
-        );
+        return const AnnouncementsPage();
       case FeatureKeys.tasks:
         return const BranchTasksPage();
       case FeatureKeys.requests:
         return const RequestsHubPage();
+      case FeatureKeys.visualAudit:
+        return const VisualAuditPage();
       case FeatureKeys.timeAttendance:
         return const ModuleDemoPage(
           key: ValueKey('ta'),
@@ -1512,7 +1496,7 @@ class _BreakStatusCard extends ConsumerWidget {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const ShiftsHubPage(),
+                        builder: (_) => const ShiftsAndBreaksPage(),
                       ),
                     );
                   },
@@ -1526,7 +1510,7 @@ class _BreakStatusCard extends ConsumerWidget {
               onViewHistory: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const ShiftsHubPage(),
+                    builder: (_) => const ShiftsAndBreaksPage(),
                   ),
                 );
               },

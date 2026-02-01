@@ -221,7 +221,13 @@ function buildTemplateWorkbook(tenantCodeOverride?: string) {
 
   const roleSheet = utils.aoa_to_sheet([
     [...ROLE_HEADERS],
-    ...staffTemplateExample.RoleAssignments.map((row) => [row.sicil_no, row.role, row.scope_type, row.scope_code]),
+    ...staffTemplateExample.RoleAssignments.map((row) => [
+      row.sicil_no,
+      row.role,
+      row.scope_type,
+      // Eğer scope_type tenant ise hedef firma kodunu kullan
+      row.scope_type === "tenant" ? (tenantCode ?? row.scope_code) : row.scope_code,
+    ]),
   ]);
 
   utils.book_append_sheet(workbook, personnelSheet, PERSONNEL_SHEET);

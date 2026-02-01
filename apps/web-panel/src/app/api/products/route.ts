@@ -1,12 +1,38 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from "@/lib/supabase/env";
 import type { Database } from "@/lib/types/database";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limiter";
+import { z } from "zod";
+import xss from "xss";
 
 const READ_ROLES = new Set(["grand_admin", "firma_admin", "bolge_muduru", "sube_muduru"]);
 const WRITE_ROLES = new Set(["grand_admin", "firma_admin"]);
+
+// Input Validation Schemas
+const barcodeSchema = z.string()
+  .min(1, "Barkod zorunlu")
+  .max(50, "Barkod çok uzun")
+  .regex(/^[\w\-]+$/, "Geçersiz barkod formatı");
+
+const createProductSchema = z.object({
+  tenant_id: z.string().uuid().optional(),
+  barcode: barcodeSchema,
+  name: z.string().min(1, "Ürün adı zorunlu").max(300).transform(v => xss(v.trim())),
+  brand: z.string().max(100).nullable().optional().transform(v => v ? xss(v.trim()) : v),
+  category: z.string().max(100).nullable().optional().transform(v => v ? xss(v.trim()) : v),
+  supplier: z.string().max(100).nullable().optional().transform(v => v ? xss(v.trim()) : v),
+  unit: z.string().max(20).nullable().optional().transform(v => v ? xss(v.trim()) : v),
+  price: z.number().min(0).max(9999999).nullable().optional(),
+  active: z.boolean().optional().default(true),
+  alt_barcodes: z.array(barcodeSchema).max(20).optional().default([]),
+});
+
+const updateProductSchema = createProductSchema.partial().extend({
+  id: z.string().uuid("Geçersiz ürün ID"),
+});
 
 type Profile = {
   id: string;
@@ -51,47 +77,13 @@ async function getProfile(opts?: { allowRoles?: Set<string> }) {
   return { supabase, profile: profile as Profile } as const;
 }
 
-function parseProductPayload(body: unknown): ParsedProduct {
-  const obj = body as Record<string, unknown>;
-  const pickString = (key: string) => (typeof obj[key] === "string" ? (obj[key] as string).trim() : undefined);
-  const pickNullableString = (key: string) => (typeof obj[key] === "string" ? (obj[key] as string).trim() : obj[key] === null ? null : undefined);
-  const pickBoolean = (key: string) => (typeof obj[key] === "boolean" ? (obj[key] as boolean) : undefined);
-  const pickNumber = (key: string) => {
-    const val = obj[key];
-    if (typeof val === "number") return val;
-    if (typeof val === "string" && val.trim()) {
-      const n = Number(val.replace(",", "."));
-      return Number.isFinite(n) ? n : undefined;
-    }
-    return undefined;
-  };
+export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimit = await checkRateLimit(request, 'search');
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit);
+  }
 
-  const altRaw = obj.alt_barcodes;
-  const alt = Array.isArray(altRaw)
-    ? altRaw.map((a) => (typeof a === "string" ? a.trim() : "")).filter(Boolean)
-    : typeof altRaw === "string"
-    ? altRaw
-        .split(",")
-        .map((a) => a.trim())
-        .filter(Boolean)
-    : undefined;
-
-  return {
-    id: pickString("id"),
-    tenant_id: pickString("tenant_id"),
-    barcode: pickString("barcode"),
-    name: pickString("name"),
-    brand: pickNullableString("brand"),
-    category: pickNullableString("category"),
-    supplier: pickNullableString("supplier"),
-    unit: pickNullableString("unit"),
-    price: pickNumber("price") ?? null,
-    active: pickBoolean("active"),
-    alt_barcodes: alt,
-  };
-}
-
-export async function GET() {
   const gate = await getProfile({ allowRoles: READ_ROLES });
   if ("error" in gate) return gate.error;
 
@@ -106,7 +98,7 @@ export async function GET() {
 
     let query = supabase
       .from("products")
-      .select("id, tenant_id, barcode, name, brand, category, supplier, unit, price, active, alt_barcodes, created_at")
+      .select("id, tenant_id, barcode, name, brand, category, supplier, unit, price, active, alt_barcodes, created_at, updated_at")
       .order("name", { ascending: true })
       .range(from, to);
 
@@ -133,7 +125,13 @@ export async function GET() {
   return NextResponse.json({ products: all });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimit = await checkRateLimit(request, 'api');
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit);
+  }
+
   const gate = await getProfile({ allowRoles: WRITE_ROLES });
   if ("error" in gate) return gate.error;
   const { profile } = gate;
@@ -142,25 +140,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Sunucu yapılandırması eksik" }, { status: 500 });
   }
 
-  const body = await request.json().catch(() => null);
-  const parsed = parseProductPayload(body);
+  // Input validation with Zod
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ message: "Geçersiz JSON formatı" }, { status: 400 });
+  }
 
+  const validation = createProductSchema.safeParse(body);
+  if (!validation.success) {
+    return NextResponse.json({ 
+      message: "Doğrulama hatası", 
+      errors: validation.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+    }, { status: 400 });
+  }
+
+  const parsed = validation.data;
   const tenantId = profile.role === "grand_admin" ? parsed.tenant_id : profile.tenant_id;
   if (!tenantId) {
     return NextResponse.json({ message: "Firma (tenant_id) zorunlu" }, { status: 400 });
   }
 
-  const barcode = parsed.barcode;
-  const name = parsed.name;
-  if (!barcode || !name) {
-    return NextResponse.json({ message: "Barkod ve ürün adı zorunlu" }, { status: 400 });
-  }
-
   const payload: Database["public"]["Tables"]["products"]["Insert"] = {
     id: crypto.randomUUID(),
     tenant_id: tenantId,
-    barcode,
-    name,
+    barcode: parsed.barcode,
+    name: parsed.name,
     brand: parsed.brand ?? null,
     category: parsed.category ?? null,
     supplier: parsed.supplier ?? null,
@@ -179,7 +185,13 @@ export async function POST(request: Request) {
   return NextResponse.json({ id: payload.id });
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
+  // Rate limiting
+  const rateLimit = await checkRateLimit(request, 'api');
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit);
+  }
+
   const gate = await getProfile({ allowRoles: WRITE_ROLES });
   if ("error" in gate) return gate.error;
   const { profile } = gate;
@@ -188,11 +200,23 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Sunucu yapılandırması eksik" }, { status: 500 });
   }
 
-  const body = await request.json().catch(() => null);
-  const parsed = parseProductPayload(body);
-  if (!parsed.id) {
-    return NextResponse.json({ message: "id gerekli" }, { status: 400 });
+  // Input validation with Zod
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ message: "Geçersiz JSON formatı" }, { status: 400 });
   }
+
+  const validation = updateProductSchema.safeParse(body);
+  if (!validation.success) {
+    return NextResponse.json({ 
+      message: "Doğrulama hatası", 
+      errors: validation.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+    }, { status: 400 });
+  }
+
+  const parsed = validation.data;
 
   const supabaseAdmin = getSupabaseAdminClient();
   const { data: existing, error: readErr } = await supabaseAdmin
@@ -231,7 +255,13 @@ export async function PATCH(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+  // Rate limiting
+  const rateLimit = await checkRateLimit(request, 'api');
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit);
+  }
+
   const gate = await getProfile({ allowRoles: WRITE_ROLES });
   if ("error" in gate) return gate.error;
   const { profile } = gate;
@@ -242,8 +272,11 @@ export async function DELETE(request: Request) {
 
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
-  if (!id) {
-    return NextResponse.json({ message: "id gerekli" }, { status: 400 });
+  
+  // Validate ID
+  const idValidation = z.string().uuid("Geçersiz ürün ID").safeParse(id);
+  if (!idValidation.success) {
+    return NextResponse.json({ message: "Geçersiz ürün ID" }, { status: 400 });
   }
 
   const supabaseAdmin = getSupabaseAdminClient();

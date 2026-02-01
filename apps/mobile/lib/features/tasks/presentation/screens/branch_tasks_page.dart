@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../shared/shared.dart';
 import '../../../auth/domain/models/auth_state.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../../region_manager/domain/models/branch_task_node.dart';
@@ -77,13 +78,13 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage>
           Expanded(
             child: tasksAsync.when(
               loading: () => const _LoadingState(),
-              error: (error, _) => _ErrorState(
+              error: (error, _) => AppErrorState(
                 message: 'Görevler yüklenemedi',
                 onRetry: () => ref.invalidate(branchTaskTreeProvider),
               ),
               data: (tasks) {
                 if (!hasBranch) {
-                  return const _EmptyState(
+                  return const AppEmptyState(
                     icon: Icons.store_mall_directory_outlined,
                     title: 'Şube ataması gerekli',
                     subtitle:
@@ -92,7 +93,7 @@ class _BranchTasksPageState extends ConsumerState<BranchTasksPage>
                 }
 
                 if (tasks.isEmpty) {
-                  return const _EmptyState(
+                  return const AppEmptyState(
                     icon: Icons.task_alt_rounded,
                     title: 'Henüz görev yok',
                     subtitle:
@@ -323,7 +324,7 @@ class _TasksList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (tasks.isEmpty) {
-      return _EmptyState(
+      return AppEmptyState(
         icon: Icons.inbox_outlined,
         title: emptyMessage,
         subtitle: 'Bu kategoride görev bulunmuyor.',
@@ -1235,113 +1236,6 @@ class _LoadingState extends StatelessWidget {
                 ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({
-    required this.message,
-    required this.onRetry,
-  });
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: theme.colorScheme.error,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: theme.textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Tekrar Dene'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color:
-                    theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                size: 48,
-                color: theme.colorScheme.primary.withValues(alpha: 0.7),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }

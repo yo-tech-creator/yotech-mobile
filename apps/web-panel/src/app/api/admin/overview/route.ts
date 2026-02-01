@@ -53,7 +53,11 @@ export async function GET() {
   branches.forEach((b) => branchCountByTenant.set(b.tenant_id, (branchCountByTenant.get(b.tenant_id) ?? 0) + 1));
 
   const userCountByTenant = new Map<string, number>();
-  users.forEach((u) => userCountByTenant.set(u.tenant_id, (userCountByTenant.get(u.tenant_id) ?? 0) + 1));
+  users.forEach((u) => {
+    if (u.tenant_id) {
+      userCountByTenant.set(u.tenant_id, (userCountByTenant.get(u.tenant_id) ?? 0) + 1);
+    }
+  });
 
   const tenantsSummary = tenants.map((t) => ({
     id: t.id,

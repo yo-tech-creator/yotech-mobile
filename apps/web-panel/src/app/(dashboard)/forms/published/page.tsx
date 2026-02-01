@@ -175,20 +175,19 @@ export default async function PublishedFormsPage() {
           </div>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>{cards}</div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
+            gap: 16,
+            maxWidth: 1220,
+            width: "100%",
+            margin: "0 auto",
+          }}
+        >
+          {cards}
+        </div>
       )}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
-          gap: 16,
-          maxWidth: 1220,
-          width: "100%",
-          margin: "0 auto",
-        }}
-      >
-        {cards}
-      </div>
     </CardListShell>
   );
 }

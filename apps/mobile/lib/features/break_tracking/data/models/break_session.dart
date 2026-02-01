@@ -7,6 +7,7 @@ class BreakSession {
     required this.startedAt,
     this.endedAt,
     this.durationSeconds,
+    this.userName,
   });
 
   final String id;
@@ -16,11 +17,25 @@ class BreakSession {
   final DateTime startedAt;
   final DateTime? endedAt;
   final int? durationSeconds;
+  final String? userName;
 
   bool get isActive => endedAt == null;
 
   Duration? get recordedDuration =>
       durationSeconds != null ? Duration(seconds: durationSeconds!) : null;
+
+  BreakSession copyWith({String? userName}) {
+    return BreakSession(
+      id: id,
+      tenantId: tenantId,
+      branchId: branchId,
+      userId: userId,
+      startedAt: startedAt,
+      endedAt: endedAt,
+      durationSeconds: durationSeconds,
+      userName: userName ?? this.userName,
+    );
+  }
 
   factory BreakSession.fromJson(Map<String, dynamic> json) {
     return BreakSession(
@@ -33,6 +48,7 @@ class BreakSession {
           ? DateTime.parse(json['ended_at'] as String)
           : null,
       durationSeconds: json['duration_seconds'] as int?,
+      userName: json['user_name'] as String?,
     );
   }
 }

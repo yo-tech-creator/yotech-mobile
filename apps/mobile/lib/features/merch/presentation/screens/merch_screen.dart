@@ -1,9 +1,12 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yotech_mobile/core/localization/localization_extensions.dart';
+import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
 import 'package:yotech_mobile/features/merch/data/models/merch_person.dart';
 import 'package:yotech_mobile/features/merch/presentation/providers/merch_providers.dart';
+import 'package:yotech_mobile/shared/shared.dart';
 
 class MerchScreen extends ConsumerStatefulWidget {
   const MerchScreen({super.key});
@@ -44,6 +47,17 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
 
+    // Kullanıcı rolü kontrolü
+    final authState = ref.watch(authProvider);
+    final userRole = authState.maybeWhen(
+      authenticated: (user) => user.role,
+      orElse: () => null,
+    );
+    // Sadece personel ekleyemez - diğer tüm roller ekleyebilir
+    final canAddPerson = userRole == 'firma_admin' ||
+        userRole == 'bolge_muduru' ||
+        userRole == 'sube_muduru';
+
     // İstatistikler
     final allPeople = groups.expand((g) => g.people).toList();
     final totalCount = allPeople.length;
@@ -57,6 +71,7 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
               context,
               totalCount: totalCount,
               companyCount: companyCount,
+              canAddPerson: canAddPerson,
             ),
           ),
         ],
@@ -125,9 +140,16 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
               child: peopleAsync.when(
                 data: (_) {
                   if (filteredGroups.isEmpty) {
-                    return _EmptyState(
-                      isFiltered:
-                          _searchQuery.isNotEmpty || _filterRank != null,
+                    final isFiltered =
+                        _searchQuery.isNotEmpty || _filterRank != null;
+                    return AppEmptyState(
+                      icon: isFiltered ? Icons.search_off : Icons.group_add,
+                      title: isFiltered
+                          ? context.l10n.merchEmptyFiltered
+                          : context.l10n.merchEmptyDefault,
+                      subtitle: isFiltered
+                          ? 'Farklı bir arama deneyin'
+                          : 'Yeni kişi ekleyerek başlayın',
                     );
                   }
                   return RefreshIndicator(
@@ -146,8 +168,8 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
                     ),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => _MerchErrorState(
+                loading: () => const AppLoading(),
+                error: (error, _) => AppErrorState(
                   message: l10n.merchLoadError('$error'),
                   onRetry: () =>
                       ref.read(merchPeopleProvider.notifier).refresh(),
@@ -164,6 +186,7 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
     BuildContext context, {
     required int totalCount,
     required int companyCount,
+    required bool canAddPerson,
   }) {
     final cs = Theme.of(context).colorScheme;
     return Container(
@@ -223,11 +246,15 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
                   ),
                   // Kişi Ekle butonu
                   Material(
-                    color: Colors.white,
+                    color: canAddPerson
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () => _openAddPersonSheet(),
+                      onTap: canAddPerson
+                          ? () => _openAddPersonSheet()
+                          : () => _showNoPermissionWarning(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 8),
@@ -235,12 +262,17 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.person_add_alt_1,
-                                size: 18, color: cs.primary),
+                                size: 18,
+                                color: canAddPerson
+                                    ? cs.primary
+                                    : cs.primary.withValues(alpha: 0.5)),
                             const SizedBox(width: 4),
                             Text(
                               'Ekle',
                               style: TextStyle(
-                                color: cs.primary,
+                                color: canAddPerson
+                                    ? cs.primary
+                                    : cs.primary.withValues(alpha: 0.5),
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
                               ),
@@ -291,6 +323,33 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
     );
   }
 
+  void _showNoPermissionWarning() {
+    final cs = Theme.of(context).colorScheme;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          icon: Icon(
+            Icons.lock_outline,
+            color: cs.tertiary,
+            size: 48,
+          ),
+          title: const Text('Yetkiniz Yok'),
+          content: const Text(
+            'Mörş eklemek için şube müdürü, bölge müdürü veya firma yöneticisi olmalısınız.\n\n'
+            'Eğer ekleme yapmanız gerekiyorsa, lütfen yetkilinize başvurun.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Tamam'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildRankChip(MerchRank? rank, String label) {
     final isSelected = _filterRank == rank;
     final cs = Theme.of(context).colorScheme;
@@ -329,26 +388,32 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
-        final bottomInset = MediaQuery.of(sheetContext).viewInsets.bottom;
-        return Container(
-          decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 20,
-              bottom: bottomInset + 20,
-            ),
-            child: SingleChildScrollView(
-              child: _buildForm(
-                sheetContext,
-                isEditing: person != null,
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            final bottomInset = MediaQuery.of(sheetContext).viewInsets.bottom;
+            return Container(
+              decoration: BoxDecoration(
+                color: cs.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
-            ),
-          ),
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 20,
+                  bottom: bottomInset + 20,
+                ),
+                child: SingleChildScrollView(
+                  child: _buildForm(
+                    sheetContext,
+                    isEditing: person != null,
+                    setSheetState: setSheetState,
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -357,7 +422,11 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
     _resetForm();
   }
 
-  Widget _buildForm(BuildContext sheetContext, {required bool isEditing}) {
+  Widget _buildForm(
+    BuildContext sheetContext, {
+    required bool isEditing,
+    required StateSetter setSheetState,
+  }) {
     final l10n = sheetContext.l10n;
     final cs = Theme.of(sheetContext).colorScheme;
 
@@ -487,19 +556,29 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
             runSpacing: 8,
             children: MerchRank.values.map((rank) {
               final isSelected = _selectedRank == rank;
-              return ChoiceChip(
-                label: Text(rank.localizedLabel(sheetContext)),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() => _selectedRank = rank);
-                  }
+              return GestureDetector(
+                onTap: () {
+                  // Önce klavyeyi kapat, sonra seçimi güncelle
+                  FocusScope.of(sheetContext).unfocus();
+                  setSheetState(() => _selectedRank = rank);
                 },
-                selectedColor: cs.primaryContainer,
-                labelStyle: TextStyle(
-                  color:
-                      isSelected ? cs.onPrimaryContainer : cs.onSurfaceVariant,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                child: ChoiceChip(
+                  label: Text(rank.localizedLabel(sheetContext)),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) {
+                      FocusScope.of(sheetContext).unfocus();
+                      setSheetState(() => _selectedRank = rank);
+                    }
+                  },
+                  selectedColor: cs.primaryContainer,
+                  labelStyle: TextStyle(
+                    color: isSelected
+                        ? cs.onPrimaryContainer
+                        : cs.onSurfaceVariant,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
                 ),
               );
             }).toList(),
@@ -937,10 +1016,12 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
                           icon: Icons.phone_outlined,
                           label: 'Ara',
                           color: Colors.green,
-                          onTap: () {
-                            Navigator.of(sheetContext).pop();
-                            // TODO: Telefon arama
-                          },
+                          onTap: person.phoneNumber.isNotEmpty
+                              ? () {
+                                  Navigator.of(sheetContext).pop();
+                                  _callPhone(person.phoneNumber);
+                                }
+                              : null,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -978,6 +1059,23 @@ class _MerchScreenState extends ConsumerState<MerchScreen> {
         return Colors.teal;
       case MerchRank.yonetici:
         return Colors.red;
+    }
+  }
+
+  Future<void> _callPhone(String phoneNumber) async {
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    final uri = Uri.parse('tel:$cleanNumber');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Telefon uygulaması açılamadı'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -1140,38 +1238,44 @@ class _ActionTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
-    required this.onTap,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = onTap == null;
+    final effectiveColor = isDisabled ? Colors.grey : color;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: color,
+      child: Opacity(
+        opacity: isDisabled ? 0.5 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: effectiveColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: effectiveColor, size: 24),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: effectiveColor,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1371,112 +1475,6 @@ class _PersonTile extends StatelessWidget {
       case MerchRank.yonetici:
         return Colors.red;
     }
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.isFiltered});
-
-  final bool isFiltered;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final message = isFiltered
-        ? context.l10n.merchEmptyFiltered
-        : context.l10n.merchEmptyDefault;
-    final subtitle = isFiltered
-        ? 'Farklı bir arama deneyin'
-        : 'Yeni kişi ekleyerek başlayın';
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isFiltered ? Icons.search_off : Icons.group_add,
-                size: 48,
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: cs.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 13,
-                color: cs.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MerchErrorState extends StatelessWidget {
-  const _MerchErrorState({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.error_outline,
-                size: 42,
-                color: Colors.redAccent,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: cs.onSurfaceVariant),
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.tryAgain),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

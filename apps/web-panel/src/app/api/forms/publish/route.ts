@@ -103,7 +103,7 @@ export async function POST(request: Request) {
   const selectable = lowerRoles(profile.role);
   const autoInclude = upperRoles(profile.role);
   const cleaned = Array.isArray(body.visibleRoles) && body.visibleRoles.length > 0
-    ? body.visibleRoles.map((r) => (typeof r === "string" ? r.trim() : "")).filter((r) => selectable.includes(r) || autoInclude.includes(r))
+    ? body.visibleRoles.map((r) => (typeof r === "string" ? r.trim() : "")).filter((r) => (selectable as string[]).includes(r) || (autoInclude as string[]).includes(r))
     : [...selectable, ...autoInclude];
   const visibleRoles = Array.from(new Set([...autoInclude, ...cleaned]));
 

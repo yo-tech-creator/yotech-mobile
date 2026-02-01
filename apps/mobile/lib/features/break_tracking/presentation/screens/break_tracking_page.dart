@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
+import 'package:yotech_mobile/shared/shared.dart';
 
 class ShiftPattern {
   final String id;
@@ -203,13 +204,14 @@ class ShiftsHubPage extends ConsumerWidget {
         child: asyncWeek.when(
           data: (week) {
             if (week == null) {
-              return const _EmptyState(
-                  message: 'Yayınlanmış vardiya bulunamadı');
+              return const AppEmptyState(
+                  icon: Icons.event_busy,
+                  title: 'Yayınlanmış vardiya bulunamadı');
             }
             return _ShiftWeekView(week: week);
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => _EmptyState(message: 'Vardiya alınamadı: $e'),
+          loading: () => const AppLoading(),
+          error: (e, _) => AppErrorState(message: 'Vardiya alınamadı: $e'),
         ),
       ),
     );
@@ -476,27 +478,4 @@ Color _hexToColor(String hex) {
   var value = hex.replaceFirst('#', '');
   if (value.length == 6) value = 'FF$value';
   return Color(int.parse(value, radix: 16));
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        const SizedBox(height: 120),
-        Icon(Icons.event_busy,
-            size: 48, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 12),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
-    );
-  }
 }

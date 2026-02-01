@@ -78,6 +78,7 @@ final effectiveFeaturesProvider =
       'instore_shortage': enabled('stoksuz'),
       'time_attendance': enabled('puantaj'),
       'merchandising': enabled('merchandising'),
+      'visual_audit': enabled('visual_audit'),
       'profile': true,
     };
   } on PostgrestException catch (e) {
@@ -101,6 +102,7 @@ final effectiveFeaturesProvider =
       'instore_shortage': true,
       'time_attendance': true,
       'merchandising': true,
+      'visual_audit': true,
       'profile': true,
     };
   }

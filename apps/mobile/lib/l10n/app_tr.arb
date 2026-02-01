@@ -251,5 +251,46 @@
   "merchRankPlasiyer": "Plasiyer",
   "merchRankSevkiyat": "Sevkiyat",
   "merchRankSef": "Şef",
-  "merchRankYonetici": "Yönetici"
+  "merchRankYonetici": "Yönetici",
+
+  "announcementsTabAll": "Tümü",
+  "announcementsTabAnnouncements": "Duyurular",
+  "announcementsTabSurveys": "Anketler",
+  "announcementsTabCompleted": "Geçmiş",
+  "completedSurveysEmpty": "Henüz tamamlanmış anket yok",
+  "completedSurveysSubtitle": "Doldurduğunuz anketler burada görünecek",
+  "filterByTitle": "Başlığa göre ara",
+  "sortByDate": "Tarihe göre sırala",
+  "sortNewest": "En yeni",
+  "sortOldest": "En eski",
+  "clearFilters": "Filtreleri temizle",
+  "announcementTypeAnnouncement": "Duyuru",
+  "announcementTypeSurvey": "Anket",
+  "announcementExpired": "Süresi doldu",
+
+  "surveyAlreadyResponded": "Bu anketi zaten doldurdunuz. Teşekkürler!",
+  "surveyDeadline": "Son tarih",
+  "surveySubmit": "Anketi Gönder",
+  "surveyCompleted": "Tamamlandı",
+  "surveyTapToRespond": "Anketi doldurmak için dokunun",
+  "surveyTextPlaceholder": "Cevabınızı yazın...",
+  "surveyTextareaPlaceholder": "Detaylı cevabınızı yazın...",
+  "surveyNumberPlaceholder": "Sayı girin",
+  "surveyRequiredFieldsError": "Lütfen zorunlu soruları cevaplayın",
+  "surveySubmitSuccess": "Anket başarıyla gönderildi. Teşekkürler!",
+  "surveySubmitError": "Anket gönderilemedi: {error}",
+  "@surveySubmitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "required": "Zorunlu",
+  "yes": "Evet",
+  "no": "Hayır",
+  "goBack": "Geri Dön",
+  "surveyClosed": "Bu anket kapatılmış",
+  "surveyClosedDescription": "Bu anketin süresi dolmuş veya kapatılmış. Artık yanıtlanamaz."
 }

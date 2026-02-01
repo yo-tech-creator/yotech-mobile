@@ -27,7 +27,6 @@ class _SktLiveScannerPageState extends State<SktLiveScannerPage>
   // Algılanan tarihler
   List<DateTime> _detectedDates = [];
   DateTime? _selectedDate;
-  String? _lastRecognizedText;
 
   // Scan alanı boyutları (ekranın ortasındaki alan)
   final double _scanAreaWidth = 280;
@@ -161,7 +160,6 @@ class _SktLiveScannerPageState extends State<SktLiveScannerPage>
         if (dates.isNotEmpty) {
           setState(() {
             _detectedDates = dates;
-            _lastRecognizedText = text;
             // Otomatik olarak en yakın tarihi seç
             if (_selectedDate == null && dates.isNotEmpty) {
               _selectedDate = dates.first;

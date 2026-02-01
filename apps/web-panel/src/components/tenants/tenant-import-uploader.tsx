@@ -84,8 +84,12 @@ type TenantImportPayload = {
     language: string;
     country: string | null;
     city: string | null;
+    logo_url: string | null;
     sap_customer_id: string | null;
     sap_api_key: string | null;
+    sap_api_url: string | null;
+    sap_integration_active: boolean;
+    module_flags: Record<string, boolean>;
   };
   modules: {
     module_code: string;
@@ -179,7 +183,12 @@ async function parseWorkbook(file: File): Promise<TenantImportPayload> {
       code: String(tenant.tenant_code).trim().toUpperCase(),
       name: String(tenant.tenant_name).trim(),
       active: activeValue,
+      currency: "TRY",
+      language: "tr",
+      country: null,
+      city: null,
       logo_url: tenant.logo_url ? String(tenant.logo_url).trim() : null,
+      sap_customer_id: null,
       sap_integration_active: sapActiveValue,
       sap_api_url: tenant.sap_api_url ? String(tenant.sap_api_url).trim() : null,
       sap_api_key: tenant.sap_api_key ? String(tenant.sap_api_key).trim() : null,

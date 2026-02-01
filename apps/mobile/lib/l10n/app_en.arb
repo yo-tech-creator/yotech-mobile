@@ -251,5 +251,46 @@
   "merchRankPlasiyer": "Field Rep",
   "merchRankSevkiyat": "Logistics",
   "merchRankSef": "Lead",
-  "merchRankYonetici": "Manager"
+  "merchRankYonetici": "Manager",
+
+  "announcementsTabAll": "All",
+  "announcementsTabAnnouncements": "Announcements",
+  "announcementsTabSurveys": "Surveys",
+  "announcementsTabCompleted": "History",
+  "completedSurveysEmpty": "No completed surveys yet",
+  "completedSurveysSubtitle": "Surveys you have completed will appear here",
+  "filterByTitle": "Search by title",
+  "sortByDate": "Sort by date",
+  "sortNewest": "Newest",
+  "sortOldest": "Oldest",
+  "clearFilters": "Clear filters",
+  "announcementTypeAnnouncement": "Announcement",
+  "announcementTypeSurvey": "Survey",
+  "announcementExpired": "Expired",
+
+  "surveyAlreadyResponded": "You have already completed this survey. Thank you!",
+  "surveyDeadline": "Deadline",
+  "surveySubmit": "Submit Survey",
+  "surveyCompleted": "Completed",
+  "surveyTapToRespond": "Tap to respond",
+  "surveyTextPlaceholder": "Enter your answer...",
+  "surveyTextareaPlaceholder": "Enter your detailed answer...",
+  "surveyNumberPlaceholder": "Enter a number",
+  "surveyRequiredFieldsError": "Please answer all required questions",
+  "surveySubmitSuccess": "Survey submitted successfully. Thank you!",
+  "surveySubmitError": "Failed to submit survey: {error}",
+  "@surveySubmitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "required": "Required",
+  "yes": "Yes",
+  "no": "No",
+  "goBack": "Go Back",
+  "surveyClosed": "This survey is closed",
+  "surveyClosedDescription": "This survey has expired or has been closed. It can no longer be answered."
 }

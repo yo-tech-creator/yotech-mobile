@@ -4,6 +4,7 @@ import 'package:yotech_mobile/core/routing/app_router.dart';
 import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
 import 'package:yotech_mobile/features/inventory_transfer/data/models/inventory_transfer_model.dart';
 import 'package:yotech_mobile/features/inventory_transfer/presentation/providers/inventory_transfer_provider.dart';
+import 'package:yotech_mobile/shared/shared.dart';
 
 enum _NoticeFilter { all, surplus, shortage }
 
@@ -611,7 +612,7 @@ class _NoticeList extends StatelessWidget {
         child: ListView(
           children: [
             const SizedBox(height: 80),
-            _EmptyState(
+            AppEmptyState(
               icon: Icons.inventory_2_outlined,
               title: emptyTitle,
               subtitle: emptySubtitle,
@@ -1133,63 +1134,6 @@ class _QuantityInfo extends StatelessWidget {
   }
 }
 
-// Empty state widget'ı
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({
-    required this.icon,
-    required this.title,
-    this.subtitle = '',
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 48,
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: cs.onSurface,
-            ),
-          ),
-          if (subtitle.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 13,
-                color: cs.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 String _formatQuantity(double value) {
   if (value % 1 == 0) {
     return value.toInt().toString();
@@ -1235,7 +1179,7 @@ class _OfferHistoryListState extends ConsumerState<_OfferHistoryList> {
         child: ListView(
           children: [
             const SizedBox(height: 80),
-            _EmptyState(
+            AppEmptyState(
               icon: widget.statusFilter != null
                   ? Icons.filter_list_off
                   : Icons.compare_arrows,
@@ -1495,31 +1439,31 @@ class _OfferHistoryListState extends ConsumerState<_OfferHistoryList> {
           icon: Icons.hourglass_empty,
         );
       case DepotOfferStatus.accepted:
-        return _OfferStatusInfo(
+        return const _OfferStatusInfo(
           label: 'Onaylandı',
           color: Colors.green,
           icon: Icons.check_circle_outline,
         );
       case DepotOfferStatus.rejected:
-        return _OfferStatusInfo(
+        return const _OfferStatusInfo(
           label: 'Reddedildi',
           color: Colors.red,
           icon: Icons.cancel_outlined,
         );
       case DepotOfferStatus.expired:
-        return _OfferStatusInfo(
+        return const _OfferStatusInfo(
           label: 'Süresi Doldu',
           color: Colors.orange,
           icon: Icons.timer_off_outlined,
         );
       case DepotOfferStatus.cancelled:
-        return _OfferStatusInfo(
+        return const _OfferStatusInfo(
           label: 'İptal Edildi',
           color: Colors.grey,
           icon: Icons.block,
         );
       case DepotOfferStatus.delivered:
-        return _OfferStatusInfo(
+        return const _OfferStatusInfo(
           label: 'Teslim Edildi',
           color: Colors.blueGrey,
           icon: Icons.local_shipping,

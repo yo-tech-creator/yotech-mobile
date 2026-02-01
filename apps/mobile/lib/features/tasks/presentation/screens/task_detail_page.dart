@@ -1421,7 +1421,8 @@ class _AttachmentBottomSheet extends ConsumerStatefulWidget {
 
 class _AttachmentBottomSheetState
     extends ConsumerState<_AttachmentBottomSheet> {
-  bool _isUploading = false;
+  // TODO: _isUploading aktif edilecek (image upload implement edildiğinde)
+  final bool _isUploading = false;
 
   @override
   Widget build(BuildContext context) {

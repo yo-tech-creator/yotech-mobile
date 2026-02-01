@@ -327,12 +327,8 @@ export default function NewShiftPage() {
     void saveDraftPatterns(sourcePatterns);
     setLeaveRemaining(sourceLeave);
 
-    const keyFor = (base: string) => (userKey ? `${base}:${userKey}` : base);
-    localStorage.setItem(keyFor(STORAGE_KEYS.assignments), JSON.stringify(nextAssignments));
-    localStorage.setItem(keyFor(STORAGE_KEYS.patterns), JSON.stringify(sourcePatterns));
-    // backward compat
-    localStorage.setItem(STORAGE_KEYS.assignments, JSON.stringify(nextAssignments));
-    localStorage.setItem(STORAGE_KEYS.patterns, JSON.stringify(sourcePatterns));
+    // Save to localStorage for backward compat
+    localStorage.setItem("shiftDraftAssignments", JSON.stringify(nextAssignments));
     localStorage.setItem("draftAssignments", JSON.stringify(nextAssignments));
     localStorage.setItem("draftPatterns", JSON.stringify(sourcePatterns));
     setCopyFeedback("Geçen haftanın vardiyası taslağa kopyalandı.");

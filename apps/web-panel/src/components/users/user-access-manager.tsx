@@ -610,7 +610,7 @@ export function UserAccessManager() {
                           borderRadius: 999,
                           fontSize: 12,
                           fontWeight: 700,
-                          ...(ROLE_BADGE_STYLE[u.role] ?? ROLE_BADGE_STYLE.personel),
+                          ...(ROLE_BADGE_STYLE[u.role ?? "personel"] ?? ROLE_BADGE_STYLE.personel),
                         }}
                       >
                         {roleLabel(u.role)}

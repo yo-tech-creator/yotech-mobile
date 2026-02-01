@@ -26,9 +26,9 @@ type RpcResult<T> = { items: T[]; error?: string };
 async function getRlsPolicies(): Promise<RpcResult<RlsPolicy>> {
   try {
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase.rpc("list_rls_policies");
+    const { data, error } = await supabase.rpc("list_rls_policies" as any);
     if (error) throw error;
-    return { items: (data ?? []) as RlsPolicy[] };
+    return { items: (data ?? []) as unknown as RlsPolicy[] };
   } catch (error) {
     console.error("RLS fetch error", error);
     return { items: [], error: error instanceof Error ? error.message : String(error) };
@@ -38,9 +38,9 @@ async function getRlsPolicies(): Promise<RpcResult<RlsPolicy>> {
 async function getEdgeFunctions(): Promise<RpcResult<EdgeFunction>> {
   try {
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase.rpc("list_edge_functions");
+    const { data, error } = await supabase.rpc("list_edge_functions" as any);
     if (error) throw error;
-    return { items: (data ?? []) as EdgeFunction[] };
+    return { items: (data ?? []) as unknown as EdgeFunction[] };
   } catch (error) {
     console.error("Edge functions fetch error", error);
     return { items: [], error: error instanceof Error ? error.message : String(error) };

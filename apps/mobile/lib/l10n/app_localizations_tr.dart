@@ -378,4 +378,102 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get merchRankYonetici => 'Yönetici';
+
+  @override
+  String get announcementsTabAll => 'Tümü';
+
+  @override
+  String get announcementsTabAnnouncements => 'Duyurular';
+
+  @override
+  String get announcementsTabSurveys => 'Anketler';
+
+  @override
+  String get announcementsTabCompleted => 'Geçmiş';
+
+  @override
+  String get completedSurveysEmpty => 'Henüz tamamlanmış anket yok';
+
+  @override
+  String get completedSurveysSubtitle =>
+      'Doldurduğunuz anketler burada görünecek';
+
+  @override
+  String get filterByTitle => 'Başlığa göre ara';
+
+  @override
+  String get sortByDate => 'Tarihe göre sırala';
+
+  @override
+  String get sortNewest => 'En yeni';
+
+  @override
+  String get sortOldest => 'En eski';
+
+  @override
+  String get clearFilters => 'Filtreleri temizle';
+
+  @override
+  String get announcementTypeAnnouncement => 'Duyuru';
+
+  @override
+  String get announcementTypeSurvey => 'Anket';
+
+  @override
+  String get announcementExpired => 'Süresi doldu';
+
+  @override
+  String get surveyAlreadyResponded =>
+      'Bu anketi zaten doldurdunuz. Teşekkürler!';
+
+  @override
+  String get surveyDeadline => 'Son tarih';
+
+  @override
+  String get surveySubmit => 'Anketi Gönder';
+
+  @override
+  String get surveyCompleted => 'Tamamlandı';
+
+  @override
+  String get surveyTapToRespond => 'Anketi doldurmak için dokunun';
+
+  @override
+  String get surveyTextPlaceholder => 'Cevabınızı yazın...';
+
+  @override
+  String get surveyTextareaPlaceholder => 'Detaylı cevabınızı yazın...';
+
+  @override
+  String get surveyNumberPlaceholder => 'Sayı girin';
+
+  @override
+  String get surveyRequiredFieldsError => 'Lütfen zorunlu soruları cevaplayın';
+
+  @override
+  String get surveySubmitSuccess => 'Anket başarıyla gönderildi. Teşekkürler!';
+
+  @override
+  String surveySubmitError(String error) {
+    return 'Anket gönderilemedi: $error';
+  }
+
+  @override
+  String get required => 'Zorunlu';
+
+  @override
+  String get yes => 'Evet';
+
+  @override
+  String get no => 'Hayır';
+
+  @override
+  String get goBack => 'Geri Dön';
+
+  @override
+  String get surveyClosed => 'Bu anket kapatılmış';
+
+  @override
+  String get surveyClosedDescription =>
+      'Bu anketin süresi dolmuş veya kapatılmış. Artık yanıtlanamaz.';
 }

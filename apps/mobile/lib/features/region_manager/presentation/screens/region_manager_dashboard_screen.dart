@@ -18,6 +18,7 @@ import '../../data/region_manager_task_repository.dart';
 import '../../../settings/presentation/screens/personal_info_page.dart';
 import '../../../settings/presentation/screens/settings_page.dart';
 import 'rm_forms_hub_page.dart';
+import '../../../announcements/presentation/screens/announcements_page.dart';
 import '../../../requests/data/request_repository.dart';
 import '../../../requests/domain/models/branch_request.dart';
 import '../../../requests/domain/models/request_category.dart';
@@ -157,6 +158,7 @@ class _RegionManagerDashboardScreenState
           onNavigateToSettings: _openSettings,
           onNavigateToPersonnel: _openPersonnelTab,
           onNavigateToStoreScoring: _openStoreScoring,
+          onNavigateToAnnouncements: _openAnnouncements,
           managerName: managerName,
           regionName: regionName,
           branchCount: branchesForActions.length,
@@ -1852,6 +1854,12 @@ class _RegionManagerDashboardScreenState
     setState(() => _currentTabIndex = 4);
   }
 
+  void _openAnnouncements() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AnnouncementsPage()),
+    );
+  }
+
   void _showNotifications(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
@@ -3300,7 +3308,7 @@ class _CreatePersonnelSheetState extends ConsumerState<_CreatePersonnelSheet> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _selectedRole,
+                value: _selectedRole,
                 decoration: const InputDecoration(labelText: 'Rol'),
                 items: widget.assignableRoles
                     .map(
@@ -4340,6 +4348,7 @@ class _RegionManagerNavigationDrawer extends StatelessWidget {
     required this.onNavigateToSettings,
     required this.onNavigateToPersonnel,
     required this.onNavigateToStoreScoring,
+    required this.onNavigateToAnnouncements,
     required this.managerName,
     required this.regionName,
     required this.branchCount,
@@ -4349,6 +4358,7 @@ class _RegionManagerNavigationDrawer extends StatelessWidget {
   final VoidCallback onNavigateToSettings;
   final VoidCallback onNavigateToPersonnel;
   final VoidCallback onNavigateToStoreScoring;
+  final VoidCallback onNavigateToAnnouncements;
   final String managerName;
   final String regionName;
   final int branchCount;
@@ -4489,6 +4499,16 @@ class _RegionManagerNavigationDrawer extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).pop();
                     onNavigateToStoreScoring();
+                  },
+                ),
+                _DrawerMenuItem(
+                  icon: Icons.campaign_outlined,
+                  selectedIcon: Icons.campaign,
+                  title: 'Duyurular',
+                  subtitle: 'Duyurular ve anketler',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onNavigateToAnnouncements();
                   },
                 ),
                 const Divider(indent: 16, endIndent: 16),

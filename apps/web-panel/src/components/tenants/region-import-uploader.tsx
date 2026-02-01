@@ -67,32 +67,23 @@ async function parseWorkbook(file: File): Promise<RegionImportPayload> {
       return;
     }
 
-          <div className="tenant-preview-wrapper">
-            <div className="tenant-preview">
-              <div>
-                <strong>Bölgeler ({preview.regions.length})</strong>
-                <ul>
-                  {preview.regions.map((r) => (
-                    <li key={r.code}>
-                      {r.code} — {r.name} {r.active ? "(Aktif)" : "(Pasif)"}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {preview.regionManagers.length > 0 ? (
-                <div>
-                  <strong>Yönetici Atamaları</strong>
-                  <ul>
-                    {preview.regionManagers.map((r, idx) => (
-                      <li key={`${r.region_code}-${idx}`}>
-                        {r.region_code} → {r.manager_sicil}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          </div>
+    const tenantCode = row.tenant_code != null ? String(row.tenant_code).trim().toUpperCase() : "";
+    const regionCode = row.region_code != null ? String(row.region_code).trim().toUpperCase() : "";
+    const regionName = row.region_name != null ? String(row.region_name).trim() : "";
+
+    if (!tenantCode) {
+      throw new Error(`${REGION_SHEET_NAME} sayfasındaki ${index + 2}. satırda tenant_code boş`);
+    }
+    if (!regionCode) {
+      throw new Error(`${REGION_SHEET_NAME} sayfasındaki ${index + 2}. satırda region_code boş`);
+    }
+    if (!regionName) {
+      throw new Error(`${REGION_SHEET_NAME} sayfasındaki ${index + 2}. satırda region_name boş`);
+    }
+    if (regionCodes.has(regionCode)) {
+      throw new Error(`${REGION_SHEET_NAME} sayfasında ${regionCode} bölge kodu birden fazla kullanılmış`);
+    }
+    regionCodes.add(regionCode);
     tenantCodes.add(tenantCode);
 
     const activeValue = normaliseBoolean(row.is_active ?? true);

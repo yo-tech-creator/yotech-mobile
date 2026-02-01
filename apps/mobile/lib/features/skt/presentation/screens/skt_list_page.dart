@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/shared.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../domain/models/product_summary_model.dart';
 import '../../domain/models/skt_record_model.dart';
 import '../../domain/providers/skt_providers.dart';
-import 'package:yotech_mobile/shared/widgets/barcode_scanner_page.dart';
-import 'package:yotech_mobile/shared/widgets/product_search_results_list.dart';
 import 'skt_date_scanner_page.dart';
 import 'skt_live_scanner_page.dart';
 
@@ -150,10 +149,8 @@ class _SktListPageState extends ConsumerState<SktListPage> {
             Expanded(
               child: recordsAsync.when(
                 data: (records) => _buildRecordsList(records, colors),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (error, stackTrace) => _ErrorState(
+                loading: () => const AppLoading(),
+                error: (error, stackTrace) => AppErrorState(
                   message: error.toString(),
                   onRetry: () => ref.invalidate(sktRecordsProvider),
                 ),
@@ -173,7 +170,13 @@ class _SktListPageState extends ConsumerState<SktListPage> {
           physics: const AlwaysScrollableScrollPhysics(),
           children: const [
             SizedBox(height: 120),
-            _EmptyState(),
+            AppEmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: 'SKT Kaydı Bulunamadı',
+              subtitle:
+                  'Seçili filtrelere uygun kayıt yok.\nFiltreleri değiştirmeyi veya yeni kayıt eklemeyi deneyin.',
+              showContainer: true,
+            ),
           ],
         ),
       );
@@ -2072,108 +2075,6 @@ class _SktEditSheetState extends ConsumerState<_SktEditSheet> {
         });
       }
     }
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(32),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.inventory_2_outlined,
-              size: 48,
-              color: colors.primary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'SKT Kaydı Bulunamadı',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Seçili filtrelere uygun kayıt yok.\nFiltreleri değiştirmeyi veya yeni kayıt eklemeyi deneyin.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Icon(
-            Icons.touch_app_outlined,
-            size: 24,
-            color: colors.outline,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.error_outline, size: 48, color: colors.error),
-          const SizedBox(height: 12),
-          Text(
-            'Veriler alınamadı',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(color: colors.onSurfaceVariant),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            message,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: colors.onSurfaceVariant),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Tekrar dene'),
-          ),
-        ],
-      ),
-    );
   }
 }
 

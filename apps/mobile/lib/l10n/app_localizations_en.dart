@@ -379,4 +379,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get merchRankYonetici => 'Manager';
+
+  @override
+  String get announcementsTabAll => 'All';
+
+  @override
+  String get announcementsTabAnnouncements => 'Announcements';
+
+  @override
+  String get announcementsTabSurveys => 'Surveys';
+
+  @override
+  String get announcementsTabCompleted => 'History';
+
+  @override
+  String get completedSurveysEmpty => 'No completed surveys yet';
+
+  @override
+  String get completedSurveysSubtitle =>
+      'Surveys you have completed will appear here';
+
+  @override
+  String get filterByTitle => 'Search by title';
+
+  @override
+  String get sortByDate => 'Sort by date';
+
+  @override
+  String get sortNewest => 'Newest';
+
+  @override
+  String get sortOldest => 'Oldest';
+
+  @override
+  String get clearFilters => 'Clear filters';
+
+  @override
+  String get announcementTypeAnnouncement => 'Announcement';
+
+  @override
+  String get announcementTypeSurvey => 'Survey';
+
+  @override
+  String get announcementExpired => 'Expired';
+
+  @override
+  String get surveyAlreadyResponded =>
+      'You have already completed this survey. Thank you!';
+
+  @override
+  String get surveyDeadline => 'Deadline';
+
+  @override
+  String get surveySubmit => 'Submit Survey';
+
+  @override
+  String get surveyCompleted => 'Completed';
+
+  @override
+  String get surveyTapToRespond => 'Tap to respond';
+
+  @override
+  String get surveyTextPlaceholder => 'Enter your answer...';
+
+  @override
+  String get surveyTextareaPlaceholder => 'Enter your detailed answer...';
+
+  @override
+  String get surveyNumberPlaceholder => 'Enter a number';
+
+  @override
+  String get surveyRequiredFieldsError =>
+      'Please answer all required questions';
+
+  @override
+  String get surveySubmitSuccess => 'Survey submitted successfully. Thank you!';
+
+  @override
+  String surveySubmitError(String error) {
+    return 'Failed to submit survey: $error';
+  }
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get goBack => 'Go Back';
+
+  @override
+  String get surveyClosed => 'This survey is closed';
+
+  @override
+  String get surveyClosedDescription =>
+      'This survey has expired or has been closed. It can no longer be answered.';
 }

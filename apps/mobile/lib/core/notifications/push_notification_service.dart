@@ -86,48 +86,28 @@ class PushNotificationService {
         return;
       }
 
-      final now = DateTime.now().toUtc().toIso8601String();
+      // RPC fonksiyonu ile token kaydet
+      // SECURITY DEFINER ile RLS bypass edilir, cihaz değişikliği durumu handle edilir
+      final response = await _client.rpc('register_device_token', params: {
+        'p_user_id': user.id,
+        'p_tenant_id': user.tenantId,
+        'p_token': resolvedToken,
+        'p_platform': Platform.isIOS
+            ? 'ios'
+            : Platform.isAndroid
+                ? 'android'
+                : 'other',
+      });
 
-      // Önce bu kullanıcının mevcut token kaydını kontrol et
-      final existing = await _client
-          .from('device_tokens')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('token', resolvedToken)
-          .maybeSingle();
-
-      if (existing != null) {
-        // Token zaten var, sadece güncelle
-        await _client.from('device_tokens').update({
-          'updated_at': now,
-          'last_seen_at': now,
-        }).eq('id', existing['id']);
+      if (response is Map && response['success'] == true) {
+        _lastRegisteredToken = resolvedToken;
+        debugPrint('Token kaydı başarılı: ${response['action']}');
       } else {
-        // Yeni token, ekle
-        // Önce bu token'ı kullanan eski kayıtları sil (cihaz değişmiş olabilir)
-        await _client
-            .from('device_tokens')
-            .delete()
-            .eq('user_id', user.id)
-            .neq('token', resolvedToken);
-
-        // Şimdi yeni token'ı ekle
-        await _client.from('device_tokens').insert({
-          'user_id': user.id,
-          'tenant_id': user.tenantId,
-          'token': resolvedToken,
-          'platform': Platform.isIOS
-              ? 'ios'
-              : Platform.isAndroid
-                  ? 'android'
-                  : 'other',
-          'updated_at': now,
-          'last_seen_at': now,
-        });
+        debugPrint(
+            'Token kaydı başarısız: ${response['error'] ?? 'Unknown error'}');
       }
-
-      _lastRegisteredToken = resolvedToken;
     } catch (e) {
+      // Kritik olmayan hata, sadece logla
       debugPrint('Token kaydı başarısız: $e');
     }
   }

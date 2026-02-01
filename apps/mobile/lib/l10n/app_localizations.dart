@@ -739,6 +739,192 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Yönetici'**
   String get merchRankYonetici;
+
+  /// No description provided for @announcementsTabAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get announcementsTabAll;
+
+  /// No description provided for @announcementsTabAnnouncements.
+  ///
+  /// In tr, this message translates to:
+  /// **'Duyurular'**
+  String get announcementsTabAnnouncements;
+
+  /// No description provided for @announcementsTabSurveys.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anketler'**
+  String get announcementsTabSurveys;
+
+  /// No description provided for @announcementsTabCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçmiş'**
+  String get announcementsTabCompleted;
+
+  /// No description provided for @completedSurveysEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz tamamlanmış anket yok'**
+  String get completedSurveysEmpty;
+
+  /// No description provided for @completedSurveysSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doldurduğunuz anketler burada görünecek'**
+  String get completedSurveysSubtitle;
+
+  /// No description provided for @filterByTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlığa göre ara'**
+  String get filterByTitle;
+
+  /// No description provided for @sortByDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarihe göre sırala'**
+  String get sortByDate;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In tr, this message translates to:
+  /// **'En yeni'**
+  String get sortNewest;
+
+  /// No description provided for @sortOldest.
+  ///
+  /// In tr, this message translates to:
+  /// **'En eski'**
+  String get sortOldest;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In tr, this message translates to:
+  /// **'Filtreleri temizle'**
+  String get clearFilters;
+
+  /// No description provided for @announcementTypeAnnouncement.
+  ///
+  /// In tr, this message translates to:
+  /// **'Duyuru'**
+  String get announcementTypeAnnouncement;
+
+  /// No description provided for @announcementTypeSurvey.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anket'**
+  String get announcementTypeSurvey;
+
+  /// No description provided for @announcementExpired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Süresi doldu'**
+  String get announcementExpired;
+
+  /// No description provided for @surveyAlreadyResponded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu anketi zaten doldurdunuz. Teşekkürler!'**
+  String get surveyAlreadyResponded;
+
+  /// No description provided for @surveyDeadline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son tarih'**
+  String get surveyDeadline;
+
+  /// No description provided for @surveySubmit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anketi Gönder'**
+  String get surveySubmit;
+
+  /// No description provided for @surveyCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlandı'**
+  String get surveyCompleted;
+
+  /// No description provided for @surveyTapToRespond.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anketi doldurmak için dokunun'**
+  String get surveyTapToRespond;
+
+  /// No description provided for @surveyTextPlaceholder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cevabınızı yazın...'**
+  String get surveyTextPlaceholder;
+
+  /// No description provided for @surveyTextareaPlaceholder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Detaylı cevabınızı yazın...'**
+  String get surveyTextareaPlaceholder;
+
+  /// No description provided for @surveyNumberPlaceholder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sayı girin'**
+  String get surveyNumberPlaceholder;
+
+  /// No description provided for @surveyRequiredFieldsError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen zorunlu soruları cevaplayın'**
+  String get surveyRequiredFieldsError;
+
+  /// No description provided for @surveySubmitSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anket başarıyla gönderildi. Teşekkürler!'**
+  String get surveySubmitSuccess;
+
+  /// No description provided for @surveySubmitError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anket gönderilemedi: {error}'**
+  String surveySubmitError(String error);
+
+  /// No description provided for @required.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zorunlu'**
+  String get required;
+
+  /// No description provided for @yes.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evet'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayır'**
+  String get no;
+
+  /// No description provided for @goBack.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geri Dön'**
+  String get goBack;
+
+  /// No description provided for @surveyClosed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu anket kapatılmış'**
+  String get surveyClosed;
+
+  /// No description provided for @surveyClosedDescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu anketin süresi dolmuş veya kapatılmış. Artık yanıtlanamaz.'**
+  String get surveyClosedDescription;
 }
 
 class _AppLocalizationsDelegate

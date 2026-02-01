@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../shared/shared.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../data/request_repository.dart';
 import '../../domain/models/branch_request.dart';
@@ -367,14 +368,14 @@ class _RequestsHubPageState extends ConsumerState<RequestsHubPage>
 
                 if (filteredRequests.isEmpty) {
                   return SliverToBoxAdapter(
-                    child: _EmptyState(
+                    child: AppEmptyState(
                       icon: _statusFilter != null
                           ? Icons.filter_list_off
                           : Icons.inbox_outlined,
                       title: _statusFilter != null
                           ? 'Sonuç Bulunamadı'
                           : 'Henüz Talep Yok',
-                      message: _statusFilter != null
+                      subtitle: _statusFilter != null
                           ? 'Bu durumdaki talep bulunamadı.\nFiltreyi kaldırmak için yukarıdaki butona tıklayın.'
                           : 'Yukarıdaki kategorilerden birini seçerek\nilk talebinizi oluşturabilirsiniz.',
                     ),
@@ -403,17 +404,13 @@ class _RequestsHubPageState extends ConsumerState<RequestsHubPage>
               loading: () => const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 48),
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: AppLoading(),
                 ),
               ),
               error: (error, _) => SliverToBoxAdapter(
-                child: _EmptyState(
-                  icon: Icons.error_outline,
+                child: AppErrorState(
                   title: 'Bir Hata Oluştu',
                   message: 'Talepler yüklenirken sorun oluştu.\n$error',
-                  isError: true,
                 ),
               ),
             ),
@@ -751,62 +748,6 @@ class _StatusInfo {
   final Color color;
   final IconData icon;
   final String label;
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.isError = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final bool isError;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final iconColor = isError ? colors.error : colors.primary;
-
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 48,
-              color: iconColor,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 enum _RequestDetailsResult {

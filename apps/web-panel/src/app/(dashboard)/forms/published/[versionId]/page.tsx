@@ -67,19 +67,26 @@ export default async function EditPublishedFormPage({ params }: Props) {
   const tenantIdsToFetch = role === "grand_admin" ? tenants.map((t) => t.id) : profile.tenant_id ? [profile.tenant_id] : [];
 
   if (tenantIdsToFetch.length === 0) {
+    console.error("[EditPublishedFormPage] No tenant IDs to fetch, redirecting. Role:", role, "Profile:", profile);
     redirect("/forms/published" as Route);
   }
 
-  const { data: formData } = await supabase
+  // RLS sorunlarını aşmak için supabaseAdmin kullanıyoruz
+  const { data: formData, error: formError } = await supabaseAdmin
     .from("v_store_scoring_published_forms")
     .select(
-      "form_id, form_version_id, tenant_id, tenant, code, title, description, version, published_at, sections, visible_roles",
+      "form_id, form_version_id, tenant_id, code, title, description, version, published_at, sections, visible_roles",
     )
     .eq("form_version_id", resolvedParams.versionId)
     .in("tenant_id", tenantIdsToFetch)
     .maybeSingle<PublishedForm>();
 
+  if (formError) {
+    console.error("[EditPublishedFormPage] Form query error:", formError);
+  }
+
   if (!formData) {
+    console.error("[EditPublishedFormPage] Form not found. VersionId:", resolvedParams.versionId, "TenantIds:", tenantIdsToFetch, "Error:", formError);
     redirect("/forms/published" as Route);
   }
 
