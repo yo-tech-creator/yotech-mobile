@@ -61,15 +61,15 @@
   },
   {
     "table_name": "branches",
-    "column_name": "tenant_id",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "branches_tenant_id_code_key"
-  },
-  {
-    "table_name": "branches",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "branches_pkey"
+  },
+  {
+    "table_name": "branches",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "branches_tenant_id_code_key"
   },
   {
     "table_name": "branches",
@@ -90,6 +90,18 @@
     "constraint_name": "break_sessions_pkey"
   },
   {
+    "table_name": "bug_report_notifications",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "bug_report_notifications_pkey"
+  },
+  {
+    "table_name": "bug_reports",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "bug_reports_pkey"
+  },
+  {
     "table_name": "depot_notice_offers",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
@@ -103,15 +115,15 @@
   },
   {
     "table_name": "device_tokens",
-    "column_name": "token",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "device_tokens_token_key"
-  },
-  {
-    "table_name": "device_tokens",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "device_tokens_pkey"
+  },
+  {
+    "table_name": "device_tokens",
+    "column_name": "token",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "device_tokens_token_key"
   },
   {
     "table_name": "employee_scores",
@@ -157,15 +169,21 @@
   },
   {
     "table_name": "modules",
+    "column_name": "code",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "modules_code_key"
+  },
+  {
+    "table_name": "modules",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "modules_pkey"
   },
   {
-    "table_name": "modules",
-    "column_name": "code",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "modules_code_key"
+    "table_name": "notification_queue",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "notification_queue_pkey"
   },
   {
     "table_name": "notifications",
@@ -175,15 +193,15 @@
   },
   {
     "table_name": "payrolls",
-    "column_name": "tenant_id",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "payrolls_tenant_id_user_id_period_key"
-  },
-  {
-    "table_name": "payrolls",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "payrolls_pkey"
+  },
+  {
+    "table_name": "payrolls",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "payrolls_tenant_id_user_id_period_key"
   },
   {
     "table_name": "payrolls",
@@ -205,15 +223,15 @@
   },
   {
     "table_name": "products",
-    "column_name": "tenant_id",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "products_tenant_id_barcode_key"
-  },
-  {
-    "table_name": "products",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "products_pkey"
+  },
+  {
+    "table_name": "products",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "products_tenant_id_barcode_key"
   },
   {
     "table_name": "products",
@@ -349,15 +367,15 @@
   },
   {
     "table_name": "store_scoring_session_items",
-    "column_name": "session_id",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "store_scoring_session_items_session_id_item_id_key"
-  },
-  {
-    "table_name": "store_scoring_session_items",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "store_scoring_session_items_pkey"
+  },
+  {
+    "table_name": "store_scoring_session_items",
+    "column_name": "session_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "store_scoring_session_items_session_id_item_id_key"
   },
   {
     "table_name": "store_scoring_session_items",
@@ -372,10 +390,34 @@
     "constraint_name": "store_scoring_sessions_pkey"
   },
   {
-    "table_name": "task_assignees",
-    "column_name": "task_id",
+    "table_name": "survey_answers",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "survey_answers_pkey"
+  },
+  {
+    "table_name": "survey_questions",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "survey_questions_pkey"
+  },
+  {
+    "table_name": "survey_responses",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "survey_responses_pkey"
+  },
+  {
+    "table_name": "survey_responses",
+    "column_name": "announcement_id",
     "constraint_type": "UNIQUE",
-    "constraint_name": "task_assignees_task_id_user_id_key"
+    "constraint_name": "survey_responses_announcement_id_user_id_key"
+  },
+  {
+    "table_name": "survey_responses",
+    "column_name": "user_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "survey_responses_announcement_id_user_id_key"
   },
   {
     "table_name": "task_assignees",
@@ -385,9 +427,21 @@
   },
   {
     "table_name": "task_assignees",
+    "column_name": "task_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "task_assignees_task_id_user_id_key"
+  },
+  {
+    "table_name": "task_assignees",
     "column_name": "user_id",
     "constraint_type": "UNIQUE",
     "constraint_name": "task_assignees_task_id_user_id_key"
+  },
+  {
+    "table_name": "task_attachments",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "task_attachments_pkey"
   },
   {
     "table_name": "task_items",
@@ -403,15 +457,15 @@
   },
   {
     "table_name": "tenant_modules",
-    "column_name": "tenant_id",
-    "constraint_type": "UNIQUE",
-    "constraint_name": "tenant_modules_tenant_id_module_code_key"
-  },
-  {
-    "table_name": "tenant_modules",
     "column_name": "id",
     "constraint_type": "PRIMARY KEY",
     "constraint_name": "tenant_modules_pkey"
+  },
+  {
+    "table_name": "tenant_modules",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "tenant_modules_tenant_id_module_code_key"
   },
   {
     "table_name": "tenant_modules",
@@ -421,15 +475,15 @@
   },
   {
     "table_name": "tenants",
-    "column_name": "id",
-    "constraint_type": "PRIMARY KEY",
-    "constraint_name": "tenants_pkey"
-  },
-  {
-    "table_name": "tenants",
     "column_name": "code",
     "constraint_type": "UNIQUE",
     "constraint_name": "tenants_code_key"
+  },
+  {
+    "table_name": "tenants",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "tenants_pkey"
   },
   {
     "table_name": "todos",
@@ -466,5 +520,119 @@
     "column_name": "employee_code",
     "constraint_type": "UNIQUE",
     "constraint_name": "users_tenant_id_employee_code_key"
+  },
+  {
+    "table_name": "visual_audit_comments",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_comments_pkey"
+  },
+  {
+    "table_name": "visual_audit_photos",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_photos_pkey"
+  },
+  {
+    "table_name": "visual_audit_sections",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_sections_pkey"
+  },
+  {
+    "table_name": "visual_audit_sections",
+    "column_name": "tenant_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_sections_tenant_id_name_key"
+  },
+  {
+    "table_name": "visual_audit_sections",
+    "column_name": "name",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_sections_tenant_id_name_key"
+  },
+  {
+    "table_name": "visual_audit_task_plans",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_task_plans_pkey"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "column_name": "template_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_tasks_template_id_branch_id_section_id_schedul_key"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_tasks_pkey"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "column_name": "branch_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_tasks_template_id_branch_id_section_id_schedul_key"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "column_name": "section_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_tasks_template_id_branch_id_section_id_schedul_key"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "column_name": "scheduled_date",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_tasks_template_id_branch_id_section_id_schedul_key"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "column_name": "scheduled_time",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_tasks_template_id_branch_id_section_id_schedul_key"
+  },
+  {
+    "table_name": "visual_audit_template_branches",
+    "column_name": "template_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_template_branches_template_id_branch_id_key"
+  },
+  {
+    "table_name": "visual_audit_template_branches",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_template_branches_pkey"
+  },
+  {
+    "table_name": "visual_audit_template_branches",
+    "column_name": "branch_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_template_branches_template_id_branch_id_key"
+  },
+  {
+    "table_name": "visual_audit_template_sections",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_template_sections_pkey"
+  },
+  {
+    "table_name": "visual_audit_template_sections",
+    "column_name": "template_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_template_sections_template_id_section_id_key"
+  },
+  {
+    "table_name": "visual_audit_template_sections",
+    "column_name": "section_id",
+    "constraint_type": "UNIQUE",
+    "constraint_name": "visual_audit_template_sections_template_id_section_id_key"
+  },
+  {
+    "table_name": "visual_audit_templates",
+    "column_name": "id",
+    "constraint_type": "PRIMARY KEY",
+    "constraint_name": "visual_audit_templates_pkey"
   }
 ]

@@ -42,7 +42,7 @@ export async function GET() {
     .from("users")
     .select("*")
     .eq("tenant_id", profile.tenant_id)
-    .eq("active", true)
+    .eq("is_active", true)
     .order("first_name", { ascending: true });
 
   if (profile.branch_id) {

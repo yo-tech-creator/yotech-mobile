@@ -13,7 +13,7 @@ export type Database = {
           branch_id: string | null;
           employee_code: string | null;
           position: string | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
         };
         Insert: {
           id: string;
@@ -26,7 +26,7 @@ export type Database = {
           branch_id?: string | null;
           employee_code?: string | null;
           position?: string | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
         };
         Update: {
           id?: string;
@@ -39,7 +39,7 @@ export type Database = {
           branch_id?: string | null;
           employee_code?: string | null;
           position?: string | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
         };
         Relationships: [];
       };
@@ -48,19 +48,19 @@ export type Database = {
           id: string;
           code: string;
           name: string;
-          active: boolean;
+          is_active: boolean;
         };
         Insert: {
           id: string;
           code: string;
           name: string;
-          active?: boolean;
+          is_active?: boolean;
         };
         Update: {
           id?: string;
           code?: string;
           name?: string;
-          active?: boolean;
+          is_active?: boolean;
         };
         Relationships: [];
       };
@@ -71,7 +71,7 @@ export type Database = {
           icon: string | null;
           description: string | null;
           is_core: boolean;
-          active: boolean;
+          is_active: boolean;
           display_order: number | null;
         };
         Insert: {
@@ -80,7 +80,7 @@ export type Database = {
           icon?: string | null;
           description?: string | null;
           is_core?: boolean;
-          active?: boolean;
+          is_active?: boolean;
           display_order?: number | null;
         };
         Update: {
@@ -89,7 +89,7 @@ export type Database = {
           icon?: string | null;
           description?: string | null;
           is_core?: boolean;
-          active?: boolean;
+          is_active?: boolean;
           display_order?: number | null;
         };
         Relationships: [];
@@ -132,7 +132,7 @@ export type Database = {
           longitude: number | null;
           geofence_radius: number | null;
           manager_id: string | null;
-          active: boolean | null;
+          is_active: boolean | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -149,7 +149,7 @@ export type Database = {
           longitude?: number | null;
           geofence_radius?: number | null;
           manager_id?: string | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -166,7 +166,7 @@ export type Database = {
           longitude?: number | null;
           geofence_radius?: number | null;
           manager_id?: string | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -196,7 +196,7 @@ export type Database = {
           supplier: string | null;
           unit: string | null;
           price: number | null;
-          active: boolean | null;
+          is_active: boolean | null;
           alt_barcodes: string[] | null;
           created_at: string | null;
           updated_at: string | null;
@@ -211,7 +211,7 @@ export type Database = {
           supplier?: string | null;
           unit?: string | null;
           price?: number | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
           alt_barcodes?: string[] | null;
           created_at?: string | null;
           updated_at?: string | null;
@@ -226,7 +226,7 @@ export type Database = {
           supplier?: string | null;
           unit?: string | null;
           price?: number | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
           alt_barcodes?: string[] | null;
           created_at?: string | null;
           updated_at?: string | null;
@@ -299,7 +299,7 @@ export type Database = {
           name: string;
           code: string;
           manager_id: string | null;
-          active: boolean | null;
+          is_active: boolean | null;
           created_at: string | null;
           updated_at: string | null;
         };
@@ -309,7 +309,7 @@ export type Database = {
           name: string;
           code: string;
           manager_id?: string | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -319,7 +319,7 @@ export type Database = {
           name?: string;
           code?: string;
           manager_id?: string | null;
-          active?: boolean | null;
+          is_active?: boolean | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -342,7 +342,7 @@ export type Database = {
         Returns:
           | {
               email: string | null;
-              active: boolean | null;
+              is_active: boolean | null;
             }[]
           | null;
       };
@@ -353,7 +353,7 @@ export type Database = {
               id: string;
               code: string;
               name: string;
-              active: boolean;
+              is_active: boolean;
               total_users: number;
               active_modules: number;
             }[]

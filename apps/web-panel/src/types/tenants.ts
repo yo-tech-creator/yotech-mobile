@@ -2,7 +2,7 @@ export type TenantSummary = {
   id: string;
   code: string;
   name: string;
-  active: boolean;
+  is_active: boolean;
   total_users: number;
   active_modules: number;
 };

@@ -47,7 +47,7 @@ export interface Announcement {
   created_by_role?: UserRole;
   published_at: string;
   expires_at?: string;
-  active: boolean;
+  is_active: boolean;
   pinned: boolean;
   pinned_at?: string;
   priority: number;

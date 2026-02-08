@@ -1,6 +1,11 @@
 [
   {
     "schema_name": "public",
+    "enum_name": "announcement_type",
+    "values": "{announcement,survey}"
+  },
+  {
+    "schema_name": "public",
     "enum_name": "depot_notice_status",
     "values": "{open,in_transfer,fulfilled,cancelled}"
   },
@@ -46,6 +51,11 @@
   },
   {
     "schema_name": "public",
+    "enum_name": "notification_type",
+    "values": "{visual_audit_task,visual_audit_photo,visual_audit_comment,visual_audit_completed,task_assigned,task_completed,task_approved,announcement,survey,skt_warning,depot_transfer,general}"
+  },
+  {
+    "schema_name": "public",
     "enum_name": "product_issue_status",
     "values": "{acik,inceleniyor,cozuldu,kapandi}"
   },
@@ -72,7 +82,17 @@
   {
     "schema_name": "public",
     "enum_name": "store_scoring_item_result",
-    "values": "{positive,negative,not_applicable}"
+    "values": "{positive,negative,not_applicable,neutral}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "survey_question_type",
+    "values": "{single_choice,multiple_choice,text,rating,yes_no,textarea,number}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "target_scope",
+    "values": "{all_branches,selected_branches,my_branches,my_branch,region_managers_only}"
   },
   {
     "schema_name": "public",
@@ -88,5 +108,20 @@
     "schema_name": "public",
     "enum_name": "user_role",
     "values": "{grand_admin,firma_admin,bolge_muduru,sube_muduru,personel}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "visual_audit_comment_type",
+    "values": "{comment,approval,rejection,revision_request}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "visual_audit_recurrence",
+    "values": "{daily,weekly,monthly}"
+  },
+  {
+    "schema_name": "public",
+    "enum_name": "visual_audit_task_status",
+    "values": "{pending,in_progress,completed,missed,approved,rejected}"
   }
 ]

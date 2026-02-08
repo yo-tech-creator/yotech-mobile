@@ -581,7 +581,7 @@ class _BranchManagerDropdown extends ConsumerWidget {
       data: (personnel) {
         // Sadece şube müdürlerini filtrele
         final managers = personnel
-            .where((p) => p.role == 'sube_muduru' && p.active)
+            .where((p) => p.role == 'sube_muduru' && p.isActive)
             .toList();
 
         if (managers.isEmpty) {

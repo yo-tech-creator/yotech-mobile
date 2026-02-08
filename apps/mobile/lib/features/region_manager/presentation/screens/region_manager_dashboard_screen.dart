@@ -6,7 +6,7 @@ import 'package:yotech_mobile/shared/widgets/custom_back_button.dart';
 
 import '../../../auth/domain/models/user_model.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
-import '../../../auth/presentation/screens/login_screen.dart';
+import 'package:yotech_mobile/core/auth/auth_navigation_helper.dart';
 import '../../../inventory_transfer/data/models/inventory_transfer_model.dart';
 import '../../../inventory_transfer/presentation/providers/inventory_transfer_provider.dart';
 import '../../domain/models/managed_branch.dart';
@@ -1891,34 +1891,7 @@ class _RegionManagerDashboardScreenState
   }
 
   Future<void> _showExitConfirmation() async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Çıkış yapılsın mı?'),
-        content: const Text('Oturum kapatılıp giriş ekranına dönülecek.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Vazgeç'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Çıkış'),
-          ),
-        ],
-      ),
-    );
-    if (shouldLogout == true) {
-      await ref.read(authProvider.notifier).logout();
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
-        );
-      });
-    }
+    await AuthNavigationHelper.confirmAndLogout(context: context, ref: ref);
   }
 
   Widget _buildScoreSection(BuildContext context) {
@@ -2420,6 +2393,10 @@ class _RegionManagerDashboardScreenState
         return Icons.check_circle;
       case RequestStatus.cancelled:
         return Icons.cancel_outlined;
+      case RequestStatus.rejected:
+        return Icons.block;
+      case RequestStatus.failed:
+        return Icons.error_outline;
     }
   }
 
@@ -2433,6 +2410,10 @@ class _RegionManagerDashboardScreenState
         return Colors.green;
       case RequestStatus.cancelled:
         return Colors.grey;
+      case RequestStatus.rejected:
+        return Colors.red;
+      case RequestStatus.failed:
+        return Colors.deepOrange;
     }
   }
 
@@ -4283,6 +4264,14 @@ class _RequestStatusChip extends StatelessWidget {
       case RequestStatus.cancelled:
         background = Colors.grey.withValues(alpha: 0.16);
         foreground = Colors.grey.shade700;
+        break;
+      case RequestStatus.rejected:
+        background = Colors.red.withValues(alpha: 0.16);
+        foreground = Colors.red.shade800;
+        break;
+      case RequestStatus.failed:
+        background = Colors.deepOrange.withValues(alpha: 0.16);
+        foreground = Colors.deepOrange.shade800;
         break;
     }
 

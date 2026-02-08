@@ -7,9 +7,45 @@ export type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+// Helper function to get Turkey timezone date string (YYYY-MM-DD)
+function getTurkeyDateString(date?: Date): string {
+  const d = date || new Date();
+  return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' });
+}
+
 // ============================================
 // GÖREV İŞLEMLERİ
 // ============================================
+
+// Generate tasks for today from all active plans
+export async function generateTasksForToday(): Promise<ActionResult<{ message: string }>> {
+  try {
+    const supabase = await getSupabaseServerClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Oturum bulunamadı" };
+    }
+    
+    const { data, error } = await supabase.rpc("generate_visual_audit_tasks_for_today" as never);
+    
+    if (error) {
+      console.error("generateTasksForToday error:", error);
+      return { success: false, error: error.message };
+    }
+    
+    const result = data as { success: boolean; error?: string; message?: string };
+    if (!result.success) {
+      return { success: false, error: result.error || "Görevler oluşturulamadı" };
+    }
+    
+    revalidatePath("/visual-audit");
+    return { success: true, data: { message: result.message || "Görevler oluşturuldu" } };
+  } catch (err) {
+    console.error("generateTasksForToday unexpected error:", err);
+    return { success: false, error: "Beklenmeyen hata oluştu" };
+  }
+}
 
 // Tekrar seçeneklerine göre tarihleri hesapla
 function calculateRecurrenceDates(
@@ -18,29 +54,28 @@ function calculateRecurrenceDates(
   recurrenceWeeks: number
 ): string[] {
   const dates: string[] = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayStr = getTurkeyDateString();
   
   if (recurrence === "none") {
     // Tek seferlik - sadece bugün
-    dates.push(today.toISOString().split("T")[0]);
+    dates.push(todayStr);
   } else if (recurrence === "daily") {
     // Her gün - belirtilen hafta sayısı kadar
     const totalDays = recurrenceWeeks * 7;
     for (let i = 0; i < totalDays; i++) {
-      const date = new Date(today);
+      const date = new Date(todayStr + 'T12:00:00');
       date.setDate(date.getDate() + i);
-      dates.push(date.toISOString().split("T")[0]);
+      dates.push(getTurkeyDateString(date));
     }
   } else if (recurrence === "weekly" && selectedDays.length > 0) {
     // Haftanın belirli günleri
     const totalDays = recurrenceWeeks * 7;
     for (let i = 0; i < totalDays; i++) {
-      const date = new Date(today);
+      const date = new Date(todayStr + 'T12:00:00');
       date.setDate(date.getDate() + i);
       const dayOfWeek = date.getDay(); // 0=Pazar, 1=Pazartesi, ...
       if (selectedDays.includes(dayOfWeek)) {
-        dates.push(date.toISOString().split("T")[0]);
+        dates.push(getTurkeyDateString(date));
       }
     }
   }
@@ -83,8 +118,7 @@ export async function createTask(formData: {
         p_min_photos: formData.min_photos,
         p_notes: formData.note || null,
         p_recurrence: recurrence,
-        p_recurrence_days: selectedDays,
-        p_recurrence_weeks: recurrenceWeeks,
+        p_recurrence_days: selectedDays.length > 0 ? selectedDays : null,
       } as never);
       
       if (error) {
@@ -110,7 +144,7 @@ export async function createTask(formData: {
     }
     
     // Tek seferlik görev - sadece bugün için
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTurkeyDateString();
     
     const { data, error } = await supabase.rpc("create_visual_audit_task" as never, {
       p_branch_ids: formData.branch_ids.length > 0 ? formData.branch_ids : null,
@@ -516,7 +550,7 @@ export async function getBranches() {
     const { data, error } = await supabase
       .from("branches" as never)
       .select("id, name")
-      .eq("active", true)
+      .eq("is_active", true)
       .order("name");
     
     if (error) {

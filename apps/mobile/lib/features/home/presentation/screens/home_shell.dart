@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:yotech_mobile/core/auth/auth_navigation_helper.dart';
 import 'package:yotech_mobile/features/break_tracking/break_tracking.dart';
 import 'package:yotech_mobile/features/skt/domain/models/skt_record_model.dart';
 import 'package:yotech_mobile/features/skt/domain/providers/skt_providers.dart';
 import 'package:yotech_mobile/features/skt/presentation/screens/skt_list_page.dart';
 import 'package:yotech_mobile/core/features/feature_repo.dart';
-import 'package:yotech_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:yotech_mobile/features/settings/presentation/screens/profile_page.dart';
 import 'package:yotech_mobile/shared/widgets/custom_back_button.dart';
 import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
@@ -178,35 +178,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   Future<void> _handleLogout() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (d) => AlertDialog(
-        title: const Text('Çıkış yapılsın mı?'),
-        content: const Text('Oturum kapatılıp giriş ekranına dönülecek.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(d).pop(false),
-            child: const Text('Vazgeç'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(d).pop(true),
-            child: const Text('Çıkış'),
-          ),
-        ],
-      ),
-    );
-
-    if (ok == true) {
-      await ref.read(authProvider.notifier).logout();
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
-        );
-      });
-    }
+    await AuthNavigationHelper.confirmAndLogout(context: context, ref: ref);
   }
 
   String _getActivePageTitle() {
@@ -477,7 +449,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           },
         );
       },
-      unauthenticated: () => const LoginScreen(),
+      // AuthWrapper zaten unauthenticated durumunu handle ediyor,
+      // burada sadece loading göster - LoginScreen GÖSTERME!
+      unauthenticated: () => const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      ),
       loading: () => const Scaffold(
         body: SafeArea(child: Center(child: CircularProgressIndicator())),
       ),

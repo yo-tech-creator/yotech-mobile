@@ -432,7 +432,8 @@ class _ModernTaskCard extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Expand Button or Status Icon
-                          if (hasChildren)
+                          // depth < 2: 3. seviye (depth=2) görevlerde genişletme oku gösterilmez
+                          if (hasChildren && depth < 2)
                             GestureDetector(
                               onTap: onToggleExpand,
                               child: AnimatedRotation(

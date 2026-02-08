@@ -46,7 +46,7 @@ class SktRepository {
           .from('branches')
           .select('id, name')
           .eq('tenant_id', tenantId.trim())
-          .eq('active', true)
+          .eq('is_active', true)
           .order('name');
 
       final list = (response as List).cast<Map<String, dynamic>>();
@@ -79,7 +79,7 @@ class SktRepository {
             .from('products')
             .select('id, name, barcode, alt_barcodes')
             .eq('tenant_id', normalizedTenantId)
-            .eq('active', true);
+            .eq('is_active', true);
       }
 
       final sanitized = trimmed.replaceAll('%', '\\%').replaceAll('_', '\\_');

@@ -1,5 +1,33 @@
 [
   {
+    "table_name": "announcements",
+    "trigger_name": "trigger_notify_announcement_published",
+    "event_manipulation": "INSERT",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_announcement_published()"
+  },
+  {
+    "table_name": "announcements",
+    "trigger_name": "trigger_notify_announcement_published",
+    "event_manipulation": "UPDATE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_announcement_published()"
+  },
+  {
+    "table_name": "announcements",
+    "trigger_name": "trg_notify_announcement_published",
+    "event_manipulation": "UPDATE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_announcement_published()"
+  },
+  {
+    "table_name": "announcements",
+    "trigger_name": "trg_notify_announcement_published",
+    "event_manipulation": "INSERT",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_announcement_published()"
+  },
+  {
     "table_name": "attendance",
     "trigger_name": "attendance_minutes_calculation",
     "event_manipulation": "UPDATE",
@@ -35,18 +63,18 @@
     "action_statement": "EXECUTE FUNCTION set_break_session_updated_at()"
   },
   {
-    "table_name": "depot_notice_offers",
-    "trigger_name": "depot_notice_offers_branch_name",
-    "event_manipulation": "INSERT",
+    "table_name": "bug_reports",
+    "trigger_name": "set_bug_reports_updated_at",
+    "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
-    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
+    "action_statement": "EXECUTE FUNCTION trigger_set_updated_at()"
   },
   {
     "table_name": "depot_notice_offers",
-    "trigger_name": "depot_notice_offers_branch_name",
+    "trigger_name": "depot_notice_offers_set_updated_at",
     "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
-    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
+    "action_statement": "EXECUTE FUNCTION depot_touch_updated_at()"
   },
   {
     "table_name": "depot_notice_offers",
@@ -57,15 +85,15 @@
   },
   {
     "table_name": "depot_notice_offers",
-    "trigger_name": "depot_notice_offers_set_updated_at",
+    "trigger_name": "depot_notice_offers_branch_name",
     "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
-    "action_statement": "EXECUTE FUNCTION depot_touch_updated_at()"
+    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
   },
   {
-    "table_name": "depot_notices",
-    "trigger_name": "depot_notices_branch_name",
-    "event_manipulation": "UPDATE",
+    "table_name": "depot_notice_offers",
+    "trigger_name": "depot_notice_offers_branch_name",
+    "event_manipulation": "INSERT",
     "action_timing": "BEFORE",
     "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
   },
@@ -73,6 +101,13 @@
     "table_name": "depot_notices",
     "trigger_name": "depot_notices_branch_name",
     "event_manipulation": "INSERT",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
+  },
+  {
+    "table_name": "depot_notices",
+    "trigger_name": "depot_notices_branch_name",
+    "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
     "action_statement": "EXECUTE FUNCTION depot_set_branch_name()"
   },
@@ -85,17 +120,17 @@
   },
   {
     "table_name": "products",
-    "trigger_name": "update_products_updated_at",
-    "event_manipulation": "UPDATE",
-    "action_timing": "BEFORE",
-    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
-  },
-  {
-    "table_name": "products",
     "trigger_name": "trg_products_alt_barcodes",
     "event_manipulation": "INSERT",
     "action_timing": "BEFORE",
     "action_statement": "EXECUTE FUNCTION validate_products_alt_barcodes()"
+  },
+  {
+    "table_name": "products",
+    "trigger_name": "update_products_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
   },
   {
     "table_name": "products",
@@ -114,6 +149,13 @@
   {
     "table_name": "skt_records",
     "trigger_name": "skt_alarm_calculation",
+    "event_manipulation": "INSERT",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION calculate_skt_alarm_date()"
+  },
+  {
+    "table_name": "skt_records",
+    "trigger_name": "skt_alarm_calculation",
     "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
     "action_statement": "EXECUTE FUNCTION calculate_skt_alarm_date()"
@@ -126,11 +168,11 @@
     "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
   },
   {
-    "table_name": "skt_records",
-    "trigger_name": "skt_alarm_calculation",
-    "event_manipulation": "INSERT",
-    "action_timing": "BEFORE",
-    "action_statement": "EXECUTE FUNCTION calculate_skt_alarm_date()"
+    "table_name": "task_items",
+    "trigger_name": "task_item_completion_update",
+    "event_manipulation": "DELETE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION update_task_completion()"
   },
   {
     "table_name": "task_items",
@@ -143,13 +185,6 @@
     "table_name": "task_items",
     "trigger_name": "task_item_completion_update",
     "event_manipulation": "INSERT",
-    "action_timing": "AFTER",
-    "action_statement": "EXECUTE FUNCTION update_task_completion()"
-  },
-  {
-    "table_name": "task_items",
-    "trigger_name": "task_item_completion_update",
-    "event_manipulation": "DELETE",
     "action_timing": "AFTER",
     "action_statement": "EXECUTE FUNCTION update_task_completion()"
   },
@@ -166,5 +201,54 @@
     "event_manipulation": "UPDATE",
     "action_timing": "BEFORE",
     "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "table_name": "visual_audit_comments",
+    "trigger_name": "trg_notify_visual_audit_comment_added",
+    "event_manipulation": "INSERT",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_visual_audit_comment_added()"
+  },
+  {
+    "table_name": "visual_audit_photos",
+    "trigger_name": "trg_notify_visual_audit_photo_uploaded",
+    "event_manipulation": "INSERT",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_visual_audit_photo_uploaded()"
+  },
+  {
+    "table_name": "visual_audit_sections",
+    "trigger_name": "visual_audit_sections_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_visual_audit_updated_at()"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "trigger_name": "trg_notify_visual_audit_task_completed",
+    "event_manipulation": "UPDATE",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_visual_audit_task_completed()"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "trigger_name": "trg_notify_visual_audit_task_created",
+    "event_manipulation": "INSERT",
+    "action_timing": "AFTER",
+    "action_statement": "EXECUTE FUNCTION notify_visual_audit_task_created()"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "trigger_name": "visual_audit_tasks_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_visual_audit_updated_at()"
+  },
+  {
+    "table_name": "visual_audit_templates",
+    "trigger_name": "visual_audit_templates_updated_at",
+    "event_manipulation": "UPDATE",
+    "action_timing": "BEFORE",
+    "action_statement": "EXECUTE FUNCTION update_visual_audit_updated_at()"
   }
 ]

@@ -8,7 +8,7 @@ type RequestBody = {
   tenant: {
     code: string;
     name: string;
-    active: boolean;
+    is_active: boolean;
     logo_url?: string | null;
     sap_integration_active?: boolean | null;
     sap_api_url?: string | null;
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   const tenantCode = body.tenant.code?.trim().toUpperCase();
   const tenantName = body.tenant.name?.trim();
-  const tenantActive = Boolean(body.tenant.active);
+  const tenantActive = Boolean(body.tenant.is_active);
 
   const logoUrl = body.tenant.logo_url?.trim() || null;
   const sapIntegrationActive = Boolean(body.tenant.sap_integration_active ?? false);
@@ -139,7 +139,7 @@ export async function POST(request: Request) {
     id: tenantId,
     code: tenantCode,
     name: tenantName,
-    active: tenantActive,
+    is_active: tenantActive,
     logo_url: logoUrl,
     sap_integration_active: sapIntegrationActive,
     sap_api_url: sapApiUrl,

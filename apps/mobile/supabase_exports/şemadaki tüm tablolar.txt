@@ -12,10 +12,6 @@
     "tablename": "buckets"
   },
   {
-    "schemaname": "public",
-    "tablename": "device_tokens"
-  },
-  {
     "schemaname": "storage",
     "tablename": "migrations"
   },
@@ -41,71 +37,47 @@
   },
   {
     "schemaname": "public",
-    "tablename": "depot_notices"
+    "tablename": "bug_reports"
   },
   {
     "schemaname": "public",
-    "tablename": "regions"
+    "tablename": "bug_report_notifications"
   },
   {
     "schemaname": "public",
-    "tablename": "users"
+    "tablename": "visual_audit_sections"
   },
   {
     "schemaname": "public",
-    "tablename": "attendance"
+    "tablename": "visual_audit_templates"
   },
   {
     "schemaname": "public",
-    "tablename": "break_logs"
+    "tablename": "visual_audit_photos"
   },
   {
     "schemaname": "public",
-    "tablename": "skt_alarm_notifications"
+    "tablename": "visual_audit_comments"
   },
   {
     "schemaname": "public",
-    "tablename": "product_issues"
+    "tablename": "visual_audit_tasks"
   },
   {
     "schemaname": "public",
-    "tablename": "employee_scores"
+    "tablename": "visual_audit_template_sections"
   },
   {
     "schemaname": "public",
-    "tablename": "branch_scores"
+    "tablename": "visual_audit_template_branches"
   },
   {
     "schemaname": "public",
-    "tablename": "stockout_lists"
+    "tablename": "visual_audit_task_plans"
   },
   {
     "schemaname": "public",
-    "tablename": "stockout_items"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "payrolls"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "branches"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "task_items"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "products"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "tasks"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "announcements"
+    "tablename": "notification_queue"
   },
   {
     "schemaname": "public",
@@ -113,51 +85,7 @@
   },
   {
     "schemaname": "public",
-    "tablename": "notifications"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "skt_records"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "health_reports"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "form_templates"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "form_submissions"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "malfunction_reports"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "modules"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "tenants"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "tenant_modules"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "task_assignees"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "shifts"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "leave_requests"
+    "tablename": "announcements"
   },
   {
     "schemaname": "public",
@@ -165,19 +93,7 @@
   },
   {
     "schemaname": "public",
-    "tablename": "depot_notice_offers"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "todos"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "merch_people"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "store_scoring_forms"
+    "tablename": "attendance"
   },
   {
     "schemaname": "public",
@@ -185,11 +101,111 @@
   },
   {
     "schemaname": "public",
+    "tablename": "branch_scores"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branches"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "depot_notice_offers"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "depot_notices"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "device_tokens"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "employee_scores"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_templates"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "health_reports"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "leave_requests"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "malfunction_reports"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "merch_people"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "modules"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "regions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shift_pattern_drafts"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shifts"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_alarm_notifications"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "skt_records"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_items"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_lists"
+  },
+  {
+    "schemaname": "public",
     "tablename": "store_scoring_form_versions"
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_sections"
+    "tablename": "store_scoring_forms"
   },
   {
     "schemaname": "public",
@@ -197,10 +213,58 @@
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_sessions"
+    "tablename": "store_scoring_sections"
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_session_items"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_sessions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_assignees"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_items"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenant_modules"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tasks"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "todos"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_attachments"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "survey_questions"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "survey_responses"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "survey_answers"
   }
 ]

@@ -51,7 +51,7 @@ export async function GET() {
           .from("branches")
           .select("id, name")
           .eq("id", profile.branch_id)
-          .eq("active", true);
+          .eq("is_active", true);
 
         if (error) {
           return NextResponse.json({ message: "Şubeler alınamadı", detail: error.message }, { status: 500 });
@@ -68,7 +68,7 @@ export async function GET() {
       .select("id, name")
       .eq("tenant_id", profile.tenant_id)
       .in("region_id", regionIds)
-      .eq("active", true)
+      .eq("is_active", true)
       .order("name", { ascending: true });
 
     if (error) {
@@ -84,7 +84,7 @@ export async function GET() {
       .from("branches")
       .select("id, name")
       .eq("id", profile.branch_id)
-      .eq("active", true);
+      .eq("is_active", true);
 
     if (error) {
       return NextResponse.json({ message: "Şubeler alınamadı", detail: error.message }, { status: 500 });
@@ -98,7 +98,7 @@ export async function GET() {
     .from("branches")
     .select("id, name")
     .eq("tenant_id", profile.tenant_id)
-    .eq("active", true)
+    .eq("is_active", true)
     .order("name", { ascending: true });
 
   if (error) {

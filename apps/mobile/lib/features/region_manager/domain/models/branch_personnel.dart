@@ -7,7 +7,7 @@ class BranchPersonnel {
     required this.lastName,
     required this.email,
     required this.role,
-    required this.active,
+    required this.isActive,
     this.phone,
     this.employeeCode,
     this.position,
@@ -20,7 +20,7 @@ class BranchPersonnel {
   final String lastName;
   final String email;
   final String role;
-  final bool active;
+  final bool isActive;
   final String? phone;
   final String? employeeCode;
   final String? position;
@@ -45,7 +45,7 @@ class BranchPersonnel {
       lastName: (map['last_name'] as String? ?? '').trim(),
       email: (map['email'] as String? ?? '').trim(),
       role: (map['role'] as String? ?? 'personel').trim(),
-      active: map['active'] is bool ? map['active'] as bool : true,
+      isActive: map['is_active'] is bool ? map['is_active'] as bool : true,
       phone: (map['phone'] as String?)?.trim(),
       employeeCode: (map['employee_code'] as String?)?.trim(),
       position: (map['position'] as String?)?.trim(),
@@ -55,7 +55,7 @@ class BranchPersonnel {
   BranchPersonnel copyWith({
     String? role,
     String? branchId,
-    bool? active,
+    bool? isActive,
   }) {
     return BranchPersonnel(
       id: id,
@@ -65,7 +65,7 @@ class BranchPersonnel {
       lastName: lastName,
       email: email,
       role: role ?? this.role,
-      active: active ?? this.active,
+      isActive: isActive ?? this.isActive,
       phone: phone,
       employeeCode: employeeCode,
       position: position,

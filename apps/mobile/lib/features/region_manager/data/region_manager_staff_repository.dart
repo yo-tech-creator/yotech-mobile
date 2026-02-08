@@ -54,7 +54,7 @@ class RegionManagerStaffRepository {
         'employee_code': map['employee_code'],
         'role': map['role'],
         'position': map['position'],
-        'active': map['active'] ?? true,
+        'is_active': map['is_active'] ?? true,
       };
       personnel.add(BranchPersonnel.fromMap(normalizedMap));
     }

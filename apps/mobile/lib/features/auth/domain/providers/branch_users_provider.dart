@@ -28,7 +28,7 @@ class BranchUser {
       fullName: fullName.isNotEmpty ? fullName : null,
       role: json['role'] as String?,
       branchId: json['branch_id'] as String?,
-      isActive: json['active'] as bool? ?? true,
+      isActive: json['is_active'] as bool? ?? true,
     );
   }
 }
@@ -40,9 +40,9 @@ final branchUsersProvider =
 
   final response = await supabase
       .from('users')
-      .select('id, first_name, last_name, role, branch_id, active')
+      .select('id, first_name, last_name, role, branch_id, is_active')
       .eq('branch_id', branchId)
-      .eq('active', true)
+      .eq('is_active', true)
       .order('first_name');
 
   return (response as List)
@@ -57,10 +57,10 @@ final branchManagersProvider =
 
   final response = await supabase
       .from('users')
-      .select('id, first_name, last_name, role, branch_id, active')
+      .select('id, first_name, last_name, role, branch_id, is_active')
       .eq('branch_id', branchId)
       .eq('role', 'sube_muduru')
-      .eq('active', true)
+      .eq('is_active', true)
       .order('first_name');
 
   return (response as List)
@@ -75,10 +75,10 @@ final branchPersonnelProvider =
 
   final response = await supabase
       .from('users')
-      .select('id, first_name, last_name, role, branch_id, active')
+      .select('id, first_name, last_name, role, branch_id, is_active')
       .eq('branch_id', branchId)
       .eq('role', 'personel')
-      .eq('active', true)
+      .eq('is_active', true)
       .order('first_name');
 
   return (response as List)

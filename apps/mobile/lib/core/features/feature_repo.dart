@@ -31,7 +31,7 @@ final effectiveFeaturesProvider =
     developer.log('📱 DEBUG: tenantId = $tenantId', name: 'feature_repo');
 
     final modulesRes =
-        await supabase.from('modules').select('code, active, is_core');
+        await supabase.from('modules').select('code, is_active, is_core');
 
     developer.log('📱 DEBUG: modules = $modulesRes', name: 'feature_repo');
 
@@ -57,7 +57,7 @@ final effectiveFeaturesProvider =
       final map = item as Map<String, dynamic>;
       final code = map['code'] as String;
       final isCore = map['is_core'] == true;
-      final globallyActive = map['active'] != false;
+      final globallyActive = map['is_active'] != false;
       final override = overrides[code];
       var enabled = override ?? globallyActive;
       if (isCore) enabled = true;

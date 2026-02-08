@@ -106,10 +106,98 @@
   {
     "table_schema": "public",
     "table_name": "announcements",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "type",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "YES",
+    "column_default": "'announcement'::announcement_type"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "target_scope",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "YES",
+    "column_default": "'all_branches'::target_scope"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "include_region_managers",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "false"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "managers_only",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "false"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "priority",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": "0"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "pinned",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "false"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "created_by_role",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "cover_image_url",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "summary",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "target_regions",
+    "data_type": "ARRAY",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "announcements",
+    "column_name": "pinned_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
   },
   {
     "table_schema": "public",
@@ -522,7 +610,7 @@
   {
     "table_schema": "public",
     "table_name": "branches",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
@@ -685,6 +773,190 @@
     "column_name": "updated_at",
     "data_type": "timestamp with time zone",
     "is_nullable": "NO",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "bug_report_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "title",
+    "data_type": "character varying",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "message",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "notification_type",
+    "data_type": "character varying",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "is_read",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "false"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "read_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_report_notifications",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "title",
+    "data_type": "character varying",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "description",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "device_info",
+    "data_type": "jsonb",
+    "is_nullable": "YES",
+    "column_default": "'{}'::jsonb"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "app_version",
+    "data_type": "character varying",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "status",
+    "data_type": "character varying",
+    "is_nullable": "YES",
+    "column_default": "'open'::character varying"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "priority",
+    "data_type": "character varying",
+    "is_nullable": "YES",
+    "column_default": "'normal'::character varying"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "admin_notes",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "resolved_by",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "resolved_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "bug_reports",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
     "column_default": "now()"
   },
   {
@@ -1154,7 +1426,7 @@
   {
     "table_schema": "public",
     "table_name": "form_templates",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
@@ -1642,7 +1914,7 @@
   {
     "table_schema": "public",
     "table_name": "modules",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
@@ -1654,6 +1926,86 @@
     "data_type": "timestamp with time zone",
     "is_nullable": "YES",
     "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "device_token_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "notification_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "title",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "body",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "data",
+    "data_type": "jsonb",
+    "is_nullable": "YES",
+    "column_default": "'{}'::jsonb"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "status",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": "'pending'::text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "error_message",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notification_queue",
+    "column_name": "sent_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
   },
   {
     "table_schema": "public",
@@ -1742,6 +2094,22 @@
     "data_type": "timestamp with time zone",
     "is_nullable": "YES",
     "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "column_name": "body",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "notifications",
+    "column_name": "data",
+    "data_type": "jsonb",
+    "is_nullable": "YES",
+    "column_default": "'{}'::jsonb"
   },
   {
     "table_schema": "public",
@@ -2026,7 +2394,7 @@
   {
     "table_schema": "public",
     "table_name": "products",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
@@ -2098,7 +2466,7 @@
   {
     "table_schema": "public",
     "table_name": "regions",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
@@ -2721,6 +3089,14 @@
   },
   {
     "table_schema": "public",
+    "table_name": "store_scoring_forms",
+    "column_name": "visible_roles",
+    "data_type": "ARRAY",
+    "is_nullable": "NO",
+    "column_default": "ARRAY['grand_admin'::text, 'firma_admin'::text, 'bolge_muduru'::text, 'sube_muduru'::text, 'personel'::text]"
+  },
+  {
+    "table_schema": "public",
     "table_name": "store_scoring_items",
     "column_name": "id",
     "data_type": "uuid",
@@ -2969,6 +3345,174 @@
   },
   {
     "table_schema": "public",
+    "table_name": "store_scoring_sessions",
+    "column_name": "evaluated_user_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "response_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "question_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "answer_text",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "answer_options",
+    "data_type": "jsonb",
+    "is_nullable": "YES",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "answer_rating",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "answer_boolean",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_answers",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "announcement_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "question_text",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "question_type",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "NO",
+    "column_default": "'single_choice'::survey_question_type"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "options",
+    "data_type": "jsonb",
+    "is_nullable": "YES",
+    "column_default": "'[]'::jsonb"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "required",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "true"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "sort_order",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": "0"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_questions",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_responses",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_responses",
+    "column_name": "announcement_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_responses",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "survey_responses",
+    "column_name": "submitted_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
     "table_name": "task_assignees",
     "column_name": "id",
     "data_type": "uuid",
@@ -2995,6 +3539,70 @@
     "table_schema": "public",
     "table_name": "task_assignees",
     "column_name": "assigned_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "task_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "file_url",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "file_name",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "file_type",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "file_size",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "uploaded_by",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "task_attachments",
+    "column_name": "created_at",
     "data_type": "timestamp with time zone",
     "is_nullable": "YES",
     "column_default": "now()"
@@ -3185,6 +3793,38 @@
   },
   {
     "table_schema": "public",
+    "table_name": "tasks",
+    "column_name": "is_archived",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "false"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "column_name": "source_task_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "column_name": "approved_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "tasks",
+    "column_name": "approved_by",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
     "table_name": "tenant_modules",
     "column_name": "id",
     "data_type": "uuid",
@@ -3370,7 +4010,7 @@
   {
     "table_schema": "public",
     "table_name": "tenants",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
@@ -3586,7 +4226,7 @@
   {
     "table_schema": "public",
     "table_name": "users",
-    "column_name": "active",
+    "column_name": "is_active",
     "data_type": "boolean",
     "is_nullable": "YES",
     "column_default": "true"
@@ -3922,14 +4562,6 @@
   {
     "table_schema": "public",
     "table_name": "v_store_scoring_published_forms",
-    "column_name": "tenant",
-    "data_type": "text",
-    "is_nullable": "YES",
-    "column_default": null
-  },
-  {
-    "table_schema": "public",
-    "table_name": "v_store_scoring_published_forms",
     "column_name": "code",
     "data_type": "text",
     "is_nullable": "YES",
@@ -3970,9 +4602,857 @@
   {
     "table_schema": "public",
     "table_name": "v_store_scoring_published_forms",
+    "column_name": "debug_effective_role",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_store_scoring_published_forms",
+    "column_name": "debug_auth_role",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_store_scoring_published_forms",
+    "column_name": "debug_user_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_store_scoring_published_forms",
+    "column_name": "visible_roles",
+    "data_type": "ARRAY",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_store_scoring_published_forms",
     "column_name": "sections",
     "data_type": "jsonb",
     "is_nullable": "YES",
     "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_survey_statistics",
+    "column_name": "announcement_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_survey_statistics",
+    "column_name": "title",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_survey_statistics",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_survey_statistics",
+    "column_name": "published_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_survey_statistics",
+    "column_name": "total_responses",
+    "data_type": "bigint",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "v_survey_statistics",
+    "column_name": "target_audience_count",
+    "data_type": "bigint",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "task_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "comment_type",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "NO",
+    "column_default": "'comment'::visual_audit_comment_type"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "message",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "photo_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_comments",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "task_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "uploaded_by",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "photo_url",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "thumbnail_url",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "file_name",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "file_size",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "mime_type",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": "'image/jpeg'::text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "caption",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "latitude",
+    "data_type": "double precision",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "longitude",
+    "data_type": "double precision",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_photos",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "name",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "description",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "icon",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": "'store'::text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "color",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": "'#3B82F6'::text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "display_order",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": "0"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "is_active",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "true"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_sections",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "name",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "section_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "NO",
+    "column_default": "'{}'::uuid[]"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "branch_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "NO",
+    "column_default": "'{}'::uuid[]"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "scheduled_hour",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "9"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "deadline_minutes",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "60"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "min_photos",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "1"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "notes",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "recurrence",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": "'daily'::text"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "recurrence_days",
+    "data_type": "ARRAY",
+    "is_nullable": "NO",
+    "column_default": "'{}'::integer[]"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "start_date",
+    "data_type": "date",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "end_date",
+    "data_type": "date",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "is_active",
+    "data_type": "boolean",
+    "is_nullable": "NO",
+    "column_default": "true"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "created_by",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_task_plans",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "template_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "branch_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "section_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "scheduled_date",
+    "data_type": "date",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "scheduled_time",
+    "data_type": "time without time zone",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "deadline_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "status",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "NO",
+    "column_default": "'pending'::visual_audit_task_status"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "completed_by",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "completed_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "reviewed_by",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "reviewed_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "review_note",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "min_photos",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "1"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "created_by",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "notes",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "plan_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_tasks",
+    "column_name": "title",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_branches",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_branches",
+    "column_name": "template_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_branches",
+    "column_name": "branch_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_branches",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_sections",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_sections",
+    "column_name": "template_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_sections",
+    "column_name": "section_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_sections",
+    "column_name": "display_order",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": "0"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_template_sections",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "tenant_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "created_by",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "name",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "description",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "section_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "branch_ids",
+    "data_type": "ARRAY",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "recurrence",
+    "data_type": "USER-DEFINED",
+    "is_nullable": "NO",
+    "column_default": "'daily'::visual_audit_recurrence"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "scheduled_times",
+    "data_type": "ARRAY",
+    "is_nullable": "NO",
+    "column_default": "ARRAY['10:00'::text]"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "weekly_days",
+    "data_type": "ARRAY",
+    "is_nullable": "YES",
+    "column_default": "ARRAY[1, 2, 3, 4, 5]"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "monthly_days",
+    "data_type": "ARRAY",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "deadline_minutes",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": "60"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "min_photos",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": "1"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "is_active",
+    "data_type": "boolean",
+    "is_nullable": "YES",
+    "column_default": "true"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "starts_at",
+    "data_type": "date",
+    "is_nullable": "YES",
+    "column_default": "CURRENT_DATE"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "ends_at",
+    "data_type": "date",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "visual_audit_templates",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
   }
 ]

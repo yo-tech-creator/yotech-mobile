@@ -5879,7 +5879,9 @@ using (((bucket_id = 'request-files'::text) AND ((storage.foldername(name))[1] =
 using (((bucket_id = 'request-files'::text) AND (auth.role() = 'authenticated'::text) AND ((storage.foldername(name))[1] = (auth.jwt() ->> 'tenant_id'::text))));
 
 
--- Storage triggers are managed by Supabase, skip if they exist
+-- Storage triggers are managed by Supabase platform, commented out for shadow database compatibility
+-- These triggers exist on the remote database but the functions are platform-managed
+/*
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'enforce_bucket_name_length_trigger') THEN
         CREATE TRIGGER enforce_bucket_name_length_trigger BEFORE INSERT OR UPDATE OF name ON storage.buckets FOR EACH ROW EXECUTE FUNCTION storage.enforce_bucket_name_length();
@@ -5921,5 +5923,6 @@ DO $$ BEGIN
         CREATE TRIGGER prefixes_delete_hierarchy AFTER DELETE ON storage.prefixes FOR EACH ROW EXECUTE FUNCTION storage.delete_prefix_hierarchy_trigger();
     END IF;
 END $$;
+*/
 
 

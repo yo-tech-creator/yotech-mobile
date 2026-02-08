@@ -1,63 +1,38 @@
 [
   {
-    "table_name": "regions",
-    "constraint_name": "regions_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+    "table_name": "break_sessions",
+    "constraint_name": "break_sessions_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
   },
   {
-    "table_name": "branches",
-    "constraint_name": "branches_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+    "table_name": "break_sessions",
+    "constraint_name": "break_sessions_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id)"
   },
   {
-    "table_name": "branches",
-    "constraint_name": "branches_region_id_fkey",
-    "definition": "FOREIGN KEY (region_id) REFERENCES regions(id) ON DELETE SET NULL"
+    "table_name": "break_sessions",
+    "constraint_name": "break_sessions_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
   },
   {
-    "table_name": "users",
-    "constraint_name": "users_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+    "table_name": "announcement_reads",
+    "constraint_name": "announcement_reads_announcement_id_fkey",
+    "definition": "FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "users",
-    "constraint_name": "users_id_fkey",
-    "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "users",
-    "constraint_name": "users_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL"
-  },
-  {
-    "table_name": "products",
-    "constraint_name": "products_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "skt_records",
-    "constraint_name": "skt_records_deleted_by_fkey",
-    "definition": "FOREIGN KEY (deleted_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "skt_records",
-    "constraint_name": "skt_records_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "skt_records",
-    "constraint_name": "skt_records_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "skt_records",
-    "constraint_name": "skt_records_product_id_fkey",
-    "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "skt_records",
-    "constraint_name": "skt_records_user_id_fkey",
+    "table_name": "announcement_reads",
+    "constraint_name": "announcement_reads_user_id_fkey",
     "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "announcements",
+    "constraint_name": "announcements_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "announcements",
+    "constraint_name": "announcements_published_by_fkey",
+    "definition": "FOREIGN KEY (published_by) REFERENCES users(id)"
   },
   {
     "table_name": "attendance",
@@ -75,194 +50,24 @@
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "break_logs",
-    "constraint_name": "break_logs_branch_id_fkey",
+    "table_name": "branch_requests",
+    "constraint_name": "branch_requests_branch_id_fkey",
     "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "break_logs",
-    "constraint_name": "break_logs_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+    "table_name": "branch_requests",
+    "constraint_name": "branch_requests_target_user_id_fkey",
+    "definition": "FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL"
   },
   {
-    "table_name": "break_logs",
-    "constraint_name": "break_logs_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+    "table_name": "branch_requests",
+    "constraint_name": "branch_requests_resolved_by_fkey",
+    "definition": "FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL"
   },
   {
-    "table_name": "tasks",
-    "constraint_name": "tasks_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "tasks",
-    "constraint_name": "tasks_created_by_fkey",
+    "table_name": "branch_requests",
+    "constraint_name": "branch_requests_created_by_fkey",
     "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "tasks",
-    "constraint_name": "tasks_parent_task_id_fkey",
-    "definition": "FOREIGN KEY (parent_task_id) REFERENCES tasks(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "tasks",
-    "constraint_name": "tasks_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "task_assignees",
-    "constraint_name": "task_assignees_task_id_fkey",
-    "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "task_assignees",
-    "constraint_name": "task_assignees_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "task_items",
-    "constraint_name": "task_items_completed_by_fkey",
-    "definition": "FOREIGN KEY (completed_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "task_items",
-    "constraint_name": "task_items_task_id_fkey",
-    "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "shifts",
-    "constraint_name": "shifts_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "shifts",
-    "constraint_name": "shifts_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "shifts",
-    "constraint_name": "shifts_created_by_fkey",
-    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "leave_requests",
-    "constraint_name": "leave_requests_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "leave_requests",
-    "constraint_name": "leave_requests_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "leave_requests",
-    "constraint_name": "leave_requests_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "leave_requests",
-    "constraint_name": "leave_requests_reviewed_by_fkey",
-    "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "health_reports",
-    "constraint_name": "health_reports_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "health_reports",
-    "constraint_name": "health_reports_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "health_reports",
-    "constraint_name": "health_reports_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "form_templates",
-    "constraint_name": "form_templates_created_by_fkey",
-    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "form_templates",
-    "constraint_name": "form_templates_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "form_submissions",
-    "constraint_name": "form_submissions_form_template_id_fkey",
-    "definition": "FOREIGN KEY (form_template_id) REFERENCES form_templates(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "form_submissions",
-    "constraint_name": "form_submissions_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "form_submissions",
-    "constraint_name": "form_submissions_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "form_submissions",
-    "constraint_name": "form_submissions_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "malfunction_reports",
-    "constraint_name": "malfunction_reports_reported_by_fkey",
-    "definition": "FOREIGN KEY (reported_by) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "malfunction_reports",
-    "constraint_name": "malfunction_reports_assigned_to_fkey",
-    "definition": "FOREIGN KEY (assigned_to) REFERENCES users(id)"
-  },
-  {
-    "table_name": "malfunction_reports",
-    "constraint_name": "malfunction_reports_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "malfunction_reports",
-    "constraint_name": "malfunction_reports_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "product_issues",
-    "constraint_name": "product_issues_product_id_fkey",
-    "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "product_issues",
-    "constraint_name": "product_issues_reported_by_fkey",
-    "definition": "FOREIGN KEY (reported_by) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "product_issues",
-    "constraint_name": "product_issues_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "product_issues",
-    "constraint_name": "product_issues_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "employee_scores",
-    "constraint_name": "employee_scores_evaluated_by_fkey",
-    "definition": "FOREIGN KEY (evaluated_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "employee_scores",
-    "constraint_name": "employee_scores_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "employee_scores",
-    "constraint_name": "employee_scores_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
   },
   {
     "table_name": "branch_scores",
@@ -280,104 +85,59 @@
     "definition": "FOREIGN KEY (evaluated_by) REFERENCES users(id)"
   },
   {
-    "table_name": "stockout_lists",
-    "constraint_name": "stockout_lists_tenant_id_fkey",
+    "table_name": "branches",
+    "constraint_name": "branches_tenant_id_fkey",
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "stockout_lists",
-    "constraint_name": "stockout_lists_branch_id_fkey",
+    "table_name": "branches",
+    "constraint_name": "branches_region_id_fkey",
+    "definition": "FOREIGN KEY (region_id) REFERENCES regions(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "break_logs",
+    "constraint_name": "break_logs_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "break_logs",
+    "constraint_name": "break_logs_branch_id_fkey",
     "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "stockout_lists",
-    "constraint_name": "stockout_lists_created_by_fkey",
-    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "stockout_items",
-    "constraint_name": "stockout_items_stockout_list_id_fkey",
-    "definition": "FOREIGN KEY (stockout_list_id) REFERENCES stockout_lists(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "stockout_items",
-    "constraint_name": "stockout_items_product_id_fkey",
-    "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "payrolls",
-    "constraint_name": "payrolls_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "payrolls",
-    "constraint_name": "payrolls_uploaded_by_fkey",
-    "definition": "FOREIGN KEY (uploaded_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "payrolls",
-    "constraint_name": "payrolls_tenant_id_fkey",
+    "table_name": "break_logs",
+    "constraint_name": "break_logs_tenant_id_fkey",
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "announcements",
-    "constraint_name": "announcements_published_by_fkey",
-    "definition": "FOREIGN KEY (published_by) REFERENCES users(id)"
+    "table_name": "depot_notice_offers",
+    "constraint_name": "depot_notice_offers_notice_id_fkey",
+    "definition": "FOREIGN KEY (notice_id) REFERENCES depot_notices(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "announcements",
-    "constraint_name": "announcements_tenant_id_fkey",
+    "table_name": "depot_notice_offers",
+    "constraint_name": "depot_notice_offers_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "constraint_name": "depot_notice_offers_decision_by_fkey",
+    "definition": "FOREIGN KEY (decision_by) REFERENCES users(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "constraint_name": "depot_notice_offers_offered_by_fkey",
+    "definition": "FOREIGN KEY (offered_by) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "depot_notice_offers",
+    "constraint_name": "depot_notice_offers_tenant_id_fkey",
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "announcement_reads",
-    "constraint_name": "announcement_reads_announcement_id_fkey",
-    "definition": "FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "announcement_reads",
-    "constraint_name": "announcement_reads_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "notifications",
-    "constraint_name": "notifications_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "notifications",
-    "constraint_name": "notifications_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "tenant_modules",
-    "constraint_name": "tenant_modules_module_code_fkey",
-    "definition": "FOREIGN KEY (module_code) REFERENCES modules(code) ON UPDATE CASCADE ON DELETE RESTRICT"
-  },
-  {
-    "table_name": "tenant_modules",
-    "constraint_name": "tenant_modules_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "tenant_modules",
-    "constraint_name": "tenant_modules_enabled_by_fkey",
-    "definition": "FOREIGN KEY (enabled_by) REFERENCES users(id)"
-  },
-  {
-    "table_name": "device_tokens",
-    "constraint_name": "device_tokens_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "skt_alarm_notifications",
-    "constraint_name": "skt_alarm_notifications_record_id_fkey",
-    "definition": "FOREIGN KEY (record_id) REFERENCES skt_records(id) ON DELETE CASCADE"
-  },
-  {
-    "table_name": "skt_alarm_notifications",
-    "constraint_name": "skt_alarm_notifications_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+    "table_name": "depot_notices",
+    "constraint_name": "depot_notices_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
   },
   {
     "table_name": "depot_notices",
@@ -390,54 +150,109 @@
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "depot_notices",
-    "constraint_name": "depot_notices_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+    "table_name": "device_tokens",
+    "constraint_name": "device_tokens_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "depot_notice_offers",
-    "constraint_name": "depot_notice_offers_tenant_id_fkey",
+    "table_name": "employee_scores",
+    "constraint_name": "employee_scores_evaluated_by_fkey",
+    "definition": "FOREIGN KEY (evaluated_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "employee_scores",
+    "constraint_name": "employee_scores_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "employee_scores",
+    "constraint_name": "employee_scores_tenant_id_fkey",
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "depot_notice_offers",
-    "constraint_name": "depot_notice_offers_branch_id_fkey",
+    "table_name": "form_submissions",
+    "constraint_name": "form_submissions_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "form_submissions",
+    "constraint_name": "form_submissions_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "form_submissions",
+    "constraint_name": "form_submissions_branch_id_fkey",
     "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "depot_notice_offers",
-    "constraint_name": "depot_notice_offers_offered_by_fkey",
-    "definition": "FOREIGN KEY (offered_by) REFERENCES users(id) ON DELETE CASCADE"
+    "table_name": "form_submissions",
+    "constraint_name": "form_submissions_form_template_id_fkey",
+    "definition": "FOREIGN KEY (form_template_id) REFERENCES form_templates(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "depot_notice_offers",
-    "constraint_name": "depot_notice_offers_decision_by_fkey",
-    "definition": "FOREIGN KEY (decision_by) REFERENCES users(id) ON DELETE SET NULL"
+    "table_name": "form_templates",
+    "constraint_name": "form_templates_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
   },
   {
-    "table_name": "depot_notice_offers",
-    "constraint_name": "depot_notice_offers_notice_id_fkey",
-    "definition": "FOREIGN KEY (notice_id) REFERENCES depot_notices(id) ON DELETE CASCADE"
+    "table_name": "form_templates",
+    "constraint_name": "form_templates_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "break_sessions",
-    "constraint_name": "break_sessions_branch_id_fkey",
-    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id)"
+    "table_name": "health_reports",
+    "constraint_name": "health_reports_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "break_sessions",
-    "constraint_name": "break_sessions_tenant_id_fkey",
-    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+    "table_name": "health_reports",
+    "constraint_name": "health_reports_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "break_sessions",
-    "constraint_name": "break_sessions_user_id_fkey",
-    "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+    "table_name": "health_reports",
+    "constraint_name": "health_reports_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "merch_people",
-    "constraint_name": "merch_people_created_by_fkey",
-    "definition": "FOREIGN KEY (created_by) REFERENCES auth.users(id)"
+    "table_name": "leave_requests",
+    "constraint_name": "leave_requests_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "leave_requests",
+    "constraint_name": "leave_requests_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "leave_requests",
+    "constraint_name": "leave_requests_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "leave_requests",
+    "constraint_name": "leave_requests_reviewed_by_fkey",
+    "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "malfunction_reports",
+    "constraint_name": "malfunction_reports_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "malfunction_reports",
+    "constraint_name": "malfunction_reports_assigned_to_fkey",
+    "definition": "FOREIGN KEY (assigned_to) REFERENCES users(id)"
+  },
+  {
+    "table_name": "malfunction_reports",
+    "constraint_name": "malfunction_reports_reported_by_fkey",
+    "definition": "FOREIGN KEY (reported_by) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "malfunction_reports",
+    "constraint_name": "malfunction_reports_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
     "table_name": "merch_people",
@@ -445,48 +260,153 @@
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
   },
   {
-    "table_name": "todos",
-    "constraint_name": "todos_parent_id_fkey",
-    "definition": "FOREIGN KEY (parent_id) REFERENCES todos(id) ON DELETE CASCADE"
+    "table_name": "merch_people",
+    "constraint_name": "merch_people_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES auth.users(id)"
   },
   {
-    "table_name": "todos",
-    "constraint_name": "todos_tenant_id_fkey",
+    "table_name": "notifications",
+    "constraint_name": "notifications_tenant_id_fkey",
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "todos",
-    "constraint_name": "todos_owner_id_fkey",
-    "definition": "FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE"
+    "table_name": "notifications",
+    "constraint_name": "notifications_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "branch_requests",
-    "constraint_name": "branch_requests_branch_id_fkey",
+    "table_name": "payrolls",
+    "constraint_name": "payrolls_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "payrolls",
+    "constraint_name": "payrolls_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "payrolls",
+    "constraint_name": "payrolls_uploaded_by_fkey",
+    "definition": "FOREIGN KEY (uploaded_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "product_issues",
+    "constraint_name": "product_issues_product_id_fkey",
+    "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "product_issues",
+    "constraint_name": "product_issues_branch_id_fkey",
     "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "branch_requests",
-    "constraint_name": "branch_requests_created_by_fkey",
-    "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE"
+    "table_name": "product_issues",
+    "constraint_name": "product_issues_reported_by_fkey",
+    "definition": "FOREIGN KEY (reported_by) REFERENCES users(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "branch_requests",
-    "constraint_name": "branch_requests_target_user_id_fkey",
-    "definition": "FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL"
-  },
-  {
-    "table_name": "branch_requests",
-    "constraint_name": "branch_requests_resolved_by_fkey",
-    "definition": "FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL"
-  },
-  {
-    "table_name": "store_scoring_forms",
-    "constraint_name": "store_scoring_forms_tenant_id_fkey",
+    "table_name": "product_issues",
+    "constraint_name": "product_issues_tenant_id_fkey",
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "store_scoring_forms",
-    "constraint_name": "store_scoring_forms_created_by_fkey",
+    "table_name": "products",
+    "constraint_name": "products_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "regions",
+    "constraint_name": "regions_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "shift_pattern_drafts",
+    "constraint_name": "shift_pattern_drafts_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "shift_pattern_drafts",
+    "constraint_name": "shift_pattern_drafts_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "shifts",
+    "constraint_name": "shifts_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "shifts",
+    "constraint_name": "shifts_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "shifts",
+    "constraint_name": "shifts_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "skt_alarm_notifications",
+    "constraint_name": "skt_alarm_notifications_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "skt_alarm_notifications",
+    "constraint_name": "skt_alarm_notifications_record_id_fkey",
+    "definition": "FOREIGN KEY (record_id) REFERENCES skt_records(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "skt_records",
+    "constraint_name": "skt_records_product_id_fkey",
+    "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "skt_records",
+    "constraint_name": "skt_records_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "skt_records",
+    "constraint_name": "skt_records_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "skt_records",
+    "constraint_name": "skt_records_deleted_by_fkey",
+    "definition": "FOREIGN KEY (deleted_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "skt_records",
+    "constraint_name": "skt_records_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "stockout_items",
+    "constraint_name": "stockout_items_product_id_fkey",
+    "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "stockout_items",
+    "constraint_name": "stockout_items_stockout_list_id_fkey",
+    "definition": "FOREIGN KEY (stockout_list_id) REFERENCES stockout_lists(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "stockout_lists",
+    "constraint_name": "stockout_lists_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "stockout_lists",
+    "constraint_name": "stockout_lists_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "stockout_lists",
+    "constraint_name": "stockout_lists_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "store_scoring_form_versions",
+    "constraint_name": "store_scoring_form_versions_created_by_fkey",
     "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT"
   },
   {
@@ -495,14 +415,14 @@
     "definition": "FOREIGN KEY (form_id) REFERENCES store_scoring_forms(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "store_scoring_form_versions",
-    "constraint_name": "store_scoring_form_versions_created_by_fkey",
+    "table_name": "store_scoring_forms",
+    "constraint_name": "store_scoring_forms_created_by_fkey",
     "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT"
   },
   {
-    "table_name": "store_scoring_sections",
-    "constraint_name": "store_scoring_sections_form_version_id_fkey",
-    "definition": "FOREIGN KEY (form_version_id) REFERENCES store_scoring_form_versions(id) ON DELETE CASCADE"
+    "table_name": "store_scoring_forms",
+    "constraint_name": "store_scoring_forms_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
   },
   {
     "table_name": "store_scoring_items",
@@ -510,9 +430,29 @@
     "definition": "FOREIGN KEY (section_id) REFERENCES store_scoring_sections(id) ON DELETE CASCADE"
   },
   {
+    "table_name": "store_scoring_sections",
+    "constraint_name": "store_scoring_sections_form_version_id_fkey",
+    "definition": "FOREIGN KEY (form_version_id) REFERENCES store_scoring_form_versions(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "store_scoring_session_items",
+    "constraint_name": "store_scoring_session_items_item_id_fkey",
+    "definition": "FOREIGN KEY (item_id) REFERENCES store_scoring_items(id) ON DELETE RESTRICT"
+  },
+  {
+    "table_name": "store_scoring_session_items",
+    "constraint_name": "store_scoring_session_items_session_id_fkey",
+    "definition": "FOREIGN KEY (session_id) REFERENCES store_scoring_sessions(id) ON DELETE CASCADE"
+  },
+  {
     "table_name": "store_scoring_sessions",
-    "constraint_name": "store_scoring_sessions_form_version_id_fkey",
-    "definition": "FOREIGN KEY (form_version_id) REFERENCES store_scoring_form_versions(id) ON DELETE RESTRICT"
+    "constraint_name": "store_scoring_sessions_evaluated_user_id_fkey",
+    "definition": "FOREIGN KEY (evaluated_user_id) REFERENCES users(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "store_scoring_sessions",
+    "constraint_name": "store_scoring_sessions_evaluator_id_fkey",
+    "definition": "FOREIGN KEY (evaluator_id) REFERENCES users(id) ON DELETE RESTRICT"
   },
   {
     "table_name": "store_scoring_sessions",
@@ -521,27 +461,292 @@
   },
   {
     "table_name": "store_scoring_sessions",
-    "constraint_name": "store_scoring_sessions_evaluator_id_fkey",
-    "definition": "FOREIGN KEY (evaluator_id) REFERENCES users(id) ON DELETE RESTRICT"
+    "constraint_name": "store_scoring_sessions_form_version_id_fkey",
+    "definition": "FOREIGN KEY (form_version_id) REFERENCES store_scoring_form_versions(id) ON DELETE RESTRICT"
   },
   {
-    "table_name": "store_scoring_session_items",
-    "constraint_name": "store_scoring_session_items_session_id_fkey",
-    "definition": "FOREIGN KEY (session_id) REFERENCES store_scoring_sessions(id) ON DELETE CASCADE"
+    "table_name": "task_assignees",
+    "constraint_name": "task_assignees_task_id_fkey",
+    "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "store_scoring_session_items",
-    "constraint_name": "store_scoring_session_items_item_id_fkey",
-    "definition": "FOREIGN KEY (item_id) REFERENCES store_scoring_items(id) ON DELETE RESTRICT"
+    "table_name": "task_assignees",
+    "constraint_name": "task_assignees_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "shift_pattern_drafts",
-    "constraint_name": "shift_pattern_drafts_user_id_fkey",
+    "table_name": "task_items",
+    "constraint_name": "task_items_task_id_fkey",
+    "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "task_items",
+    "constraint_name": "task_items_completed_by_fkey",
+    "definition": "FOREIGN KEY (completed_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "tasks",
+    "constraint_name": "tasks_approved_by_fkey",
+    "definition": "FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "tasks",
+    "constraint_name": "tasks_source_task_id_fkey",
+    "definition": "FOREIGN KEY (source_task_id) REFERENCES tasks(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "tasks",
+    "constraint_name": "tasks_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "tasks",
+    "constraint_name": "tasks_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "tasks",
+    "constraint_name": "tasks_parent_task_id_fkey",
+    "definition": "FOREIGN KEY (parent_task_id) REFERENCES tasks(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "tasks",
+    "constraint_name": "tasks_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "tenant_modules",
+    "constraint_name": "tenant_modules_enabled_by_fkey",
+    "definition": "FOREIGN KEY (enabled_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "tenant_modules",
+    "constraint_name": "tenant_modules_module_code_fkey",
+    "definition": "FOREIGN KEY (module_code) REFERENCES modules(code) ON UPDATE CASCADE ON DELETE RESTRICT"
+  },
+  {
+    "table_name": "tenant_modules",
+    "constraint_name": "tenant_modules_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "todos",
+    "constraint_name": "todos_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "todos",
+    "constraint_name": "todos_parent_id_fkey",
+    "definition": "FOREIGN KEY (parent_id) REFERENCES todos(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "todos",
+    "constraint_name": "todos_owner_id_fkey",
+    "definition": "FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "users",
+    "constraint_name": "users_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "users",
+    "constraint_name": "users_id_fkey",
+    "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "users",
+    "constraint_name": "users_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "task_attachments",
+    "constraint_name": "task_attachments_uploaded_by_fkey",
+    "definition": "FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "task_attachments",
+    "constraint_name": "task_attachments_task_id_fkey",
+    "definition": "FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "survey_questions",
+    "constraint_name": "survey_questions_announcement_id_fkey",
+    "definition": "FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "survey_responses",
+    "constraint_name": "survey_responses_user_id_fkey",
     "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
   },
   {
-    "table_name": "shift_pattern_drafts",
-    "constraint_name": "shift_pattern_drafts_tenant_id_fkey",
+    "table_name": "survey_responses",
+    "constraint_name": "survey_responses_announcement_id_fkey",
+    "definition": "FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "survey_answers",
+    "constraint_name": "survey_answers_response_id_fkey",
+    "definition": "FOREIGN KEY (response_id) REFERENCES survey_responses(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "survey_answers",
+    "constraint_name": "survey_answers_question_id_fkey",
+    "definition": "FOREIGN KEY (question_id) REFERENCES survey_questions(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "bug_reports",
+    "constraint_name": "bug_reports_tenant_id_fkey",
     "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "bug_reports",
+    "constraint_name": "bug_reports_resolved_by_fkey",
+    "definition": "FOREIGN KEY (resolved_by) REFERENCES auth.users(id)"
+  },
+  {
+    "table_name": "bug_reports",
+    "constraint_name": "bug_reports_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "bug_report_notifications",
+    "constraint_name": "bug_report_notifications_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "bug_report_notifications",
+    "constraint_name": "bug_report_notifications_bug_report_id_fkey",
+    "definition": "FOREIGN KEY (bug_report_id) REFERENCES bug_reports(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_sections",
+    "constraint_name": "visual_audit_sections_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_templates",
+    "constraint_name": "visual_audit_templates_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "visual_audit_templates",
+    "constraint_name": "visual_audit_templates_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_reviewed_by_fkey",
+    "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_section_id_fkey",
+    "definition": "FOREIGN KEY (section_id) REFERENCES visual_audit_sections(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_completed_by_fkey",
+    "definition": "FOREIGN KEY (completed_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_plan_id_fkey",
+    "definition": "FOREIGN KEY (plan_id) REFERENCES visual_audit_task_plans(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_tasks",
+    "constraint_name": "visual_audit_tasks_template_id_fkey",
+    "definition": "FOREIGN KEY (template_id) REFERENCES visual_audit_templates(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_photos",
+    "constraint_name": "visual_audit_photos_uploaded_by_fkey",
+    "definition": "FOREIGN KEY (uploaded_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "visual_audit_photos",
+    "constraint_name": "visual_audit_photos_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_photos",
+    "constraint_name": "visual_audit_photos_task_id_fkey",
+    "definition": "FOREIGN KEY (task_id) REFERENCES visual_audit_tasks(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_comments",
+    "constraint_name": "visual_audit_comments_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES users(id)"
+  },
+  {
+    "table_name": "visual_audit_comments",
+    "constraint_name": "visual_audit_comments_task_id_fkey",
+    "definition": "FOREIGN KEY (task_id) REFERENCES visual_audit_tasks(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_comments",
+    "constraint_name": "visual_audit_comments_photo_id_fkey",
+    "definition": "FOREIGN KEY (photo_id) REFERENCES visual_audit_photos(id)"
+  },
+  {
+    "table_name": "visual_audit_comments",
+    "constraint_name": "visual_audit_comments_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_template_sections",
+    "constraint_name": "visual_audit_template_sections_section_id_fkey",
+    "definition": "FOREIGN KEY (section_id) REFERENCES visual_audit_sections(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_template_sections",
+    "constraint_name": "visual_audit_template_sections_template_id_fkey",
+    "definition": "FOREIGN KEY (template_id) REFERENCES visual_audit_templates(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_template_branches",
+    "constraint_name": "visual_audit_template_branches_template_id_fkey",
+    "definition": "FOREIGN KEY (template_id) REFERENCES visual_audit_templates(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_template_branches",
+    "constraint_name": "visual_audit_template_branches_branch_id_fkey",
+    "definition": "FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_task_plans",
+    "constraint_name": "visual_audit_task_plans_tenant_id_fkey",
+    "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+  },
+  {
+    "table_name": "visual_audit_task_plans",
+    "constraint_name": "visual_audit_task_plans_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES users(id)"
+  },
+  {
+    "table_name": "notification_queue",
+    "constraint_name": "notification_queue_notification_id_fkey",
+    "definition": "FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE SET NULL"
+  },
+  {
+    "table_name": "notification_queue",
+    "constraint_name": "notification_queue_device_token_id_fkey",
+    "definition": "FOREIGN KEY (device_token_id) REFERENCES device_tokens(id) ON DELETE CASCADE"
   }
 ]

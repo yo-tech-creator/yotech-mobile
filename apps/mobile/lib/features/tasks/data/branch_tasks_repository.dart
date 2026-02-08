@@ -67,9 +67,31 @@ class BranchTasksRepository {
         .from('tasks')
         .update({'status': branchTaskStatusToString(status)}).eq('id', taskId);
 
-    // Eğer tamamlandı olarak işaretlendiyse, üst görevleri de kontrol et
+    // Eğer tamamlandı olarak işaretlendiyse
     if (status == BranchTaskStatus.completed) {
+      // Tüm alt görevleri de tamamla
+      await _completeChildTasks(taskId);
+      // Üst görevleri de kontrol et
       await _checkAndCompleteParentTasks(taskId);
+    }
+  }
+
+  /// Bir görevin tüm alt görevlerini rekürsif olarak tamamla
+  Future<void> _completeChildTasks(String taskId) async {
+    // Bu görevin tüm alt görevlerini bul
+    final childrenResponse =
+        await _client.from('tasks').select('id').eq('parent_task_id', taskId);
+
+    final children = List<Map<String, dynamic>>.from(childrenResponse as List);
+
+    for (final child in children) {
+      final childId = child['id'] as String;
+      // Alt görevi tamamla
+      await _client
+          .from('tasks')
+          .update({'status': 'tamamlandi'}).eq('id', childId);
+      // Rekürsif olarak bu alt görevin alt görevlerini de tamamla
+      await _completeChildTasks(childId);
     }
   }
 

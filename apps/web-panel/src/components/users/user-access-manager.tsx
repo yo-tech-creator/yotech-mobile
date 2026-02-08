@@ -4,11 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/types/database";
 
-type Tenant = Pick<Database["public"]["Tables"]["tenants"]["Row"], "id" | "code" | "name" | "active">;
+type Tenant = Pick<Database["public"]["Tables"]["tenants"]["Row"], "id" | "code" | "name" | "is_active">;
 type Branch = Pick<Database["public"]["Tables"]["branches"]["Row"], "id" | "name" | "code">;
 type UserRow = Pick<
   Database["public"]["Tables"]["users"]["Row"],
-  "id" | "tenant_id" | "branch_id" | "role" | "first_name" | "last_name" | "email" | "phone" | "employee_code" | "position" | "active"
+  "id" | "tenant_id" | "branch_id" | "role" | "first_name" | "last_name" | "email" | "phone" | "employee_code" | "position" | "is_active"
 >;
 
 const ROLES = [
@@ -621,10 +621,10 @@ export function UserAccessManager() {
                           borderRadius: 999,
                           fontSize: 12,
                           fontWeight: 700,
-                          ...(u.active ? STATUS_PILL.active : STATUS_PILL.passive),
+                          ...(u.is_active ? STATUS_PILL.active : STATUS_PILL.passive),
                         }}
                       >
-                        {u.active ? "Aktif" : "Pasif"}
+                        {u.is_active ? "Aktif" : "Pasif"}
                       </span>
                     </div>
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", color: "var(--text-muted)" }}>
@@ -666,8 +666,8 @@ export function UserAccessManager() {
                     <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       <input
                         type="checkbox"
-                        checked={!!rowDraft.active}
-                        onChange={(e) => setDraft((p) => ({ ...p, active: e.target.checked }))}
+                        checked={!!rowDraft.is_active}
+                        onChange={(e) => setDraft((p) => ({ ...p, is_active: e.target.checked }))}
                       />
                       <span style={{ fontSize: 12 }}>Aktif</span>
                     </label>

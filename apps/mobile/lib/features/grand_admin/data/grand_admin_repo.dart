@@ -43,7 +43,7 @@ class GrandAdminRepository {
     try {
       final res = await _supabase
           .from('tenants')
-          .select('id, name, code, active')
+          .select('id, name, code, is_active')
           .order('name');
 
       developer.log('fetchTenants REST raw response: $res',
@@ -51,7 +51,7 @@ class GrandAdminRepository {
 
       final list = (res as List).cast<Map<String, dynamic>>();
       final active = list.where((t) {
-        final value = t['active'];
+        final value = t['is_active'];
         if (value is bool) return value;
         if (value is String) {
           return value.toLowerCase() == 'true' || value.toLowerCase() == 't';

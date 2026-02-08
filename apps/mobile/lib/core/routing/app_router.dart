@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yotech_mobile/core/localization/localization_extensions.dart';
 
+import '../../features/announcements/presentation/screens/announcements_page.dart';
 import '../../features/auth/domain/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/grand_admin/presentation/screens/grand_admin_panel_screen.dart';
 import '../../features/home/presentation/screens/home_shell.dart';
 import '../../features/region_manager/presentation/screens/region_manager_dashboard_screen.dart';
+import '../../features/firma_admin/presentation/screens/firma_admin_dashboard_screen.dart';
 import '../../features/inventory_transfer/data/models/inventory_transfer_model.dart';
 import '../../features/inventory_transfer/presentation/screens/create_notice_screen.dart';
 import '../../features/inventory_transfer/presentation/screens/inventory_transfer_list_screen.dart';
@@ -25,13 +27,23 @@ class AppRouter {
   static const String login = '/login';
   static const String grandAdminPanel = '/grand-admin';
   static const String home = '/home';
+  static const String announcement = '/announcement';
   static const String inventoryTransferList = '/inventory-transfer';
   static const String createInventoryTransfer = '/inventory-transfer/create';
   static const String inventoryTransferDetail = '/inventory-transfer/detail';
 
   // Route generator
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
-    switch (settings.name) {
+    final String? routeName = settings.name;
+
+    // /announcement/:id pattern'ini kontrol et
+    if (routeName != null && routeName.startsWith('/announcement')) {
+      debugPrint(
+          '📢 [AppRouter] Announcement route: $routeName -> AnnouncementsPage');
+      return MaterialPageRoute(builder: (_) => const AnnouncementsPage());
+    }
+
+    switch (routeName) {
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case grandAdminPanel:
@@ -48,7 +60,11 @@ class AppRouter {
         return MaterialPageRoute(
             builder: (_) => NoticeDetailScreen(notice: notice));
       default:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        // Unknown route'lar için LoginScreen DEĞİL, home ekranına yönlendir
+        // Auth kontrolü AuthWrapper'da yapılacak
+        debugPrint(
+            '⚠️ [AppRouter] Unknown route: $routeName -> HomeShell (will be auth-checked)');
+        return MaterialPageRoute(builder: (_) => const HomeShell());
     }
   }
 
@@ -69,6 +85,7 @@ class AppRouter {
           case 'bolge_muduru':
             return const RegionManagerDashboardScreen();
           case 'firma_admin':
+            return const FirmaAdminDashboardScreen();
           case 'sube_muduru':
           case 'personel':
             return const HomeShell();

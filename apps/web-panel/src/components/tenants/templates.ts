@@ -68,7 +68,7 @@ export const productsTemplateExample = {
       unit: "adet",
       price: 12.5,
       alt_barcodes: "8690000000001,8690000000002",
-      active: true,
+      is_active: true,
     },
   ],
 };
@@ -78,7 +78,7 @@ export const tenantTemplateExample = {
     {
       tenant_code: "ORNEK",
       tenant_name: "Örnek Firma",
-      active: true,
+      is_active: true,
       logo_url: "https://cdn.example.com/logos/filemarket.png",
       sap_integration_active: false,
       sap_api_url: "",

@@ -69,7 +69,7 @@ export async function GET() {
       .from("branches")
       .select("id, name, region_id")
       .eq("tenant_id", tenantId)
-      .eq("active", true)
+      .eq("is_active", true)
       .order("name");
 
     // For bölge müdürü: find their managed regions

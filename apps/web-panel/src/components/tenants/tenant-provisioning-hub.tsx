@@ -163,7 +163,7 @@ function ProductTemplateCard({ tenantId }: { tenantId?: string }) {
     const wb = utils.book_new();
     const tenantCode = tenantId?.trim() || productsTemplateExample.Products[0].tenant_code;
     const productSheet = utils.aoa_to_sheet([
-      ["tenant_code", "barcode", "name", "brand", "category", "supplier", "unit", "price", "alt_barcodes", "active"],
+      ["tenant_code", "barcode", "name", "brand", "category", "supplier", "unit", "price", "alt_barcodes", "is_active"],
       ...productsTemplateExample.Products.map((row) => [
         tenantCode,
         row.barcode,
@@ -174,7 +174,7 @@ function ProductTemplateCard({ tenantId }: { tenantId?: string }) {
         row.unit,
         row.price,
         row.alt_barcodes,
-        row.active ? "TRUE" : "FALSE",
+        row.is_active ? "TRUE" : "FALSE",
       ]),
     ]);
     utils.book_append_sheet(wb, productSheet, "Products");
@@ -198,7 +198,7 @@ function ProductTemplateCard({ tenantId }: { tenantId?: string }) {
         <li>tenant_code tüm satırlarda hedef firma kodu ile eşleşmeli.</li>
         <li>barcode benzersiz olmalı; alt_barcodes en fazla 10 değer, ana barkodla aynı olamaz.</li>
         <li>brand/category/supplier/unit opsiyonel; unit boşsa adet kabul edilir.</li>
-        <li>price opsiyonel numerik; active true/false ile ürün durumu belirlenir.</li>
+        <li>price opsiyonel numerik; is_active true/false ile ürün durumu belirlenir.</li>
         <li>{tenantId ? `${tenantId} için şablon oluşturuldu.` : "Tenant kodunu doldurmayı unutmayın."}</li>
       </ul>
       <p className="provisioning-note">Şablonu doldurup Ürün İçe Aktarma sekmesinden yükleyebilirsiniz.</p>

@@ -1,13 +1,143 @@
 [
   {
     "schemaname": "public",
+    "tablename": "announcement_reads",
+    "policyname": "announcement_reads_owner",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads",
+    "policyname": "announcement_reads_owner_write",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads",
+    "policyname": "announcement_reads_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM (users u\n     JOIN announcements a ON ((a.id = announcement_reads.announcement_id)))\n  WHERE ((u.id = ( SELECT auth.uid() AS uid)) AND (u.tenant_id = a.tenant_id) AND (u.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role]))))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcement_reads",
+    "policyname": "announcement_reads_service_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{service_role}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "policyname": "announcements_admin_write",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = announcements.tenant_id) AND (ctx.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role, 'bolge_muduru'::user_role]))))) OR is_service_role())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "policyname": "announcements_admin_write_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = announcements.tenant_id) AND (ctx.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role, 'bolge_muduru'::user_role]))))) OR is_service_role())",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "policyname": "announcements_admin_write_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = announcements.tenant_id) AND (ctx.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role, 'bolge_muduru'::user_role]))))) OR is_service_role())",
+    "with_check": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = announcements.tenant_id) AND (ctx.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role, 'bolge_muduru'::user_role]))))) OR is_service_role())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "policyname": "announcements_audience_read",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = announcements.tenant_id) AND ((announcements.target_branches IS NULL) OR (array_length(announcements.target_branches, 1) IS NULL) OR (ctx.branch_id = ANY (announcements.target_branches))) AND ((announcements.target_roles IS NULL) OR (array_length(announcements.target_roles, 1) IS NULL) OR ((ctx.role)::text = ANY (announcements.target_roles)))))) OR is_service_role())",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "announcements",
+    "policyname": "announcements_service_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{service_role}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "policyname": "attendance_service_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{service_role}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "policyname": "attendance_tenant_scoped_read",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = attendance.tenant_id) AND ((ctx.role = 'grand_admin'::user_role) OR (ctx.role = 'firma_admin'::user_role) OR ((ctx.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = attendance.branch_id) AND (r.manager_id = ctx.id) AND (r.tenant_id = ctx.tenant_id))))) OR ((ctx.role = 'sube_muduru'::user_role) AND (ctx.branch_id = attendance.branch_id)) OR ((ctx.role = 'personel'::user_role) AND (ctx.branch_id = attendance.branch_id) AND (attendance.user_id = ctx.id)))))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "policyname": "attendance_tenant_scoped_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = attendance.tenant_id) AND ((ctx.role = 'grand_admin'::user_role) OR (ctx.role = 'firma_admin'::user_role) OR ((ctx.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = attendance.branch_id) AND (r.manager_id = ctx.id) AND (r.tenant_id = ctx.tenant_id))))) OR ((ctx.role = 'sube_muduru'::user_role) AND (ctx.branch_id = attendance.branch_id)) OR ((ctx.role = 'personel'::user_role) AND (ctx.branch_id = attendance.branch_id) AND (attendance.user_id = ctx.id)))))) OR is_service_role())",
+    "with_check": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = attendance.tenant_id) AND ((ctx.role = 'grand_admin'::user_role) OR (ctx.role = 'firma_admin'::user_role) OR ((ctx.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = attendance.branch_id) AND (r.manager_id = ctx.id) AND (r.tenant_id = ctx.tenant_id))))) OR ((ctx.role = 'sube_muduru'::user_role) AND (ctx.branch_id = attendance.branch_id)) OR ((ctx.role = 'personel'::user_role) AND (ctx.branch_id = attendance.branch_id) AND (attendance.user_id = ctx.id)))))) OR is_service_role())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "attendance",
+    "policyname": "attendance_tenant_scoped_write",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = attendance.tenant_id) AND ((ctx.role = 'grand_admin'::user_role) OR (ctx.role = 'firma_admin'::user_role) OR ((ctx.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = attendance.branch_id) AND (r.manager_id = ctx.id) AND (r.tenant_id = ctx.tenant_id))))) OR ((ctx.role = 'sube_muduru'::user_role) AND (ctx.branch_id = attendance.branch_id)) OR ((ctx.role = 'personel'::user_role) AND (ctx.branch_id = attendance.branch_id) AND (attendance.user_id = ctx.id)))))) OR is_service_role())"
+  },
+  {
+    "schemaname": "public",
     "tablename": "branch_requests",
     "policyname": "branch_requests_insert",
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "INSERT",
     "qual": null,
-    "with_check": "((auth.role() = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = branch_requests.tenant_id) AND ((u.role = 'grand_admin'::user_role) OR (u.role = 'firma_admin'::user_role) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = branch_requests.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = 'sube_muduru'::user_role) AND (u.branch_id = branch_requests.branch_id)) OR ((u.role = 'personel'::user_role) AND (u.branch_id = branch_requests.branch_id) AND (u.id = branch_requests.created_by)))))))"
+    "with_check": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = current_user_id()) AND (u.tenant_id = branch_requests.tenant_id) AND (u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role, 'personel'::user_role]))))))"
   },
   {
     "schemaname": "public",
@@ -16,7 +146,7 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = branch_requests.tenant_id) AND ((u.role = 'grand_admin'::user_role) OR (u.role = 'firma_admin'::user_role) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = branch_requests.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = 'sube_muduru'::user_role) AND (u.branch_id = branch_requests.branch_id)) OR ((u.role = 'personel'::user_role) AND ((u.id = branch_requests.created_by) OR (u.branch_id = branch_requests.branch_id))))))))",
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = current_user_id()) AND (u.tenant_id = branch_requests.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = branch_requests.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (u.branch_id = branch_requests.branch_id)))))))",
     "with_check": null
   },
   {
@@ -26,8 +156,38 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "UPDATE",
-    "qual": "((auth.role() = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = branch_requests.tenant_id) AND ((u.role = 'grand_admin'::user_role) OR (u.role = 'firma_admin'::user_role) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = branch_requests.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = 'sube_muduru'::user_role) AND (u.branch_id = branch_requests.branch_id)) OR ((u.role = 'personel'::user_role) AND (u.id = branch_requests.created_by)))))))",
-    "with_check": "((auth.role() = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = branch_requests.tenant_id) AND ((u.role = 'grand_admin'::user_role) OR (u.role = 'firma_admin'::user_role) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = branch_requests.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = 'sube_muduru'::user_role) AND (u.branch_id = branch_requests.branch_id)) OR ((u.role = 'personel'::user_role) AND (u.id = branch_requests.created_by)))))))"
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = current_user_id()) AND (u.tenant_id = branch_requests.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = branch_requests.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (u.branch_id = branch_requests.branch_id)))))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "policyname": "branch_scores_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "policyname": "branch_scores_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "branch_scores",
+    "policyname": "branch_scores_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
   },
   {
     "schemaname": "public",
@@ -37,6 +197,26 @@
     "roles": "{public}",
     "cmd": "SELECT",
     "qual": "((( SELECT auth.role() AS role) = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = ( SELECT auth.uid() AS uid)) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = branches.tenant_id) AND ((u.role = 'firma_admin'::user_role) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM regions r\n          WHERE ((r.id = branches.region_id) AND (r.manager_id = u.id) AND (r.tenant_id = branches.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (u.branch_id = branches.id)))))))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs",
+    "policyname": "break_logs_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "break_logs",
+    "policyname": "break_logs_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
     "with_check": null
   },
   {
@@ -68,6 +248,86 @@
     "cmd": "UPDATE",
     "qual": "(current_user_id() = user_id)",
     "with_check": "(current_user_id() = user_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_report_notifications",
+    "policyname": "grand_admin_insert_notifications",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_report_notifications",
+    "policyname": "users_update_own_notifications",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_report_notifications",
+    "policyname": "users_view_own_notifications",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_reports",
+    "policyname": "firma_admin_view_tenant_bug_reports",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "((( SELECT current_user_role() AS current_user_role) = 'firma_admin'::text) AND (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_reports",
+    "policyname": "grand_admin_update_bug_reports",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text)",
+    "with_check": "(( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_reports",
+    "policyname": "grand_admin_view_all_bug_reports",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_reports",
+    "policyname": "users_insert_bug_reports",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bug_reports",
+    "policyname": "users_view_own_bug_reports",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": null
   },
   {
     "schemaname": "public",
@@ -181,52 +441,32 @@
   },
   {
     "schemaname": "public",
-    "tablename": "form_submissions",
-    "policyname": "Branch managers can view their branch submissions",
+    "tablename": "employee_scores",
+    "policyname": "employee_scores_insert",
     "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "cmd": "SELECT",
-    "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.branch_id = u.branch_id) AND (u.role = 'sube_muduru'::user_role))))",
-    "with_check": null
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])))"
   },
   {
     "schemaname": "public",
-    "tablename": "form_submissions",
-    "policyname": "Tenant admin can view all submissions",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "cmd": "SELECT",
-    "qual": "(EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.role = 'firma_admin'::user_role))))",
-    "with_check": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "form_submissions",
-    "policyname": "Users can view their own submissions",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "cmd": "SELECT",
-    "qual": "(auth.uid() = user_id)",
-    "with_check": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "form_submissions",
-    "policyname": "form_submissions_all",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "cmd": "ALL",
-    "qual": "((( SELECT auth.role() AS role) = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = ( SELECT auth.uid() AS uid)) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = form_submissions.tenant_id) AND ((u.role = 'firma_admin'::user_role) OR ((u.role = ANY (ARRAY['bolge_muduru'::user_role, 'sube_muduru'::user_role])) AND ((u.branch_id = form_submissions.branch_id) OR (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = form_submissions.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id)))))) OR ((u.role = 'personel'::user_role) AND (u.id = form_submissions.user_id)))))))))",
-    "with_check": "((( SELECT auth.role() AS role) = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = ( SELECT auth.uid() AS uid)) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = form_submissions.tenant_id) AND ((u.role = 'firma_admin'::user_role) OR ((u.role = 'sube_muduru'::user_role) AND (u.branch_id = form_submissions.branch_id)) OR ((u.role = 'personel'::user_role) AND (u.id = form_submissions.user_id)))))))))"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "form_submissions",
-    "policyname": "submissions select",
+    "tablename": "employee_scores",
+    "policyname": "employee_scores_select",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR (current_user_role() = 'grand_admin'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = form_submissions.tenant_id) AND ((u.role = 'firma_admin'::user_role) OR ((u.role = 'bolge_muduru'::user_role) AND (u.branch_id = form_submissions.branch_id)) OR ((u.role = 'sube_muduru'::user_role) AND (u.branch_id = form_submissions.branch_id)) OR (u.id = form_submissions.user_id))))))",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)) OR (user_id = ( SELECT auth.uid() AS uid)))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_submissions",
+    "policyname": "form_submissions_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = current_user_id()) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = form_submissions.tenant_id) AND ((u.role = 'firma_admin'::user_role) OR ((u.role = ANY (ARRAY['bolge_muduru'::user_role, 'sube_muduru'::user_role])) AND ((u.branch_id = form_submissions.branch_id) OR (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = form_submissions.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id)))))) OR ((u.role = 'personel'::user_role) AND (u.id = form_submissions.user_id)))))))))",
     "with_check": null
   },
   {
@@ -296,7 +536,7 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "DELETE",
-    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.role = 'grand_admin'::user_role) OR ((ctx.tenant_id = merch_people.tenant_id) AND ((ctx.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role])) OR (ctx.id = merch_people.created_by)))))))",
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.role = 'grand_admin'::user_role) OR ((ctx.tenant_id = merch_people.tenant_id) AND (ctx.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role])))))))",
     "with_check": null
   },
   {
@@ -326,8 +566,8 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "UPDATE",
-    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.role = 'grand_admin'::user_role) OR ((ctx.tenant_id = merch_people.tenant_id) AND ((ctx.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role])) OR (ctx.id = merch_people.created_by)))))))",
-    "with_check": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.role = 'grand_admin'::user_role) OR ((ctx.tenant_id = merch_people.tenant_id) AND ((ctx.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role])) OR (ctx.id = merch_people.created_by)))))))"
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.role = 'grand_admin'::user_role) OR ((ctx.tenant_id = merch_people.tenant_id) AND (ctx.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role])))))))",
+    "with_check": null
   },
   {
     "schemaname": "public",
@@ -341,6 +581,16 @@
   },
   {
     "schemaname": "public",
+    "tablename": "notification_queue",
+    "policyname": "notification_queue_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "false",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
     "tablename": "notifications",
     "policyname": "notifications_all",
     "permissive": "PERMISSIVE",
@@ -348,6 +598,86 @@
     "cmd": "ALL",
     "qual": "((( SELECT auth.role() AS role) = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = ( SELECT auth.uid() AS uid)) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = notifications.tenant_id) AND ((u.id = notifications.user_id) OR (u.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role, 'sube_muduru'::user_role])))))))))",
     "with_check": "((( SELECT auth.role() AS role) = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = ( SELECT auth.uid() AS uid)) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = notifications.tenant_id) AND (u.id = notifications.user_id)))))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "policyname": "notifications_insert_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "policyname": "notifications_select_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (user_id = ( SELECT auth.uid() AS uid)) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "notifications",
+    "policyname": "notifications_update_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "policyname": "payrolls_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payrolls",
+    "policyname": "payrolls_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR ((tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)) AND (user_id = ( SELECT auth.uid() AS uid))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "policyname": "product_issues_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "policyname": "product_issues_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_issues",
+    "policyname": "product_issues_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text, 'sube_muduru'::text])) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
   },
   {
     "schemaname": "public",
@@ -368,6 +698,56 @@
     "cmd": "SELECT",
     "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM current_user_ctx() ctx(id, tenant_id, role, branch_id)\n  WHERE ((ctx.tenant_id = regions.tenant_id) AND ((ctx.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((ctx.role = 'bolge_muduru'::user_role) AND (regions.manager_id = ctx.id)))))))",
     "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shift_pattern_drafts",
+    "policyname": "shift_pattern_drafts_owner_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((user_id = current_user_id()) AND (tenant_id = current_tenant_id()))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shift_pattern_drafts",
+    "policyname": "shift_pattern_drafts_owner_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((user_id = current_user_id()) AND (tenant_id = current_tenant_id()))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shift_pattern_drafts",
+    "policyname": "shift_pattern_drafts_owner_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((user_id = current_user_id()) AND (tenant_id = current_tenant_id()))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shift_pattern_drafts",
+    "policyname": "shift_pattern_drafts_owner_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((user_id = current_user_id()) AND (tenant_id = current_tenant_id()))",
+    "with_check": "((user_id = current_user_id()) AND (tenant_id = current_tenant_id()))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "shift_pattern_drafts",
+    "policyname": "shift_pattern_drafts_service_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{service_role}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
   },
   {
     "schemaname": "public",
@@ -471,213 +851,383 @@
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_form_versions",
-    "policyname": "form versions select",
+    "tablename": "stockout_items",
+    "policyname": "stockout_items_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "(is_service_role() OR (stockout_list_id IN ( SELECT stockout_lists.id\n   FROM stockout_lists\n  WHERE (stockout_lists.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_items",
+    "policyname": "stockout_items_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (stockout_list_id IN ( SELECT stockout_lists.id\n   FROM stockout_lists\n  WHERE (stockout_lists.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_items",
+    "policyname": "stockout_items_select",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR (current_user_role() = 'grand_admin'::text) OR (EXISTS ( SELECT 1\n   FROM store_scoring_forms f\n  WHERE ((f.id = store_scoring_form_versions.form_id) AND (f.tenant_id = current_tenant_id())))))",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR (stockout_list_id IN ( SELECT stockout_lists.id\n   FROM stockout_lists\n  WHERE (stockout_lists.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))",
     "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_items",
+    "policyname": "stockout_items_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(is_service_role() OR (stockout_list_id IN ( SELECT stockout_lists.id\n   FROM stockout_lists\n  WHERE (stockout_lists.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_lists",
+    "policyname": "stockout_lists_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text, 'sube_muduru'::text])))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_lists",
+    "policyname": "stockout_lists_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(is_service_role() OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_lists",
+    "policyname": "stockout_lists_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(is_service_role() OR (( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "stockout_lists",
+    "policyname": "stockout_lists_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(is_service_role() OR (tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_form_versions",
+    "policyname": "store_form_versions_access_v2",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM store_scoring_forms f\n  WHERE ((f.id = store_scoring_form_versions.form_id) AND (f.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_form_versions",
+    "policyname": "store_form_versions_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR is_service_role())"
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_form_versions",
     "policyname": "store_form_versions_select",
     "permissive": "PERMISSIVE",
-    "roles": "{public}",
+    "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'grand_admin'::text) OR (EXISTS ( SELECT 1\n   FROM store_scoring_forms f\n  WHERE ((f.id = store_scoring_form_versions.form_id) AND (f.tenant_id = current_tenant_id())))))",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR (form_id IN ( SELECT store_scoring_forms.id\n   FROM store_scoring_forms\n  WHERE (store_scoring_forms.tenant_id = current_tenant_id()))))",
     "with_check": null
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_form_versions",
-    "policyname": "store_form_versions_write",
+    "policyname": "store_form_versions_update",
     "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "cmd": "ALL",
-    "qual": "((auth.role() = 'grand_admin'::text) OR ((auth.role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])) AND (EXISTS ( SELECT 1\n   FROM store_scoring_forms f\n  WHERE ((f.id = store_scoring_form_versions.form_id) AND (f.tenant_id = current_tenant_id()))))))",
-    "with_check": "((auth.role() = 'grand_admin'::text) OR ((auth.role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])) AND (EXISTS ( SELECT 1\n   FROM store_scoring_forms f\n  WHERE ((f.id = store_scoring_form_versions.form_id) AND (f.tenant_id = current_tenant_id()))))))"
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (form_id IN ( SELECT store_scoring_forms.id\n   FROM store_scoring_forms\n  WHERE (store_scoring_forms.tenant_id = current_tenant_id())))))",
+    "with_check": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (form_id IN ( SELECT store_scoring_forms.id\n   FROM store_scoring_forms\n  WHERE (store_scoring_forms.tenant_id = current_tenant_id())))))"
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_form_versions",
-    "policyname": "tenant form versions select",
+    "tablename": "store_scoring_forms",
+    "policyname": "store_forms_delete",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
-    "cmd": "SELECT",
-    "qual": "(EXISTS ( SELECT 1\n   FROM store_scoring_forms f\n  WHERE ((f.id = store_scoring_form_versions.form_id) AND (f.tenant_id = current_tenant_id()))))",
+    "cmd": "DELETE",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (tenant_id = current_tenant_id())))",
     "with_check": null
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_forms",
-    "policyname": "forms select",
+    "policyname": "store_forms_insert",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
-    "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR (current_user_role() = 'grand_admin'::text) OR (tenant_id = current_tenant_id()))",
-    "with_check": null
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR is_service_role())"
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_forms",
     "policyname": "store_forms_select",
     "permissive": "PERMISSIVE",
-    "roles": "{public}",
+    "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'grand_admin'::text) OR (tenant_id = current_tenant_id()))",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR (tenant_id = current_tenant_id()))",
     "with_check": null
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_forms",
-    "policyname": "store_forms_write",
+    "policyname": "store_forms_update",
     "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "cmd": "ALL",
-    "qual": "((auth.role() = 'grand_admin'::text) OR ((tenant_id = current_tenant_id()) AND (auth.role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text]))))",
-    "with_check": "((auth.role() = 'grand_admin'::text) OR ((tenant_id = current_tenant_id()) AND (auth.role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text]))))"
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (tenant_id = current_tenant_id())))",
+    "with_check": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (tenant_id = current_tenant_id())))"
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_forms",
-    "policyname": "tenant forms select",
+    "tablename": "store_scoring_items",
+    "policyname": "store_items_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR is_service_role())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_items",
+    "policyname": "store_items_select",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "(tenant_id = current_tenant_id())",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR (section_id IN ( SELECT s.id\n   FROM ((store_scoring_sections s\n     JOIN store_scoring_form_versions fv ON ((fv.id = s.form_version_id)))\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE (f.tenant_id = current_tenant_id()))))",
     "with_check": null
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_items",
-    "policyname": "items select",
+    "policyname": "store_items_update",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
-    "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR (current_user_role() = 'grand_admin'::text) OR (EXISTS ( SELECT 1\n   FROM ((store_scoring_sections s\n     JOIN store_scoring_form_versions fv ON ((fv.id = s.form_version_id)))\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE ((s.id = store_scoring_items.section_id) AND (f.tenant_id = current_tenant_id())))))",
-    "with_check": null
+    "cmd": "UPDATE",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (section_id IN ( SELECT s.id\n   FROM ((store_scoring_sections s\n     JOIN store_scoring_form_versions fv ON ((fv.id = s.form_version_id)))\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE (f.tenant_id = current_tenant_id())))))",
+    "with_check": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (section_id IN ( SELECT s.id\n   FROM ((store_scoring_sections s\n     JOIN store_scoring_form_versions fv ON ((fv.id = s.form_version_id)))\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE (f.tenant_id = current_tenant_id())))))"
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_items",
-    "policyname": "tenant scoring items select",
+    "policyname": "store_scoring_items_select",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "(EXISTS ( SELECT 1\n   FROM ((store_scoring_sections s\n     JOIN store_scoring_form_versions fv ON ((fv.id = s.form_version_id)))\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE ((s.id = store_scoring_items.section_id) AND (f.tenant_id = current_tenant_id()))))",
+    "qual": "(is_service_role() OR (current_user_role() = 'grand_admin'::text) OR (EXISTS ( SELECT 1\n   FROM ((store_scoring_sections s\n     JOIN store_scoring_form_versions fv ON ((fv.id = s.form_version_id)))\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE ((s.id = store_scoring_items.section_id) AND (f.tenant_id = current_tenant_id())))))",
     "with_check": null
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_sections",
-    "policyname": "sections select",
+    "policyname": "store_scoring_sections_select",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR (current_user_role() = 'grand_admin'::text) OR (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions fv\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE ((fv.id = store_scoring_sections.form_version_id) AND (f.tenant_id = current_tenant_id())))))",
+    "qual": "(is_service_role() OR (current_user_role() = 'grand_admin'::text) OR (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions fv\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE ((fv.id = store_scoring_sections.form_version_id) AND (f.tenant_id = current_tenant_id())))))",
     "with_check": null
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_sections",
-    "policyname": "tenant scoring sections select",
+    "policyname": "store_sections_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR is_service_role())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_sections",
+    "policyname": "store_sections_select",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
     "cmd": "SELECT",
-    "qual": "(EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions fv\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE ((fv.id = store_scoring_sections.form_version_id) AND (f.tenant_id = current_tenant_id()))))",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR (form_version_id IN ( SELECT fv.id\n   FROM (store_scoring_form_versions fv\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE (f.tenant_id = current_tenant_id()))))",
     "with_check": null
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_session_items",
-    "policyname": "scoring_session_items_manage",
+    "tablename": "store_scoring_sections",
+    "policyname": "store_sections_update",
     "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "cmd": "ALL",
-    "qual": "(EXISTS ( SELECT 1\n   FROM store_scoring_sessions s\n  WHERE ((s.id = store_scoring_session_items.session_id) AND ((auth.role() = 'grand_admin'::text) OR ((auth.role() = 'firma_admin'::text) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id())))) AND ((s.branch_id = ( SELECT users.branch_id\n           FROM users\n          WHERE (users.id = auth.uid()))) OR (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = s.branch_id) AND (r.manager_id = auth.uid()) AND (r.tenant_id = current_tenant_id())))))) OR ((auth.role() = 'sube_muduru'::text) AND (s.evaluator_id = auth.uid()) AND (s.branch_id = ( SELECT users.branch_id\n           FROM users\n          WHERE (users.id = auth.uid()))) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'personel'::text) AND (s.evaluator_id = auth.uid()) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id())))))))))",
-    "with_check": "(EXISTS ( SELECT 1\n   FROM store_scoring_sessions s\n  WHERE ((s.id = store_scoring_session_items.session_id) AND ((auth.role() = 'grand_admin'::text) OR ((auth.role() = 'firma_admin'::text) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id())))) AND ((s.branch_id = ( SELECT users.branch_id\n           FROM users\n          WHERE (users.id = auth.uid()))) OR (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = s.branch_id) AND (r.manager_id = auth.uid()) AND (r.tenant_id = current_tenant_id())))))) OR ((auth.role() = 'sube_muduru'::text) AND (s.evaluator_id = auth.uid()) AND (s.branch_id = ( SELECT users.branch_id\n           FROM users\n          WHERE (users.id = auth.uid()))) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'personel'::text) AND (s.evaluator_id = auth.uid()) AND (EXISTS ( SELECT 1\n           FROM (store_scoring_form_versions v\n             JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n          WHERE ((v.id = s.form_version_id) AND (f.tenant_id = current_tenant_id())))))))))"
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (form_version_id IN ( SELECT fv.id\n   FROM (store_scoring_form_versions fv\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE (f.tenant_id = current_tenant_id())))))",
+    "with_check": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR ((current_user_role() = 'firma_admin'::text) AND (form_version_id IN ( SELECT fv.id\n   FROM (store_scoring_form_versions fv\n     JOIN store_scoring_forms f ON ((f.id = fv.form_id)))\n  WHERE (f.tenant_id = current_tenant_id())))))"
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_session_items",
-    "policyname": "tenant scoring session items manage",
+    "policyname": "store_scoring_session_items_insert_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1\n   FROM store_scoring_sessions s\n  WHERE ((s.id = store_scoring_session_items.session_id) AND (s.evaluator_id = auth.uid()))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_session_items",
+    "policyname": "store_scoring_session_items_manage",
     "permissive": "PERMISSIVE",
     "roles": "{authenticated}",
     "cmd": "ALL",
-    "qual": "session_belongs_to_current_tenant(session_id)",
-    "with_check": "session_belongs_to_current_tenant(session_id)"
+    "qual": "(EXISTS ( SELECT 1\n   FROM store_scoring_sessions s\n  WHERE ((s.id = store_scoring_session_items.session_id) AND ((current_user_role() = 'grand_admin'::text) OR ((current_user_role() = 'firma_admin'::text) AND (s.branch_id IN ( SELECT b.id\n           FROM branches b\n          WHERE (b.tenant_id = current_tenant_id())))) OR ((current_user_role() = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n           FROM regions r\n          WHERE ((r.id = ( SELECT b.region_id\n                   FROM branches b\n                  WHERE (b.id = s.branch_id))) AND (r.manager_id = current_user_id()) AND (r.tenant_id = current_tenant_id()))))) OR ((current_user_role() = 'sube_muduru'::text) AND (s.branch_id = ( SELECT u.branch_id\n           FROM users u\n          WHERE (u.id = current_user_id())))) OR ((current_user_role() = 'personel'::text) AND (s.evaluator_id = current_user_id()))))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM store_scoring_sessions s\n  WHERE ((s.id = store_scoring_session_items.session_id) AND ((current_user_role() = 'grand_admin'::text) OR ((current_user_role() = 'firma_admin'::text) AND (s.branch_id IN ( SELECT b.id\n           FROM branches b\n          WHERE (b.tenant_id = current_tenant_id())))) OR ((current_user_role() = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n           FROM regions r\n          WHERE ((r.id = ( SELECT b.region_id\n                   FROM branches b\n                  WHERE (b.id = s.branch_id))) AND (r.manager_id = current_user_id()) AND (r.tenant_id = current_tenant_id()))))) OR ((current_user_role() = 'sube_muduru'::text) AND (s.branch_id = ( SELECT u.branch_id\n           FROM users u\n          WHERE (u.id = current_user_id())))) OR ((current_user_role() = 'personel'::text) AND (s.evaluator_id = current_user_id()))))))"
   },
   {
     "schemaname": "public",
     "tablename": "store_scoring_sessions",
-    "policyname": "scoring_sessions_delete",
+    "policyname": "store_scoring_sessions_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "((current_user_role() = ANY (ARRAY['grand_admin'::text, 'firma_admin'::text])) OR ((current_user_role() = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n   FROM (branches b\n     JOIN regions r ON ((r.id = b.region_id)))\n  WHERE ((b.id = store_scoring_sessions.branch_id) AND (r.manager_id = current_user_id()) AND (r.tenant_id = current_tenant_id()))))) OR is_service_role())",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_sessions",
+    "policyname": "store_scoring_sessions_insert_policy",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((evaluator_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM branches b\n  WHERE ((b.id = store_scoring_sessions.branch_id) AND (b.tenant_id = current_tenant_id())))) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id())))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_sessions",
+    "policyname": "store_scoring_sessions_select_v2",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "((( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR ((( SELECT current_user_role() AS current_user_role) = 'firma_admin'::text) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))) OR ((( SELECT current_user_role() AS current_user_role) = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n   FROM (branches b\n     JOIN regions r ON ((r.id = b.region_id)))\n  WHERE ((b.id = store_scoring_sessions.branch_id) AND (r.manager_id = ( SELECT current_user_id() AS current_user_id)) AND (r.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))) OR ((( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['sube_muduru'::text, 'personel'::text])) AND (evaluator_id = ( SELECT current_user_id() AS current_user_id))) OR ( SELECT is_service_role() AS is_service_role))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "store_scoring_sessions",
+    "policyname": "store_scoring_sessions_update_v2",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "((( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR ((( SELECT current_user_role() AS current_user_role) = 'firma_admin'::text) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))) OR ((( SELECT current_user_role() AS current_user_role) = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n   FROM (branches b\n     JOIN regions r ON ((r.id = b.region_id)))\n  WHERE ((b.id = store_scoring_sessions.branch_id) AND (r.manager_id = ( SELECT current_user_id() AS current_user_id)) AND (r.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))) OR ( SELECT is_service_role() AS is_service_role))",
+    "with_check": "((( SELECT current_user_role() AS current_user_role) = 'grand_admin'::text) OR ((( SELECT current_user_role() AS current_user_role) = 'firma_admin'::text) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))) OR ((( SELECT current_user_role() AS current_user_role) = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n   FROM (branches b\n     JOIN regions r ON ((r.id = b.region_id)))\n  WHERE ((b.id = store_scoring_sessions.branch_id) AND (r.manager_id = ( SELECT current_user_id() AS current_user_id)) AND (r.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))) OR ( SELECT is_service_role() AS is_service_role))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "survey_answers",
+    "policyname": "survey_answers_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1\n   FROM survey_responses sr\n  WHERE ((sr.id = survey_answers.response_id) AND (sr.user_id = ( SELECT auth.uid() AS uid)))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "survey_answers",
+    "policyname": "survey_answers_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM survey_responses sr\n  WHERE ((sr.id = survey_answers.response_id) AND ((sr.user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n           FROM announcements a\n          WHERE ((a.id = sr.announcement_id) AND (a.published_by = ( SELECT auth.uid() AS uid))))) OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['firma_admin'::text, 'grand_admin'::text]))))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "survey_questions",
+    "policyname": "survey_questions_delete",
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "DELETE",
-    "qual": "((auth.role() = 'grand_admin'::text) OR ((auth.role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR (evaluator_id = auth.uid()))",
+    "qual": "(EXISTS ( SELECT 1\n   FROM announcements a\n  WHERE ((a.id = survey_questions.announcement_id) AND (a.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)) AND (a.published_by = ( SELECT auth.uid() AS uid)))))",
     "with_check": null
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_sessions",
-    "policyname": "scoring_sessions_insert",
+    "tablename": "survey_questions",
+    "policyname": "survey_questions_insert",
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "INSERT",
     "qual": null,
-    "with_check": "((auth.role() = 'grand_admin'::text) OR ((auth.role() = 'firma_admin'::text) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id())))) AND ((branch_id = ( SELECT users.branch_id\n   FROM users\n  WHERE (users.id = auth.uid()))) OR (EXISTS ( SELECT 1\n   FROM (branches b\n     JOIN regions r ON ((r.id = b.region_id)))\n  WHERE ((b.id = store_scoring_sessions.branch_id) AND (r.manager_id = auth.uid()) AND (r.tenant_id = current_tenant_id())))))) OR ((auth.role() = 'sube_muduru'::text) AND (evaluator_id = auth.uid()) AND (branch_id = ( SELECT users.branch_id\n   FROM users\n  WHERE (users.id = auth.uid()))) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'personel'::text) AND (evaluator_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))))"
+    "with_check": "(EXISTS ( SELECT 1\n   FROM announcements a\n  WHERE ((a.id = survey_questions.announcement_id) AND (a.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)) AND (a.published_by = ( SELECT auth.uid() AS uid)))))"
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_sessions",
-    "policyname": "scoring_sessions_select",
+    "tablename": "survey_questions",
+    "policyname": "survey_questions_select",
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'grand_admin'::text) OR ((auth.role() = 'firma_admin'::text) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'bolge_muduru'::text) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id())))) AND ((branch_id = ( SELECT users.branch_id\n   FROM users\n  WHERE (users.id = auth.uid()))) OR (EXISTS ( SELECT 1\n   FROM (branches b\n     JOIN regions r ON ((r.id = b.region_id)))\n  WHERE ((b.id = store_scoring_sessions.branch_id) AND (r.manager_id = auth.uid()) AND (r.tenant_id = current_tenant_id())))))) OR ((auth.role() = 'sube_muduru'::text) AND (evaluator_id = auth.uid()) AND (branch_id = ( SELECT users.branch_id\n   FROM users\n  WHERE (users.id = auth.uid()))) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR ((auth.role() = 'personel'::text) AND (evaluator_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))))",
+    "qual": "(EXISTS ( SELECT 1\n   FROM announcements a\n  WHERE ((a.id = survey_questions.announcement_id) AND (a.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))",
     "with_check": null
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_sessions",
-    "policyname": "scoring_sessions_update",
+    "tablename": "survey_questions",
+    "policyname": "survey_questions_update",
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "UPDATE",
-    "qual": "((auth.role() = 'grand_admin'::text) OR ((auth.role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR (evaluator_id = auth.uid()))",
-    "with_check": "((auth.role() = 'grand_admin'::text) OR ((auth.role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])) AND (EXISTS ( SELECT 1\n   FROM (store_scoring_form_versions v\n     JOIN store_scoring_forms f ON ((f.id = v.form_id)))\n  WHERE ((v.id = store_scoring_sessions.form_version_id) AND (f.tenant_id = current_tenant_id()))))) OR (evaluator_id = auth.uid()))"
+    "qual": "(EXISTS ( SELECT 1\n   FROM announcements a\n  WHERE ((a.id = survey_questions.announcement_id) AND (a.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)) AND (a.published_by = ( SELECT auth.uid() AS uid)))))",
+    "with_check": null
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_sessions",
-    "policyname": "tenant scoring sessions insert",
+    "tablename": "survey_responses",
+    "policyname": "survey_responses_insert",
     "permissive": "PERMISSIVE",
-    "roles": "{authenticated}",
+    "roles": "{public}",
     "cmd": "INSERT",
     "qual": null,
-    "with_check": "branch_belongs_to_current_tenant(branch_id)"
+    "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
   },
   {
     "schemaname": "public",
-    "tablename": "store_scoring_sessions",
-    "policyname": "tenant scoring sessions select",
+    "tablename": "survey_responses",
+    "policyname": "survey_responses_select",
     "permissive": "PERMISSIVE",
-    "roles": "{authenticated}",
+    "roles": "{public}",
     "cmd": "SELECT",
-    "qual": "branch_belongs_to_current_tenant(branch_id)",
+    "qual": "((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM announcements a\n  WHERE ((a.id = survey_responses.announcement_id) AND (a.published_by = ( SELECT auth.uid() AS uid))))) OR (( SELECT current_user_role() AS current_user_role) = ANY (ARRAY['firma_admin'::text, 'grand_admin'::text])))",
     "with_check": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "store_scoring_sessions",
-    "policyname": "tenant scoring sessions update",
-    "permissive": "PERMISSIVE",
-    "roles": "{authenticated}",
-    "cmd": "UPDATE",
-    "qual": "branch_belongs_to_current_tenant(branch_id)",
-    "with_check": "branch_belongs_to_current_tenant(branch_id)"
   },
   {
     "schemaname": "public",
@@ -686,8 +1236,38 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "ALL",
-    "qual": "((( SELECT auth.role() AS role) = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM (tasks t\n     JOIN users u ON ((u.id = ( SELECT auth.uid() AS uid))))\n  WHERE ((t.id = task_assignees.task_id) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = t.tenant_id) AND ((u.role = 'firma_admin'::user_role) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND ((t.branch_id = u.branch_id) OR (task_assignees.user_id = u.id))) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = t.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))))))))))",
-    "with_check": "true"
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM (tasks t\n     JOIN users u ON ((u.id = current_user_id())))\n  WHERE ((t.id = task_assignees.task_id) AND (t.tenant_id = u.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = t.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND ((t.branch_id = u.branch_id) OR (task_assignees.user_id = u.id))))))))",
+    "with_check": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM (tasks t\n     JOIN users u ON ((u.id = current_user_id())))\n  WHERE ((t.id = task_assignees.task_id) AND (t.tenant_id = u.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = t.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND ((t.branch_id = u.branch_id) OR (task_assignees.user_id = u.id))))))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_attachments",
+    "policyname": "task_attachments_delete_v2",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "((uploaded_by = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = ( SELECT auth.uid() AS uid)) AND (u.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)) AND (u.role = ANY (ARRAY['firma_admin'::user_role, 'bolge_muduru'::user_role]))))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_attachments",
+    "policyname": "task_attachments_insert_v2",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((uploaded_by = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM tasks t\n  WHERE ((t.id = task_attachments.task_id) AND (t.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id))))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "task_attachments",
+    "policyname": "task_attachments_select_v2",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM tasks t\n  WHERE ((t.id = task_attachments.task_id) AND (t.tenant_id = ( SELECT current_tenant_id() AS current_tenant_id)))))",
+    "with_check": null
   },
   {
     "schemaname": "public",
@@ -696,8 +1276,8 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "ALL",
-    "qual": "((( SELECT auth.role() AS role) = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM (tasks t\n     JOIN users u ON ((u.id = ( SELECT auth.uid() AS uid))))\n  WHERE ((t.id = task_items.task_id) AND ((u.role = 'grand_admin'::user_role) OR ((u.tenant_id = t.tenant_id) AND ((u.role = 'firma_admin'::user_role) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = t.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND ((t.branch_id = u.branch_id) OR (EXISTS ( SELECT 1\n           FROM task_assignees ta\n          WHERE ((ta.task_id = t.id) AND (ta.user_id = u.id)))))))))))))",
-    "with_check": "true"
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM (tasks t\n     JOIN users u ON ((u.id = current_user_id())))\n  WHERE ((t.id = task_items.task_id) AND (t.tenant_id = u.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = t.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND ((t.branch_id = u.branch_id) OR (EXISTS ( SELECT 1\n           FROM task_assignees ta\n          WHERE ((ta.task_id = task_items.task_id) AND (ta.user_id = u.id)))))))))))",
+    "with_check": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM (tasks t\n     JOIN users u ON ((u.id = current_user_id())))\n  WHERE ((t.id = task_items.task_id) AND (t.tenant_id = u.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = t.branch_id) AND (r.manager_id = u.id) AND (r.tenant_id = u.tenant_id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND ((t.branch_id = u.branch_id) OR (EXISTS ( SELECT 1\n           FROM task_assignees ta\n          WHERE ((ta.task_id = task_items.task_id) AND (ta.user_id = u.id)))))))))))"
   },
   {
     "schemaname": "public",
@@ -706,7 +1286,7 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "DELETE",
-    "qual": "((auth.role() = 'service_role'::text) OR ((created_by = auth.uid()) AND (tenant_id = COALESCE((((current_setting('request.jwt.claims'::text, true))::json ->> 'tenant_id'::text))::uuid, ( SELECT users.tenant_id\n   FROM users\n  WHERE (users.id = auth.uid()))))))",
+    "qual": "(is_service_role() OR ((created_by = current_user_id()) AND (tenant_id = COALESCE(current_tenant_id(), ( SELECT u.tenant_id\n   FROM users u\n  WHERE (u.id = current_user_id()))))))",
     "with_check": null
   },
   {
@@ -717,7 +1297,7 @@
     "roles": "{public}",
     "cmd": "INSERT",
     "qual": null,
-    "with_check": "((auth.role() = 'service_role'::text) OR ((created_by = auth.uid()) AND (tenant_id = COALESCE((((current_setting('request.jwt.claims'::text, true))::json ->> 'tenant_id'::text))::uuid, ( SELECT users.tenant_id\n   FROM users\n  WHERE (users.id = auth.uid()))))))"
+    "with_check": "(is_service_role() OR ((created_by = current_user_id()) AND (tenant_id = COALESCE(current_tenant_id(), ( SELECT u.tenant_id\n   FROM users u\n  WHERE (u.id = current_user_id()))))))"
   },
   {
     "schemaname": "public",
@@ -726,7 +1306,7 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = tasks.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = tasks.branch_id) AND (b.tenant_id = u.tenant_id) AND (r.manager_id = u.id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (tasks.branch_id = u.branch_id)))))))",
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = current_user_id()) AND (u.tenant_id = tasks.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = 'bolge_muduru'::user_role) AND (EXISTS ( SELECT 1\n           FROM (branches b\n             JOIN regions r ON ((r.id = b.region_id)))\n          WHERE ((b.id = tasks.branch_id) AND (b.tenant_id = u.tenant_id) AND (r.manager_id = u.id))))) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (tasks.branch_id = u.branch_id)))))))",
     "with_check": null
   },
   {
@@ -736,8 +1316,8 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "UPDATE",
-    "qual": "((auth.role() = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = tasks.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (tasks.branch_id = u.branch_id)))))))",
-    "with_check": "((auth.role() = 'service_role'::text) OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = auth.uid()) AND (u.tenant_id = tasks.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (tasks.branch_id = u.branch_id)))))))"
+    "qual": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = current_user_id()) AND (u.tenant_id = tasks.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (tasks.branch_id = u.branch_id)))))))",
+    "with_check": "(is_service_role() OR (EXISTS ( SELECT 1\n   FROM users u\n  WHERE ((u.id = current_user_id()) AND (u.tenant_id = tasks.tenant_id) AND ((u.role = ANY (ARRAY['grand_admin'::user_role, 'firma_admin'::user_role])) OR ((u.role = ANY (ARRAY['sube_muduru'::user_role, 'personel'::user_role])) AND (tasks.branch_id = u.branch_id)))))))"
   },
   {
     "schemaname": "public",
@@ -776,7 +1356,7 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'grand_admin'::text) OR (id = current_tenant_id()))",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR is_service_role() OR (id = current_tenant_id()))",
     "with_check": null
   },
   {
@@ -786,7 +1366,7 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "DELETE",
-    "qual": "((auth.role() = 'service_role'::text) OR ((owner_id = auth.uid()) AND (tenant_id = COALESCE((((current_setting('request.jwt.claims'::text, true))::json ->> 'tenant_id'::text))::uuid, ( SELECT users.tenant_id\n   FROM users\n  WHERE (users.id = auth.uid()))))))",
+    "qual": "(is_service_role() OR ((owner_id = current_user_id()) AND (tenant_id = COALESCE(current_tenant_id(), ( SELECT u.tenant_id\n   FROM users u\n  WHERE (u.id = current_user_id()))))))",
     "with_check": null
   },
   {
@@ -797,7 +1377,7 @@
     "roles": "{public}",
     "cmd": "INSERT",
     "qual": null,
-    "with_check": "((auth.role() = 'service_role'::text) OR ((owner_id = auth.uid()) AND (tenant_id = COALESCE((((current_setting('request.jwt.claims'::text, true))::json ->> 'tenant_id'::text))::uuid, ( SELECT users.tenant_id\n   FROM users\n  WHERE (users.id = auth.uid()))))))"
+    "with_check": "(is_service_role() OR ((owner_id = current_user_id()) AND (tenant_id = COALESCE(current_tenant_id(), ( SELECT u.tenant_id\n   FROM users u\n  WHERE (u.id = current_user_id()))))))"
   },
   {
     "schemaname": "public",
@@ -806,7 +1386,7 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "SELECT",
-    "qual": "((auth.role() = 'service_role'::text) OR ((owner_id = auth.uid()) AND (tenant_id = COALESCE((((current_setting('request.jwt.claims'::text, true))::json ->> 'tenant_id'::text))::uuid, ( SELECT users.tenant_id\n   FROM users\n  WHERE (users.id = auth.uid()))))))",
+    "qual": "(is_service_role() OR ((owner_id = current_user_id()) AND (tenant_id = COALESCE(current_tenant_id(), ( SELECT u.tenant_id\n   FROM users u\n  WHERE (u.id = current_user_id()))))))",
     "with_check": null
   },
   {
@@ -816,17 +1396,297 @@
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "UPDATE",
-    "qual": "((auth.role() = 'service_role'::text) OR ((owner_id = auth.uid()) AND (tenant_id = COALESCE((((current_setting('request.jwt.claims'::text, true))::json ->> 'tenant_id'::text))::uuid, ( SELECT users.tenant_id\n   FROM users\n  WHERE (users.id = auth.uid()))))))",
-    "with_check": "((auth.role() = 'service_role'::text) OR ((owner_id = auth.uid()) AND (tenant_id = COALESCE((((current_setting('request.jwt.claims'::text, true))::json ->> 'tenant_id'::text))::uuid, ( SELECT users.tenant_id\n   FROM users\n  WHERE (users.id = auth.uid()))))))"
+    "qual": "(is_service_role() OR ((owner_id = current_user_id()) AND (tenant_id = COALESCE(current_tenant_id(), ( SELECT u.tenant_id\n   FROM users u\n  WHERE (u.id = current_user_id()))))))",
+    "with_check": "(is_service_role() OR ((owner_id = current_user_id()) AND (tenant_id = COALESCE(current_tenant_id(), ( SELECT u.tenant_id\n   FROM users u\n  WHERE (u.id = current_user_id()))))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_module_preferences",
+    "policyname": "Users can delete own module preferences",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_module_preferences",
+    "policyname": "Users can insert own module preferences",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_module_preferences",
+    "policyname": "Users can update own module preferences",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_module_preferences",
+    "policyname": "Users can view own module preferences",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+    "with_check": null
   },
   {
     "schemaname": "public",
     "tablename": "users",
-    "policyname": "users_select_self",
+    "policyname": "users_select_policy",
     "permissive": "PERMISSIVE",
     "roles": "{public}",
     "cmd": "SELECT",
-    "qual": "((COALESCE(( SELECT auth.role() AS role), 'anon'::text) = 'service_role'::text) OR (( SELECT auth.uid() AS uid) = id))",
+    "qual": "((COALESCE(( SELECT auth.role() AS role), 'anon'::text) = 'service_role'::text) OR (( SELECT auth.uid() AS uid) = id) OR ((tenant_id = current_tenant_id()) AND (((get_my_role() = 'sube_muduru'::text) AND (branch_id = get_my_branch_id())) OR ((get_my_role() = 'bolge_muduru'::text) AND (branch_id IN ( SELECT get_my_managed_branch_ids() AS get_my_managed_branch_ids))) OR (get_my_role() = ANY (ARRAY['firma_admin'::text, 'grand_admin'::text])))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_comments",
+    "policyname": "visual_audit_comments_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(tenant_id = current_tenant_id())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_comments",
+    "policyname": "visual_audit_comments_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR (tenant_id = current_tenant_id()))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_photos",
+    "policyname": "visual_audit_photos_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((tenant_id = current_tenant_id()) AND ((uploaded_by = current_user_id()) OR (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text, 'sube_muduru'::text]))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_photos",
+    "policyname": "visual_audit_photos_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(tenant_id = current_tenant_id())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_photos",
+    "policyname": "visual_audit_photos_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR (tenant_id = current_tenant_id()))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_sections",
+    "policyname": "visual_audit_sections_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((tenant_id = current_tenant_id()) AND (current_user_role() = 'firma_admin'::text))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_sections",
+    "policyname": "visual_audit_sections_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_sections",
+    "policyname": "visual_audit_sections_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((tenant_id = current_tenant_id()) OR (current_user_role() = 'grand_admin'::text))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_sections",
+    "policyname": "visual_audit_sections_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_task_plans",
+    "policyname": "visual_audit_task_plans_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "(tenant_id = ( SELECT current_tenant_id() AS current_tenant_id))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_task_plans",
+    "policyname": "visual_audit_task_plans_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(tenant_id = ( SELECT current_tenant_id() AS current_tenant_id))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_task_plans",
+    "policyname": "visual_audit_task_plans_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(tenant_id = ( SELECT current_tenant_id() AS current_tenant_id))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_task_plans",
+    "policyname": "visual_audit_task_plans_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(tenant_id = ( SELECT current_tenant_id() AS current_tenant_id))",
+    "with_check": "(tenant_id = ( SELECT current_tenant_id() AS current_tenant_id))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_tasks",
+    "policyname": "visual_audit_tasks_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((current_user_role() = 'grand_admin'::text) OR (tenant_id = current_tenant_id()))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_tasks",
+    "policyname": "visual_audit_tasks_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(tenant_id = current_tenant_id())",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_template_branches",
+    "policyname": "visual_audit_template_branches_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM visual_audit_templates t\n  WHERE ((t.id = visual_audit_template_branches.template_id) AND (t.tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_template_branches",
+    "policyname": "visual_audit_template_branches_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1\n   FROM visual_audit_templates t\n  WHERE ((t.id = visual_audit_template_branches.template_id) AND (t.tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_template_branches",
+    "policyname": "visual_audit_template_branches_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM visual_audit_templates t\n  WHERE ((t.id = visual_audit_template_branches.template_id) AND ((t.tenant_id = current_tenant_id()) OR (current_user_role() = 'grand_admin'::text)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_template_sections",
+    "policyname": "visual_audit_template_sections_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1\n   FROM visual_audit_templates t\n  WHERE ((t.id = visual_audit_template_sections.template_id) AND (t.tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_template_sections",
+    "policyname": "visual_audit_template_sections_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM visual_audit_templates t\n  WHERE ((t.id = visual_audit_template_sections.template_id) AND ((t.tenant_id = current_tenant_id()) OR (current_user_role() = 'grand_admin'::text)))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_templates",
+    "policyname": "visual_audit_templates_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "((tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text])))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_templates",
+    "policyname": "visual_audit_templates_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "((tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text, 'sube_muduru'::text])))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_templates",
+    "policyname": "visual_audit_templates_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((tenant_id = current_tenant_id()) OR (current_user_role() = 'grand_admin'::text))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "visual_audit_templates",
+    "policyname": "visual_audit_templates_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((tenant_id = current_tenant_id()) AND (current_user_role() = ANY (ARRAY['firma_admin'::text, 'bolge_muduru'::text, 'sube_muduru'::text])))",
     "with_check": null
   }
 ]

@@ -27,7 +27,7 @@ export async function GET() {
   if (profile?.role === "grand_admin") {
     const { data, error } = await supabaseAdmin
       .from("tenants")
-      .select("id, code, name, active")
+      .select("id, code, name, is_active")
       .order("name", { ascending: true });
 
     if (error) {
@@ -40,7 +40,7 @@ export async function GET() {
   if (profile?.role === "firma_admin" && profile.tenant_id) {
     const { data, error } = await supabaseAdmin
       .from("tenants")
-      .select("id, code, name, active")
+      .select("id, code, name, is_active")
       .eq("id", profile.tenant_id)
       .order("name", { ascending: true });
 

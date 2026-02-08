@@ -1,7 +1,6 @@
 ﻿// lib/main.dart
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/notifications/push_notification_service.dart';
 import 'core/routing/app_router.dart';
+import 'core/routing/auth_wrapper.dart';
 import 'core/localization/locale_controller.dart';
 import 'core/localization/localization_extensions.dart';
 import 'core/providers/shared_preferences_provider.dart';
@@ -18,9 +18,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'package:yotech_mobile/l10n/app_localizations.dart';
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-}
+// NOT: onBackgroundMessage kaldırıldı - duplicate main() sorununa neden oluyordu
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,13 +36,18 @@ void main() async {
   }
 
   await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // NOT: onBackgroundMessage kaldırıldı
 
   // Supabase başlatma
   await Supabase.initialize(
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
+
+  // NOT: Session recovery artık AuthNotifier içinde yapılıyor.
+  // AuthNotifier listener ile initialSession event'ini yakalıyor.
+  debugPrint(
+      '🚀 [main] Supabase initialized, currentSession: ${Supabase.instance.client.auth.currentSession != null}');
 
   final sharedPrefs = await SharedPreferences.getInstance();
 
@@ -58,16 +61,40 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(appRouterProvider);
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  bool _listenerSetup = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _setupNotificationListener() {
+    if (_listenerSetup) return;
+    _listenerSetup = true;
+
+    // Notification stream'i dinle - navigasyon devre dışı bırakıldı
+    // Bildirime tıklandığında sadece uygulama açılıyor
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Push notification service'i başlat
     ref.watch(pushNotificationServiceProvider);
+
     final locale = ref.watch(localeControllerProvider);
     final appTheme = ref.watch(appThemeControllerProvider);
     final themeData = buildAppTheme(appTheme);
+
+    // Listener'ı build içinde kur - ref.listen build içinde olmalı
+    _setupNotificationListener();
 
     return MaterialApp(
       onGenerateTitle: (context) => context.l10n.appTitle,
@@ -81,7 +108,7 @@ class MyApp extends ConsumerWidget {
       ],
       debugShowCheckedModeBanner: false,
       theme: themeData,
-      home: router.getInitialScreen(), // ✅ Auth state'e göre yönlendirme
+      home: const AuthWrapper(), // ✅ Auth state değişikliklerini dinler
       onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }

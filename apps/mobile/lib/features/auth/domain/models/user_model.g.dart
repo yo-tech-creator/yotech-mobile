@@ -17,6 +17,7 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       branchId: json['branchId'] as String?,
       regionId: json['regionId'] as String?,
       sicilNo: json['sicilNo'] as String?,
+      departmentId: json['departmentId'] as String?,
     );
 
 Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
@@ -30,4 +31,5 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'branchId': instance.branchId,
       'regionId': instance.regionId,
       'sicilNo': instance.sicilNo,
+      'departmentId': instance.departmentId,
     };

@@ -13,7 +13,7 @@ type Product = {
   supplier: string | null;
   unit: string | null;
   price: number | null;
-  active: boolean | null;
+  is_active: boolean | null;
   alt_barcodes: string[] | null;
 };
 
@@ -171,8 +171,8 @@ export default function ProductsPage() {
       if (!includes([p.supplier], filters.supplier)) return false;
       if (!includes([p.unit], filters.unit)) return false;
 
-      if (filters.status === "active" && !p.active) return false;
-      if (filters.status === "inactive" && p.active) return false;
+      if (filters.status === "active" && !p.is_active) return false;
+      if (filters.status === "inactive" && p.is_active) return false;
 
       const price = typeof p.price === "number" ? p.price : null;
       if (min !== null && (price === null || price < min)) return false;
@@ -361,7 +361,7 @@ export default function ProductsPage() {
         supplier: "",
         unit: "",
         price: null,
-        active: true,
+        is_active: true,
         alt_barcodes: [],
       },
     });
@@ -394,7 +394,7 @@ export default function ProductsPage() {
         supplier: form.supplier?.trim() || null,
         unit: form.unit?.trim() || null,
         price: typeof form.price === "number" ? form.price : null,
-        active: form.active ?? true,
+        is_active: form.is_active ?? true,
         alt_barcodes: form.alt_barcodes ?? [],
       };
 
@@ -458,7 +458,7 @@ export default function ProductsPage() {
       const res = await fetch("/api/products", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: p.id, active: !p.active }),
+        body: JSON.stringify({ id: p.id, is_active: !p.is_active }),
       });
       if (!res.ok) {
         const detail = await res.json().catch(() => null);
@@ -537,7 +537,7 @@ export default function ProductsPage() {
           />
         </div>
         <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input type="checkbox" checked={Boolean(editState.form.active)} onChange={(e) => updateForm("active", e.target.checked)} />
+          <input type="checkbox" checked={Boolean(editState.form.is_active)} onChange={(e) => updateForm("is_active", e.target.checked)} />
           Aktif
         </label>
         {formError ? (
@@ -550,7 +550,7 @@ export default function ProductsPage() {
   };
 
   const cards = paginated.map((p) => {
-    const statusTone = p.active ? "success" : "muted";
+    const statusTone = p.is_active ? "success" : "muted";
     const alt = p.alt_barcodes && p.alt_barcodes.length > 0 ? p.alt_barcodes.join(", ") : null;
 
     return (
@@ -582,12 +582,12 @@ export default function ProductsPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-            <SoftBadge tone={statusTone} label={p.active ? "Aktif" : "Pasif"} />
+            <SoftBadge tone={statusTone} label={p.is_active ? "Aktif" : "Pasif"} />
             <div style={{ fontWeight: 800, fontSize: 18 }}>{formatPrice(p.price)} ₺</div>
             {canEdit ? (
               <div style={{ display: "flex", gap: 8 }}>
-                <CardActionButton tone={p.active ? "muted" : "success"} onClick={() => toggleActive(p)} disabled={saving}
-                  label={p.active ? "Pasifleştir" : "Aktifleştir"}
+                <CardActionButton tone={p.is_active ? "muted" : "success"} onClick={() => toggleActive(p)} disabled={saving}
+                  label={p.is_active ? "Pasifleştir" : "Aktifleştir"}
                 />
                 <CardActionButton tone="info" onClick={() => openEdit(p)} disabled={saving} label="Düzenle" />
                 <CardActionButton

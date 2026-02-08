@@ -218,7 +218,7 @@ export function SurveyResultsModal({ surveyId, onClose }: Props) {
           <div className="text-responses">
             {responses.slice(0, 10).map((response, idx) => (
               <div key={idx} className="text-response">
-                "{response}"
+                &ldquo;{response}&rdquo;
               </div>
             ))}
             {responses.length > 10 && (

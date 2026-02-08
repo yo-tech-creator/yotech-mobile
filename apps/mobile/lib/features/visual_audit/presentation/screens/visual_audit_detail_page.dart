@@ -27,6 +27,8 @@ class VisualAuditDetailPage extends ConsumerStatefulWidget {
 class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
   final _commentController = TextEditingController();
   bool _isUploading = false;
+  final List<File> _pendingPhotos = [];
+  int _uploadProgress = 0;
 
   @override
   void dispose() {
@@ -91,32 +93,6 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
               // Alt bar - yorum yazma
               _buildBottomBar(context, theme, task),
             ],
-          );
-        },
-      ),
-      floatingActionButton: taskAsync.whenOrNull(
-        data: (task) {
-          if (task == null) return null;
-          if (task.status == VisualAuditStatus.approved) return null;
-
-          return FloatingActionButton.extended(
-            onPressed: _isUploading ? null : () => _pickAndUploadPhoto(task),
-            backgroundColor: const Color(0xFF3B82F6),
-            icon: _isUploading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(Icons.add_a_photo_rounded, color: Colors.white),
-            label: Text(
-              _isUploading ? 'Yükleniyor...' : 'Fotoğraf Ekle',
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600),
-            ),
           );
         },
       ),
@@ -262,6 +238,8 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
     VisualAuditTask task,
     AsyncValue<List<VisualAuditPhoto>> photosAsync,
   ) {
+    final canAddPhotos = task.status != VisualAuditStatus.approved;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -282,6 +260,26 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
           ],
         ),
         const SizedBox(height: 12),
+
+        // Fotoğraf ekleme butonları
+        if (canAddPhotos) ...[
+          _buildPhotoActionButtons(context, theme, task),
+          const SizedBox(height: 12),
+        ],
+
+        // Yükleme durumu
+        if (_isUploading) ...[
+          _buildUploadProgress(theme),
+          const SizedBox(height: 12),
+        ],
+
+        // Bekleyen fotoğraflar önizlemesi
+        if (_pendingPhotos.isNotEmpty) ...[
+          _buildPendingPhotosPreview(context, theme, task),
+          const SizedBox(height: 12),
+        ],
+
+        // Mevcut fotoğraflar
         photosAsync.when(
           loading: () => const Center(
             child: Padding(
@@ -291,7 +289,7 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
           ),
           error: (_, __) => const Text('Fotoğraflar yüklenemedi'),
           data: (photos) {
-            if (photos.isEmpty) {
+            if (photos.isEmpty && _pendingPhotos.isEmpty) {
               return Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -317,29 +315,317 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
                         color: theme.colorScheme.onSurface.withOpacity(0.5),
                       ),
                     ),
+                    if (canAddPhotos) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Yukarıdaki butonları kullanarak fotoğraf ekleyin',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.4),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               );
             }
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 1,
-              ),
-              itemCount: photos.length,
-              itemBuilder: (context, index) {
-                final photo = photos[index];
-                return _buildPhotoCard(context, theme, photo);
-              },
+            return Column(
+              children: [
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: photos.length,
+                  itemBuilder: (context, index) {
+                    final photo = photos[index];
+                    return _buildPhotoCard(context, theme, photo);
+                  },
+                ),
+                // Görevi Tamamla butonu
+                if (photos.length >= task.minPhotos &&
+                    task.status != VisualAuditStatus.completed &&
+                    task.status != VisualAuditStatus.approved) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _completeTask(task),
+                      icon: const Icon(Icons.check_circle_rounded),
+                      label: const Text('Görevi Tamamla'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                // Görev tamamlandı bilgisi
+                if (task.status == VisualAuditStatus.completed) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Görev Tamamlandı ✓',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             );
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildPhotoActionButtons(
+      BuildContext context, ThemeData theme, VisualAuditTask task) {
+    return Row(
+      children: [
+        // Kamera butonu
+        Expanded(
+          child: _buildActionButton(
+            theme,
+            icon: Icons.camera_alt_rounded,
+            label: 'Fotoğraf Çek',
+            color: const Color(0xFF3B82F6),
+            onTap: _isUploading ? null : () => _openCamera(task),
+          ),
+        ),
+        const SizedBox(width: 10),
+        // Galeri butonu
+        Expanded(
+          child: _buildActionButton(
+            theme,
+            icon: Icons.photo_library_rounded,
+            label: 'Galeriden Seç',
+            color: const Color(0xFF10B981),
+            onTap: _isUploading ? null : () => _pickFromGallery(task),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(
+    ThemeData theme, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUploadProgress(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Fotoğraflar yükleniyor...',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                LinearProgressIndicator(
+                  value: _pendingPhotos.isEmpty
+                      ? null
+                      : _uploadProgress / _pendingPhotos.length,
+                  backgroundColor: Colors.white.withOpacity(0.3),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPendingPhotosPreview(
+      BuildContext context, ThemeData theme, VisualAuditTask task) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withOpacity(0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.pending_rounded,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${_pendingPhotos.length} fotoğraf yüklenmeye hazır',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              // Temizle butonu
+              TextButton.icon(
+                onPressed: () {
+                  setState(() => _pendingPhotos.clear());
+                },
+                icon: const Icon(Icons.close, size: 16),
+                label: const Text('Temizle'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Önizleme grid
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _pendingPhotos.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 80,
+                  height: 80,
+                  margin: EdgeInsets.only(
+                      right: index < _pendingPhotos.length - 1 ? 8 : 0),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          _pendingPhotos[index],
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // Silme butonu
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _pendingPhotos.removeAt(index);
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Yükle butonu
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isUploading ? null : () => _uploadPendingPhotos(task),
+              icon: const Icon(Icons.cloud_upload_rounded),
+              label: Text('${_pendingPhotos.length} Fotoğrafı Yükle'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -463,8 +749,8 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
           },
         ),
 
-        // FAB için boşluk
-        const SizedBox(height: 80),
+        // Alt boşluk
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -604,8 +890,13 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
     );
   }
 
-  Future<void> _pickAndUploadPhoto(VisualAuditTask task) async {
+  // ============================================
+  // KAMERA - WhatsApp tarzı çoklu fotoğraf çekme
+  // ============================================
+  Future<void> _openCamera(VisualAuditTask task) async {
     final picker = ImagePicker();
+
+    // Kamerayı aç
     final XFile? image = await picker.pickImage(
       source: ImageSource.camera,
       maxWidth: 1920,
@@ -615,43 +906,142 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
 
     if (image == null) return;
 
-    setState(() => _isUploading = true);
+    // Fotoğrafı listeye ekle
+    setState(() {
+      _pendingPhotos.add(File(image.path));
+    });
+
+    // Kullanıcıya seçenek sun: Devam mı yükle mi?
+    if (!mounted) return;
+
+    final shouldContinue = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Fotoğraf Eklendi'),
+        content: Text(
+          '${_pendingPhotos.length} fotoğraf hazır.\n\nBaşka fotoğraf çekmek ister misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Yüklemeye Geç'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.camera_alt),
+            label: const Text('Devam Et'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldContinue == true && mounted) {
+      _openCamera(task);
+    }
+  }
+
+  // ============================================
+  // GALERİ - Çoklu fotoğraf seçme
+  // ============================================
+  Future<void> _pickFromGallery(VisualAuditTask task) async {
+    final picker = ImagePicker();
+
+    final List<XFile> images = await picker.pickMultiImage(
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+
+    if (images.isEmpty) return;
+
+    setState(() {
+      _pendingPhotos.addAll(images.map((img) => File(img.path)));
+    });
+  }
+
+  // ============================================
+  // FOTOĞRAFLARı YÜKLE
+  // ============================================
+  Future<void> _uploadPendingPhotos(VisualAuditTask task) async {
+    if (_pendingPhotos.isEmpty) return;
+
+    setState(() {
+      _isUploading = true;
+      _uploadProgress = 0;
+    });
+
+    final photosToUpload = List<File>.from(_pendingPhotos);
+    int successCount = 0;
+    String? lastError;
 
     try {
-      final file = File(image.path);
-      final fileName =
-          '${task.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final storagePath = 'visual-audits/${task.id}/$fileName';
+      for (int i = 0; i < photosToUpload.length; i++) {
+        final file = photosToUpload[i];
+        final fileName =
+            '${task.id}_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+        // Storage path - bucket adı olmadan sadece dosya yolu
+        final storagePath = '${task.id}/$fileName';
 
-      // Supabase Storage'a yükle
-      await Supabase.instance.client.storage
-          .from('visual-audits')
-          .upload(storagePath, file);
+        try {
+          // Supabase Storage'a yükle
+          await Supabase.instance.client.storage
+              .from('visual-audits')
+              .upload(storagePath, file);
 
-      // Public URL al
-      final photoUrl = Supabase.instance.client.storage
-          .from('visual-audits')
-          .getPublicUrl(storagePath);
+          // Public URL al
+          final photoUrl = Supabase.instance.client.storage
+              .from('visual-audits')
+              .getPublicUrl(storagePath);
 
-      // Veritabanına kaydet
-      final success =
-          await ref.read(visualAuditPhotoUploadProvider.notifier).uploadPhoto(
-                taskId: task.id,
-                photoUrl: photoUrl,
-              );
+          // Veritabanına kaydet - doğrudan Supabase kullan
+          await Supabase.instance.client.rpc(
+            'upload_visual_audit_photo',
+            params: {
+              'p_task_id': task.id,
+              'p_photo_url': photoUrl,
+            },
+          );
 
-      if (success && mounted) {
+          successCount++;
+        } catch (e) {
+          debugPrint('Fotoğraf yükleme hatası: $e');
+          lastError = e.toString();
+        }
+
+        if (mounted) {
+          setState(() {
+            _uploadProgress = i + 1;
+          });
+        }
+      }
+
+      if (mounted) {
         // Fotoğrafları ve görevi yenile
         ref.invalidate(visualAuditPhotosProvider(task.id));
         ref.invalidate(visualAuditTaskProvider(task.id));
         ref.invalidate(visualAuditTasksProvider);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fotoğraf yüklendi ✓'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // Pending listeyi temizle
+        setState(() {
+          _pendingPhotos.clear();
+        });
+
+        if (successCount > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$successCount fotoğraf yüklendi ✓'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (lastError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Yükleme hatası: $lastError'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -664,7 +1054,72 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isUploading = false);
+        setState(() {
+          _isUploading = false;
+          _uploadProgress = 0;
+        });
+      }
+    }
+  }
+
+  // ============================================
+  // GÖREVİ TAMAMLA
+  // ============================================
+  Future<void> _completeTask(VisualAuditTask task) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text('Görevi Tamamla'),
+          ],
+        ),
+        content: const Text(
+          'Bu görevi tamamlamak istediğinize emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('İptal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Tamamla'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await Supabase.instance.client.from('visual_audit_tasks').update({
+        'status': 'completed',
+        'completed_at': DateTime.now().toIso8601String(),
+      }).eq('id', task.id);
+
+      if (mounted) {
+        ref.invalidate(visualAuditTaskProvider(task.id));
+        ref.invalidate(visualAuditTasksProvider);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Görev tamamlandı! ✓'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hata: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -673,15 +1128,27 @@ class _VisualAuditDetailPageState extends ConsumerState<VisualAuditDetailPage> {
     final message = _commentController.text.trim();
     if (message.isEmpty) return;
 
-    final success =
-        await ref.read(visualAuditCommentProvider.notifier).addComment(
-              taskId: widget.taskId,
-              message: message,
-            );
+    try {
+      // Doğrudan Supabase RPC kullan - provider dispose sorununu önle
+      await Supabase.instance.client.rpc('add_visual_audit_comment', params: {
+        'p_task_id': widget.taskId,
+        'p_message': message,
+        'p_comment_type': 'comment',
+      });
 
-    if (success && mounted) {
-      _commentController.clear();
-      ref.invalidate(visualAuditCommentsProvider(widget.taskId));
+      if (mounted) {
+        _commentController.clear();
+        ref.invalidate(visualAuditCommentsProvider(widget.taskId));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Yorum gönderilemedi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

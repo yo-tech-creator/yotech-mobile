@@ -142,7 +142,7 @@ export async function POST(request: Request) {
     tenant_id: tenant.id,
     code: region.region_code,
     name: region.region_name,
-    active: region.is_active,
+    is_active: region.is_active,
   }));
 
   const { error: insertRegionsError } = await supabaseAdmin.from("regions").insert(regionPayload);

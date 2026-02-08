@@ -261,7 +261,7 @@ export async function POST(request: Request) {
     latitude: branch.latitude ?? null,
     longitude: branch.longitude ?? null,
     geofence_radius: branch.geofence_radius ?? null,
-    active: branch.is_active,
+    is_active: branch.is_active,
   }));
 
   const { error: insertBranchesError } = await supabaseAdmin.from("branches").insert(branchPayload);

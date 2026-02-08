@@ -87,8 +87,8 @@ export function TenantDirectory({ tenants }: { tenants: TenantSummary[] }) {
           <div className="card tenant-directory__card">
             <header>
               <h3>{selectedTenant.name}</h3>
-              <span className={selectedTenant.active ? "status-badge status-badge--success" : "status-badge"}>
-                {selectedTenant.active ? "Aktif" : "Pasif"}
+              <span className={selectedTenant.is_active ? "status-badge status-badge--success" : "status-badge"}>
+                {selectedTenant.is_active ? "Aktif" : "Pasif"}
               </span>
             </header>
             <p>

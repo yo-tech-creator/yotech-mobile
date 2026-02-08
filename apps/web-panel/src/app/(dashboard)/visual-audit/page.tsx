@@ -4,8 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Settings, Plus, Send, X, Clock, CheckCircle, AlertCircle, Camera, Loader2, ChevronLeft, ChevronRight, Calendar, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
-import { createTask, getTasks, getStats, getSections, getBranches, getTaskPhotos, getTaskComments, addComment, deleteTasks } from "./actions";
+import { createTask, getTasks, getStats, getSections, getBranches, getTaskPhotos, getTaskComments, addComment, deleteTasks, generateTasksForToday } from "./actions";
 import "./visual-audit.css";
+
+// Helper function to get Turkey timezone date string (YYYY-MM-DD)
+function getTurkeyDateString(date?: Date): string {
+  const d = date || new Date();
+  return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' });
+}
 
 // Types
 interface Task {
@@ -84,6 +90,10 @@ export default function VisualAuditPage() {
   const [deletingTasks, setDeletingTasks] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   
+  // Photo viewer states
+  const [zoomedPhoto, setZoomedPhoto] = useState<string | null>(null);
+  const [loadingTaskDetails, setLoadingTaskDetails] = useState(false);
+  
   // New task form states
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
@@ -114,28 +124,28 @@ export default function VisualAuditPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterBranch, setFilterBranch] = useState<string>("all");
   const [filterSection, setFilterSection] = useState<string>("all");
-  const [filterDate, setFilterDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [filterDate, setFilterDate] = useState<string>(getTurkeyDateString());
   const [filterHour, setFilterHour] = useState<string>("all");
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Date navigation helpers
   const goToPreviousDay = () => {
-    const date = new Date(filterDate);
+    const date = new Date(filterDate + 'T12:00:00'); // Use noon to avoid timezone issues
     date.setDate(date.getDate() - 1);
-    setFilterDate(date.toISOString().split("T")[0]);
+    setFilterDate(getTurkeyDateString(date));
   };
 
   const goToNextDay = () => {
-    const date = new Date(filterDate);
+    const date = new Date(filterDate + 'T12:00:00'); // Use noon to avoid timezone issues
     date.setDate(date.getDate() + 1);
-    setFilterDate(date.toISOString().split("T")[0]);
+    setFilterDate(getTurkeyDateString(date));
   };
 
   const goToToday = () => {
-    setFilterDate(new Date().toISOString().split("T")[0]);
+    setFilterDate(getTurkeyDateString());
   };
 
-  const isToday = filterDate === new Date().toISOString().split("T")[0];
+  const isToday = filterDate === getTurkeyDateString();
 
   const formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -179,6 +189,20 @@ export default function VisualAuditPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Generate tasks for today on initial load (once per session)
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const lastGenerated = sessionStorage.getItem("visual_audit_tasks_generated");
+    
+    if (lastGenerated !== today) {
+      generateTasksForToday().then(() => {
+        sessionStorage.setItem("visual_audit_tasks_generated", today);
+        // Refetch after generating
+        fetchData();
+      }).catch(console.error);
+    }
+  }, []);
 
   // Multi-select handlers
   const handleLongPressStart = (taskId: string) => {
@@ -251,7 +275,12 @@ export default function VisualAuditPage() {
       return;
     }
     
+    // Önce eski fotoğrafları ve yorumları temizle
+    setTaskPhotos([]);
+    setTaskComments([]);
     setSelectedTask(task);
+    setLoadingTaskDetails(true);
+    
     try {
       const [photos, comments] = await Promise.all([
         getTaskPhotos(task.id),
@@ -261,6 +290,40 @@ export default function VisualAuditPage() {
       setTaskComments(comments as Comment[]);
     } catch (error) {
       console.error("Error fetching task details:", error);
+    } finally {
+      setLoadingTaskDetails(false);
+    }
+  };
+
+  // Navigate to next/previous task
+  const navigateTask = async (direction: "prev" | "next") => {
+    if (!selectedTask) return;
+    
+    const currentIndex = filteredTasks.findIndex(t => t.id === selectedTask.id);
+    if (currentIndex === -1) return;
+    
+    const newIndex = direction === "prev" ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= filteredTasks.length) return;
+    
+    const newTask = filteredTasks[newIndex];
+    
+    // Önce eski verileri temizle
+    setTaskPhotos([]);
+    setTaskComments([]);
+    setSelectedTask(newTask);
+    setLoadingTaskDetails(true);
+    
+    try {
+      const [photos, comments] = await Promise.all([
+        getTaskPhotos(newTask.id),
+        getTaskComments(newTask.id),
+      ]);
+      setTaskPhotos(photos as Photo[]);
+      setTaskComments(comments as Comment[]);
+    } catch (error) {
+      console.error("Error fetching task details:", error);
+    } finally {
+      setLoadingTaskDetails(false);
     }
   };
 
@@ -374,6 +437,11 @@ export default function VisualAuditPage() {
     return true;
   });
 
+  // Get current task index for navigation
+  const currentTaskIndex = selectedTask ? filteredTasks.findIndex(t => t.id === selectedTask.id) : -1;
+  const canGoPrev = currentTaskIndex > 0;
+  const canGoNext = currentTaskIndex !== -1 && currentTaskIndex < filteredTasks.length - 1;
+
   // Get unique hours from tasks
   const uniqueHours = [...new Set(tasks.map(t => new Date(t.deadline_at).getHours()))].sort((a, b) => a - b);
 
@@ -466,7 +534,7 @@ export default function VisualAuditPage() {
                     {s.name}
                   </button>
                 ))}
-                {sections.length === 0 && <p className="va-empty-text">Önce Ayarlar'dan bölüm ekleyin</p>}
+                {sections.length === 0 && <p className="va-empty-text">Önce Ayarlar&apos;dan bölüm ekleyin</p>}
               </div>
             </div>
 
@@ -865,6 +933,17 @@ export default function VisualAuditPage() {
       {/* Task Detail Modal */}
       {selectedTask && (
         <div className="va-modal-overlay" onClick={() => setSelectedTask(null)}>
+          {/* Previous button */}
+          {canGoPrev && (
+            <button 
+              className="va-nav-btn va-nav-prev" 
+              onClick={(e) => { e.stopPropagation(); navigateTask("prev"); }}
+              title="Önceki görev"
+            >
+              <ChevronLeft size={32} />
+            </button>
+          )}
+          
           <div className="va-modal" onClick={e => e.stopPropagation()}>
             <div className="va-modal-header">
               <div>
@@ -873,95 +952,144 @@ export default function VisualAuditPage() {
                   {selectedTask.section_name}
                 </span>
               </div>
-              <button className="va-close-btn" onClick={() => setSelectedTask(null)}>
-                <X size={20} />
-              </button>
+              <div className="va-modal-header-actions">
+                {/* Navigation counter */}
+                <span className="va-nav-counter">
+                  {currentTaskIndex + 1} / {filteredTasks.length}
+                </span>
+                <button className="va-close-btn" onClick={() => setSelectedTask(null)}>
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             <div className="va-modal-body">
-              {/* Task Info */}
-              <div className="va-modal-info">
-                <div className="va-info-row">
-                  <span>Durum:</span>
-                  <span className={`va-status-badge ${selectedTask.status} ${isOverdue(selectedTask) ? "overdue" : ""}`}>
-                    {selectedTask.status === "completed" ? "Tamamlandı" : isOverdue(selectedTask) ? "Gecikti" : "Bekliyor"}
-                  </span>
+              {loadingTaskDetails ? (
+                <div className="va-loading-details">
+                  <Loader2 size={32} className="animate-spin" />
+                  <span>Yükleniyor...</span>
                 </div>
-                <div className="va-info-row">
-                  <span>Görev Saati:</span>
-                  <span>{selectedTask.scheduled_time?.slice(0, 5) || "--:--"}</span>
-                </div>
-                <div className="va-info-row">
-                  <span>Son Teslim:</span>
-                  <span>{formatTime(selectedTask.deadline_at)}</span>
-                </div>
-                <div className="va-info-row">
-                  <span>Fotoğraf:</span>
-                  <span>{selectedTask.photo_count} / {selectedTask.min_photos}</span>
-                </div>
-                {selectedTask.created_by_name && (
-                  <div className="va-info-row">
-                    <span>Oluşturan:</span>
-                    <span>{selectedTask.created_by_name}</span>
-                  </div>
-                )}
-                {selectedTask.notes && (
-                  <div className="va-info-row">
-                    <span>Not:</span>
-                    <span>{selectedTask.notes}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Photos */}
-              <div className="va-modal-section">
-                <h4>Fotoğraflar</h4>
-                {taskPhotos.length === 0 ? (
-                  <p className="va-empty-text">Henüz fotoğraf yüklenmedi</p>
-                ) : (
-                  <div className="va-photo-grid">
-                    {taskPhotos.map(photo => (
-                      <div key={photo.id} className="va-photo-item">
-                        <img src={photo.photo_url} alt="Fotoğraf" />
+              ) : (
+                <>
+                  {/* Task Info */}
+                  <div className="va-modal-info">
+                    <div className="va-info-row">
+                      <span>Durum:</span>
+                      <span className={`va-status-badge ${selectedTask.status} ${isOverdue(selectedTask) ? "overdue" : ""}`}>
+                        {selectedTask.status === "completed" ? "Tamamlandı" : isOverdue(selectedTask) ? "Gecikti" : "Bekliyor"}
+                      </span>
+                    </div>
+                    <div className="va-info-row">
+                      <span>Görev Saati:</span>
+                      <span>{selectedTask.scheduled_time?.slice(0, 5) || "--:--"}</span>
+                    </div>
+                    <div className="va-info-row">
+                      <span>Son Teslim:</span>
+                      <span>{formatTime(selectedTask.deadline_at)}</span>
+                    </div>
+                    <div className="va-info-row">
+                      <span>Fotoğraf:</span>
+                      <span>{selectedTask.photo_count} / {selectedTask.min_photos}</span>
+                    </div>
+                    {selectedTask.created_by_name && (
+                      <div className="va-info-row">
+                        <span>Oluşturan:</span>
+                        <span>{selectedTask.created_by_name}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Comments */}
-              <div className="va-modal-section">
-                <h4>Yorumlar</h4>
-                <div className="va-comments-list">
-                  {taskComments.length === 0 ? (
-                    <p className="va-empty-text">Henüz yorum yok</p>
-                  ) : (
-                    taskComments.map(comment => (
-                      <div key={comment.id} className="va-comment">
-                        <span className="va-comment-author">{comment.users?.full_name || "Kullanıcı"}</span>
-                        <p>{comment.comment}</p>
-                        <span className="va-comment-time">
-                          {new Date(comment.created_at).toLocaleString("tr-TR")}
-                        </span>
+                    )}
+                    {selectedTask.notes && (
+                      <div className="va-info-row">
+                        <span>Not:</span>
+                        <span>{selectedTask.notes}</span>
                       </div>
-                    ))
-                  )}
-                </div>
-                <div className="va-comment-input">
-                  <input
-                    type="text"
-                    value={newComment}
-                    onChange={e => setNewComment(e.target.value)}
-                    placeholder="Yorum yazın..."
-                    onKeyDown={e => e.key === "Enter" && handleSendComment()}
-                  />
-                  <button onClick={handleSendComment} disabled={sendingComment || !newComment.trim()}>
-                    <Send size={18} />
-                  </button>
-                </div>
-              </div>
+                    )}
+                  </div>
+
+                  {/* Photos */}
+                  <div className="va-modal-section">
+                    <h4>Fotoğraflar</h4>
+                    {taskPhotos.length === 0 ? (
+                      <p className="va-empty-text">Henüz fotoğraf yüklenmedi</p>
+                    ) : (
+                      <div className="va-photo-grid">
+                        {taskPhotos.map(photo => (
+                          <div 
+                            key={photo.id} 
+                            className="va-photo-item va-photo-clickable"
+                            onClick={() => setZoomedPhoto(photo.photo_url)}
+                            title="Büyütmek için tıklayın"
+                          >
+                            <img src={photo.photo_url} alt="Fotoğraf" />
+                            <div className="va-photo-overlay">
+                              <span>🔍</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Comments */}
+                  <div className="va-modal-section">
+                    <h4>Yorumlar</h4>
+                    <div className="va-comments-list">
+                      {taskComments.length === 0 ? (
+                        <p className="va-empty-text">Henüz yorum yok</p>
+                      ) : (
+                        taskComments.map(comment => (
+                          <div key={comment.id} className="va-comment">
+                            <span className="va-comment-author">{comment.users?.full_name || "Kullanıcı"}</span>
+                            <p>{comment.comment}</p>
+                            <span className="va-comment-time">
+                              {new Date(comment.created_at).toLocaleString("tr-TR")}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="va-comment-input">
+                      <input
+                        type="text"
+                        value={newComment}
+                        onChange={e => setNewComment(e.target.value)}
+                        placeholder="Yorum yazın..."
+                        onKeyDown={e => e.key === "Enter" && handleSendComment()}
+                      />
+                      <button onClick={handleSendComment} disabled={sendingComment || !newComment.trim()}>
+                        <Send size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
+
+          {/* Next button */}
+          {canGoNext && (
+            <button 
+              className="va-nav-btn va-nav-next" 
+              onClick={(e) => { e.stopPropagation(); navigateTask("next"); }}
+              title="Sonraki görev"
+            >
+              <ChevronRight size={32} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Photo Zoom Modal */}
+      {zoomedPhoto && (
+        <div className="va-zoom-overlay" onClick={() => setZoomedPhoto(null)}>
+          <button className="va-zoom-close" onClick={() => setZoomedPhoto(null)}>
+            <X size={24} />
+          </button>
+          <img 
+            src={zoomedPhoto} 
+            alt="Büyütülmüş fotoğraf" 
+            className="va-zoomed-image"
+            onClick={e => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

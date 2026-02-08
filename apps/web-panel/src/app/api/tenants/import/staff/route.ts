@@ -313,7 +313,7 @@ export async function POST(request: Request) {
         branch_id: branchId,
         role: finalRole,
         position,
-        active: person.is_active,
+        is_active: person.is_active,
       })
       .eq("id", userId);
 

@@ -53,7 +53,7 @@ export default async function ModulesPage() {
     );
   }
 
-  const tenants = ((data ?? []) as TenantSummary[]).filter((tenant) => tenant.active);
+  const tenants = ((data ?? []) as TenantSummary[]).filter((tenant) => tenant.is_active);
 
   if (tenants.length === 0) {
     return (

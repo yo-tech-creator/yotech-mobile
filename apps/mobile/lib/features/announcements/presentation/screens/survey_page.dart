@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yotech_mobile/core/localization/localization_extensions.dart';
+import 'package:yotech_mobile/core/routing/auth_wrapper.dart';
 import 'package:yotech_mobile/features/announcements/data/models/announcement.dart';
 import 'package:yotech_mobile/features/announcements/data/models/survey_question.dart';
 import 'package:yotech_mobile/features/announcements/presentation/providers/announcement_providers.dart';
@@ -10,9 +11,13 @@ class SurveyPage extends ConsumerStatefulWidget {
   const SurveyPage({
     super.key,
     required this.announcement,
+    this.openedFromNotification = false,
   });
 
   final Announcement announcement;
+
+  /// Bildirimden açıldıysa true - geri dönüşte ana sayfaya yönlendirir
+  final bool openedFromNotification;
 
   @override
   ConsumerState<SurveyPage> createState() => _SurveyPageState();
@@ -21,6 +26,18 @@ class SurveyPage extends ConsumerStatefulWidget {
 class _SurveyPageState extends ConsumerState<SurveyPage> {
   final Map<String, dynamic> _answers = {};
   bool _submitting = false;
+
+  /// Geri dönüş - bildirimden açıldıysa ana sayfaya git
+  void _goBack() {
+    if (widget.openedFromNotification) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AuthWrapper()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +135,7 @@ class _SurveyPageState extends ConsumerState<SurveyPage> {
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _goBack,
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color: theme.colorScheme.outline.withValues(alpha: 0.3),
@@ -190,7 +207,7 @@ class _SurveyPageState extends ConsumerState<SurveyPage> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _goBack,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
@@ -984,7 +1001,16 @@ class _SurveyPageState extends ConsumerState<SurveyPage> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(true);
+
+        // Bildirimden açıldıysa stack'i temizle ve ana sayfaya git
+        if (widget.openedFromNotification) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const AuthWrapper()),
+            (route) => false,
+          );
+        } else {
+          Navigator.of(context).pop(true);
+        }
       }
     } catch (e) {
       if (mounted) {

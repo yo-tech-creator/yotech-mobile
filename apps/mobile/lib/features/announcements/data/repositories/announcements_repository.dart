@@ -31,19 +31,19 @@ class AnnouncementsRepository {
               // First by pinned status
               if (a.pinned && !b.pinned) return -1;
               if (!a.pinned && b.pinned) return 1;
-              
+
               // If both pinned, sort by pinned_at (most recent first)
               if (a.pinned && b.pinned) {
                 final aTime = a.pinnedAt?.millisecondsSinceEpoch ?? 0;
                 final bTime = b.pinnedAt?.millisecondsSinceEpoch ?? 0;
                 if (bTime != aTime) return bTime.compareTo(aTime);
               }
-              
+
               // Then by priority
               if (b.priority != a.priority) {
                 return b.priority.compareTo(a.priority);
               }
-              
+
               // Finally by published_at
               return b.publishedAt.compareTo(a.publishedAt);
             });

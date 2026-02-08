@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Geçersiz kimlik bilgileri" }, { status: 401 });
     }
 
-    if (result.active === false) {
+    if (result.is_active === false) {
       return NextResponse.json({ message: "Kullanıcı hesabı aktif değil" }, { status: 403 });
     }
 

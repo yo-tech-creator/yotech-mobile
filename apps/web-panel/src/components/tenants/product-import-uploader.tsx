@@ -18,7 +18,7 @@ const PRODUCT_HEADERS = [
   "unit",
   "price",
   "alt_barcodes",
-  "active",
+  "is_active",
 ] as const;
 
 type ProductRow = {
@@ -31,7 +31,7 @@ type ProductRow = {
   unit?: string | null;
   price?: number | string | null;
   alt_barcodes?: string | null;
-  active?: boolean | string | number | null;
+  is_active?: boolean | string | number | null;
 };
 
 type ProductDefinition = {
@@ -44,7 +44,7 @@ type ProductDefinition = {
   unit: string | null;
   price: number | null;
   alt_barcodes: string[] | null;
-  active: boolean;
+  is_active: boolean;
 };
 
 type ProductsImportPayload = {
@@ -144,9 +144,9 @@ async function parseWorkbook(file: File): Promise<ProductsImportPayload> {
       throw new Error(`${barcode} fiyat değeri numerik olmalı`);
     }
 
-    const active = normaliseBoolean(row.active ?? true);
-    if (active === null) {
-      throw new Error(`${barcode} için active true/false olmalıdır`);
+    const is_active = normaliseBoolean(row.is_active ?? true);
+    if (is_active === null) {
+      throw new Error(`${barcode} için is_active true/false olmalıdır`);
     }
 
     products.push({
@@ -159,7 +159,7 @@ async function parseWorkbook(file: File): Promise<ProductsImportPayload> {
       unit: row.unit?.trim() || "adet",
       price,
       alt_barcodes: altList.length > 0 ? altList : null,
-      active,
+      is_active,
     });
   });
 
@@ -196,7 +196,7 @@ function buildTemplateWorkbook(tenantCodeOverride?: string) {
       row.unit,
       row.price,
       row.alt_barcodes,
-      row.active ? "TRUE" : "FALSE",
+      row.is_active ? "TRUE" : "FALSE",
     ]),
   ]);
 
@@ -370,7 +370,7 @@ export function ProductImportUploader({ showHeader = true, tenantHint }: Props) 
                       {p.brand ? ` · Marka: ${p.brand}` : ""}
                       {p.category ? ` · Kategori: ${p.category}` : ""}
                       {p.price !== null && !Number.isNaN(p.price) ? ` · Fiyat: ${p.price}` : ""}
-                      {p.active ? " (Aktif)" : " (Pasif)"}
+                      {p.is_active ? " (Aktif)" : " (Pasif)"}
                       {p.alt_barcodes && p.alt_barcodes.length > 0 ? ` · Alt barkodlar: ${p.alt_barcodes.join(", ")}` : ""}
                     </li>
                   ))}

@@ -77,7 +77,7 @@ export async function GET(request: Request) {
           .select("id, name")
           .eq("tenant_id", profile.tenant_id)
           .in("region_id", regionIds)
-          .eq("active", true)
+          .eq("is_active", true)
           .order("name");
 
         if (branchError) {
@@ -128,16 +128,16 @@ export async function GET(request: Request) {
 
     // Get user names for team breaks
     if (teamOnly && breaks.length > 0) {
-      const userIds = [...new Set(breaks.map((b: { user_id: string }) => b.user_id))];
+      const userIds = [...new Set(breaks.map((b: { user_id: string }) => b.user_id))] as string[];
       
       const { data: users } = await supabase
         .from("users")
         .select("id, first_name, last_name, employee_code")
-        .eq("tenant_id", profile.tenant_id)
+        .eq("tenant_id", profile.tenant_id!)
         .in("id", userIds);
 
       const userMap = new Map();
-      (users || []).forEach((u: { id: string; first_name?: string; last_name?: string; employee_code?: string }) => {
+      (users || []).forEach((u) => {
         const name = [u.first_name, u.last_name].filter(Boolean).join(" ").trim() || u.employee_code || u.id.slice(0, 8);
         userMap.set(u.id, name);
       });

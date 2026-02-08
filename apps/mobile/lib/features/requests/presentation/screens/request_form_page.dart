@@ -45,7 +45,6 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _targetDepartmentController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
   final List<_PendingAttachment> _attachments = <_PendingAttachment>[];
   final List<String> _existingAttachments = <String>[];
@@ -58,6 +57,8 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
   String? _selectedMalfunctionType;
   String? _selectedEquipmentType;
   String? _selectedLeaveType;
+  String? _selectedTargetUserId;
+  String? _selectedDepartmentId;
   double? _annualLeaveBalanceDays;
   bool _isFetchingLeaveBalance = false;
   String? _leaveBalanceError;
@@ -79,7 +80,7 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
     if (existing != null) {
       _titleController.text = existing.title;
       _descriptionController.text = existing.description ?? '';
-      _targetDepartmentController.text = existing.targetDepartment ?? '';
+      _selectedDepartmentId = existing.targetDepartmentId;
     }
 
     final payload = existing?.payload ?? const <String, dynamic>{};
@@ -213,7 +214,6 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _targetDepartmentController.dispose();
     super.dispose();
   }
 
@@ -338,7 +338,15 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
 
       final title = _titleController.text.trim();
       final descriptionText = _descriptionController.text.trim();
-      final targetDepartment = _targetDepartmentController.text.trim();
+
+      // Departman ismini al (eğer seçilmişse)
+      String? targetDepartmentName;
+      if (_selectedDepartmentId != null) {
+        final departments = ref.read(departmentsProvider).valueOrNull ?? [];
+        final selectedDept =
+            departments.where((d) => d.id == _selectedDepartmentId).firstOrNull;
+        targetDepartmentName = selectedDept?.name;
+      }
 
       BranchRequest request;
       if (_isEditing) {
@@ -347,7 +355,8 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
           title: title,
           description: descriptionText.isEmpty ? null : descriptionText,
           payload: payload.isEmpty ? null : payload,
-          targetDepartment: targetDepartment.isEmpty ? null : targetDepartment,
+          targetDepartment: targetDepartmentName,
+          targetDepartmentId: _selectedDepartmentId,
         );
       } else {
         request = await repo.createRequest(
@@ -356,7 +365,9 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
           description: descriptionText.isEmpty ? null : descriptionText,
           branchId: currentUser.branchId!,
           payload: payload.isEmpty ? null : payload,
-          targetDepartment: targetDepartment.isEmpty ? null : targetDepartment,
+          targetDepartment: targetDepartmentName,
+          targetDepartmentId: _selectedDepartmentId,
+          targetUserId: _selectedTargetUserId,
         );
       }
 
@@ -889,6 +900,189 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
     );
   }
 
+  Widget _buildDepartmentDropdown() {
+    final departmentsAsync = ref.watch(departmentsProvider);
+
+    return departmentsAsync.when(
+      data: (departments) {
+        if (departments.isEmpty) {
+          // Departman yoksa bilgi mesajı göster
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Theme.of(context).colorScheme.outline,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Henüz departman tanımlanmamış. Yöneticinize başvurun.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return DropdownButtonFormField<String>(
+          value: _selectedDepartmentId,
+          decoration: const InputDecoration(
+            labelText: 'Hedef Birim (opsiyonel)',
+            helperText: 'Talep hangi birime iletilsin?',
+          ),
+          isExpanded: true,
+          items: [
+            const DropdownMenuItem<String>(
+              value: null,
+              child: Text('Seçilmedi'),
+            ),
+            ...departments.map(
+              (dept) => DropdownMenuItem<String>(
+                value: dept.id,
+                child: Text(dept.name),
+              ),
+            ),
+          ],
+          onChanged: _isSubmitting
+              ? null
+              : (value) {
+                  setState(() => _selectedDepartmentId = value);
+                },
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.only(top: 16),
+        child: LinearProgressIndicator(),
+      ),
+      error: (error, _) => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.errorContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Theme.of(context).colorScheme.error,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Departmanlar yüklenemedi',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTargetUserDropdown() {
+    final user = ref.watch(authProvider).maybeWhen(
+          authenticated: (user) => user,
+          orElse: () => null,
+        );
+
+    if (user?.branchId == null) {
+      return const SizedBox.shrink();
+    }
+
+    final targetUsersAsync = ref.watch(targetUsersProvider(user!.branchId!));
+
+    return targetUsersAsync.when(
+      data: (targetUsers) {
+        if (targetUsers.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _selectedTargetUserId,
+              decoration: const InputDecoration(
+                labelText: 'Talep Yetkilisi (opsiyonel)',
+                helperText: 'Talebin iletileceği yetkiliyi seçin',
+              ),
+              isExpanded: true,
+              items: [
+                const DropdownMenuItem<String>(
+                  value: null,
+                  child: Text('Seçilmedi'),
+                ),
+                ...targetUsers.map(
+                  (user) => DropdownMenuItem<String>(
+                    value: user.userId,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(user.userName),
+                        Text(
+                          user.branchName != null
+                              ? '${user.roleLabel} - ${user.branchName}'
+                              : user.roleLabel,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              selectedItemBuilder: (context) {
+                return [
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Seçilmedi'),
+                  ),
+                  ...targetUsers.map(
+                    (user) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('${user.userName} (${user.roleLabel})'),
+                    ),
+                  ),
+                ];
+              },
+              onChanged: _isSubmitting
+                  ? null
+                  : (value) {
+                      setState(() => _selectedTargetUserId = value);
+                    },
+            ),
+          ],
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.only(top: 16),
+        child: LinearProgressIndicator(),
+      ),
+      error: (error, _) => Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: Text(
+          'Yetkili listesi yüklenemedi: $error',
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final pageTitle = _isEditing
@@ -1082,13 +1276,10 @@ class _RequestFormPageState extends ConsumerState<RequestFormPage> {
                 _buildAttachmentSection(context),
               ],
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _targetDepartmentController,
-                decoration: const InputDecoration(
-                  labelText: 'Hedef Birim (opsiyonel)',
-                  hintText: 'Teknik ekip, insan kaynakları vb.',
-                ),
-              ),
+              // Departman Dropdown
+              _buildDepartmentDropdown(),
+              // Hedef Kullanıcı Seçimi
+              _buildTargetUserDropdown(),
               if (widget.category == RequestCategory.leave) ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(

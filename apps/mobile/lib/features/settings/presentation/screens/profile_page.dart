@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:yotech_mobile/core/auth/auth_navigation_helper.dart';
 import 'package:yotech_mobile/core/localization/locale_controller.dart';
 import 'package:yotech_mobile/core/localization/localization_extensions.dart';
 import 'package:yotech_mobile/core/theme/app_theme.dart';
@@ -347,31 +348,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
   }
 
   Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Çıkış Yap'),
-        content: const Text('Oturumunuzu kapatmak istediğinize emin misiniz?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Çıkış Yap'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    await Supabase.instance.client.auth.signOut();
-    if (!mounted) return;
-
-    // Login ekranına yönlendir ve tüm geçmişi temizle
-    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    await AuthNavigationHelper.confirmAndLogout(context: context, ref: ref);
   }
 }
 

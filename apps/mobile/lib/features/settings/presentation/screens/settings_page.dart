@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:yotech_mobile/core/auth/auth_navigation_helper.dart';
 import 'package:yotech_mobile/core/localization/locale_controller.dart';
 import 'package:yotech_mobile/core/localization/localization_extensions.dart';
 import 'package:yotech_mobile/core/theme/app_theme.dart';
@@ -195,11 +196,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _handleLogout() async {
-    await _client.auth.signOut();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.l10n.settingsLogoutSuccess)),
-    );
+    await AuthNavigationHelper.confirmAndLogout(context: context, ref: ref);
   }
 
   Future<void> _showLanguageSheet(Locale currentLocale) async {

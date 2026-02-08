@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/models/task_models.dart';
 import '../../domain/providers/tasks_providers.dart';
+import '../../domain/providers/branch_tasks_providers.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../../../shared/providers/branches_provider.dart';
 import '../../../auth/domain/providers/branch_users_provider.dart';
@@ -490,6 +491,7 @@ class _CreateTaskPageState extends ConsumerState<CreateTaskPage> {
       // Providers'ları yenile
       ref.invalidate(activeTasksProvider);
       ref.invalidate(myCreatedTasksProvider);
+      ref.invalidate(branchTaskTreeProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -535,11 +537,16 @@ class _CreateTaskPageState extends ConsumerState<CreateTaskPage> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('Çıkmak istediğinize emin misiniz?'),
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Çıkmak istediğinize emin misiniz?',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
           ],
         ),
         content: const Text('Girdiğiniz bilgiler kaybolacak.'),

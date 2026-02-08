@@ -62,7 +62,7 @@ export async function GET(request: Request) {
 
   let query = supabaseAdmin
     .from("users")
-    .select("id, first_name, last_name, email, phone, role, tenant_id, branch_id, employee_code, position, active, branches(name, code)", {
+    .select("id, first_name, last_name, email, phone, role, tenant_id, branch_id, employee_code, position, is_active, branches(name, code)", {
       count: "exact",
     })
     .eq("tenant_id", tenantId);
@@ -140,7 +140,8 @@ export async function POST(request: Request) {
   });
 
   if (authError || !authUser?.user?.id) {
-    return NextResponse.json({ message: "Auth kullanıcısı oluşturulamadı" }, { status: 500 });
+    console.error("Auth user creation error:", authError);
+    return NextResponse.json({ message: authError?.message || "Auth kullanıcısı oluşturulamadı" }, { status: 500 });
   }
 
   const insertPayload: Database["public"]["Tables"]["users"]["Insert"] = {
@@ -154,7 +155,7 @@ export async function POST(request: Request) {
     phone: body.phone ?? null,
     employee_code: body.employee_code ?? null,
     position: body.position ?? null,
-    active: body.active ?? true,
+    is_active: body.is_active ?? true,
   };
 
   const { error: insertError } = await supabaseAdmin.from("users").insert(insertPayload);
@@ -202,7 +203,7 @@ export async function PATCH(request: Request) {
     employee_code: typeof rest.employee_code === "string" ? rest.employee_code : undefined,
     position: typeof rest.position === "string" ? rest.position : undefined,
     email: typeof email === "string" ? email : undefined,
-    active: typeof rest.active === "boolean" ? rest.active : undefined,
+    is_active: typeof rest.is_active === "boolean" ? rest.is_active : undefined,
   };
 
   const { error: updateError } = await supabaseAdmin.from("users").update(updatePayload).eq("id", userId);

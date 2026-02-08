@@ -36,9 +36,9 @@ export async function GET() {
   const supabaseAdmin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const [tenantsRes, branchesRes, usersRes] = await Promise.all([
-    supabaseAdmin.from("tenants").select("id, name, code, active"),
-    supabaseAdmin.from("branches").select("id, tenant_id, active"),
-    supabaseAdmin.from("users").select("id, tenant_id, branch_id, active"),
+    supabaseAdmin.from("tenants").select("id, name, code, is_active"),
+    supabaseAdmin.from("branches").select("id, tenant_id, is_active"),
+    supabaseAdmin.from("users").select("id, tenant_id, branch_id, is_active"),
   ]);
 
   if (tenantsRes.error || branchesRes.error || usersRes.error) {
@@ -63,7 +63,7 @@ export async function GET() {
     id: t.id,
     name: t.name,
     code: t.code,
-    active: t.active,
+    is_active: t.is_active,
     branchCount: branchCountByTenant.get(t.id) ?? 0,
     userCount: userCountByTenant.get(t.id) ?? 0,
   }));
@@ -72,11 +72,11 @@ export async function GET() {
 
   const stats = {
     totalTenants: tenants.length,
-    activeTenants: tenants.filter((t) => t.active).length,
+    activeTenants: tenants.filter((t) => t.is_active).length,
     totalBranches: branches.length,
-    activeBranches: branches.filter((b) => b.active ?? false).length,
+    activeBranches: branches.filter((b) => b.is_active ?? false).length,
     totalUsers: users.length,
-    activeUsers: users.filter((u) => u.active ?? false).length,
+    activeUsers: users.filter((u) => u.is_active ?? false).length,
   };
 
   return NextResponse.json({

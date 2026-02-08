@@ -15,7 +15,7 @@ type ProductInput = {
   unit?: string | null;
   price?: number | null;
   alt_barcodes?: string[] | string | null;
-  active?: boolean | null;
+  is_active?: boolean | null;
 };
 
 type RequestBody = {
@@ -215,7 +215,7 @@ export async function POST(request: Request) {
       supplier: raw.supplier?.trim() || null,
       unit: (raw.unit?.trim() || "adet") || null,
       price: priceValue,
-      active: raw.active ?? true,
+      is_active: raw.is_active ?? true,
       alt_barcodes: cleanedAlt.length > 0 ? cleanedAlt : null,
     });
   }

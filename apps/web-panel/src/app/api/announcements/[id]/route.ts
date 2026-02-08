@@ -214,8 +214,8 @@ export async function PATCH(
       // Set pinned_at timestamp when pinning, null when unpinning
       updateData.pinned_at = body.pinned ? new Date().toISOString() : null;
     }
-    if (typeof body.active === "boolean") {
-      updateData.active = body.active;
+    if (typeof body.is_active === "boolean") {
+      updateData.is_active = body.is_active;
     }
     if (body.expires_at !== undefined) {
       updateData.expires_at = body.expires_at;

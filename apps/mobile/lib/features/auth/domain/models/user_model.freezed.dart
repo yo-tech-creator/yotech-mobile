@@ -29,6 +29,7 @@ mixin _$UserModel {
   String? get branchId => throw _privateConstructorUsedError;
   String? get regionId => throw _privateConstructorUsedError;
   String? get sicilNo => throw _privateConstructorUsedError;
+  String? get departmentId => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -54,7 +55,8 @@ abstract class $UserModelCopyWith<$Res> {
       String tenantId,
       String? branchId,
       String? regionId,
-      String? sicilNo});
+      String? sicilNo,
+      String? departmentId});
 }
 
 /// @nodoc
@@ -81,6 +83,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? branchId = freezed,
     Object? regionId = freezed,
     Object? sicilNo = freezed,
+    Object? departmentId = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -119,6 +122,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.sicilNo
           : sicilNo // ignore: cast_nullable_to_non_nullable
               as String?,
+      departmentId: freezed == departmentId
+          ? _value.departmentId
+          : departmentId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -140,7 +147,8 @@ abstract class _$$UserModelImplCopyWith<$Res>
       String tenantId,
       String? branchId,
       String? regionId,
-      String? sicilNo});
+      String? sicilNo,
+      String? departmentId});
 }
 
 /// @nodoc
@@ -165,6 +173,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? branchId = freezed,
     Object? regionId = freezed,
     Object? sicilNo = freezed,
+    Object? departmentId = freezed,
   }) {
     return _then(_$UserModelImpl(
       id: null == id
@@ -203,6 +212,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.sicilNo
           : sicilNo // ignore: cast_nullable_to_non_nullable
               as String?,
+      departmentId: freezed == departmentId
+          ? _value.departmentId
+          : departmentId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -219,7 +232,8 @@ class _$UserModelImpl implements _UserModel {
       required this.tenantId,
       this.branchId,
       this.regionId,
-      this.sicilNo});
+      this.sicilNo,
+      this.departmentId});
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserModelImplFromJson(json);
@@ -242,10 +256,12 @@ class _$UserModelImpl implements _UserModel {
   final String? regionId;
   @override
   final String? sicilNo;
+  @override
+  final String? departmentId;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, name: $name, surname: $surname, role: $role, tenantId: $tenantId, branchId: $branchId, regionId: $regionId, sicilNo: $sicilNo)';
+    return 'UserModel(id: $id, email: $email, name: $name, surname: $surname, role: $role, tenantId: $tenantId, branchId: $branchId, regionId: $regionId, sicilNo: $sicilNo, departmentId: $departmentId)';
   }
 
   @override
@@ -264,13 +280,15 @@ class _$UserModelImpl implements _UserModel {
                 other.branchId == branchId) &&
             (identical(other.regionId, regionId) ||
                 other.regionId == regionId) &&
-            (identical(other.sicilNo, sicilNo) || other.sicilNo == sicilNo));
+            (identical(other.sicilNo, sicilNo) || other.sicilNo == sicilNo) &&
+            (identical(other.departmentId, departmentId) ||
+                other.departmentId == departmentId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, email, name, surname, role,
-      tenantId, branchId, regionId, sicilNo);
+      tenantId, branchId, regionId, sicilNo, departmentId);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -298,7 +316,8 @@ abstract class _UserModel implements UserModel {
       required final String tenantId,
       final String? branchId,
       final String? regionId,
-      final String? sicilNo}) = _$UserModelImpl;
+      final String? sicilNo,
+      final String? departmentId}) = _$UserModelImpl;
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
       _$UserModelImpl.fromJson;
@@ -321,6 +340,8 @@ abstract class _UserModel implements UserModel {
   String? get regionId;
   @override
   String? get sicilNo;
+  @override
+  String? get departmentId;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.

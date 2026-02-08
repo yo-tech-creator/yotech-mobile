@@ -384,8 +384,15 @@ export default function SurveyResultsPage({ params }: { params: Promise<{ id: st
 
   const renderNumberResult = (question: SurveyQuestion) => {
     const answers = question.answers || [];
+    // Sayı tipi sorular answer_rating alanında saklanıyor
     const numbers = answers
-      .map(a => parseFloat(a.answer_text || "0"))
+      .map(a => {
+        // Önce answer_rating'i kontrol et, yoksa answer_text'i dene
+        if (a.answer_rating !== null && a.answer_rating !== undefined) {
+          return Number(a.answer_rating);
+        }
+        return parseFloat(a.answer_text || "");
+      })
       .filter(n => !isNaN(n));
     
     const avg = numbers.length > 0 ? numbers.reduce((a, b) => a + b, 0) / numbers.length : 0;
@@ -451,10 +458,25 @@ export default function SurveyResultsPage({ params }: { params: Promise<{ id: st
             </div>
             {answers.map((answer, idx) => {
               let displayAnswer = "-";
-              if (answer.answer_text) displayAnswer = answer.answer_text;
-              else if (answer.answer_rating) displayAnswer = `${"★".repeat(answer.answer_rating)}${"☆".repeat(5 - answer.answer_rating)}`;
-              else if (answer.answer_boolean !== null) displayAnswer = answer.answer_boolean ? "Evet ✓" : "Hayır ✕";
-              else if (answer.answer_options) displayAnswer = answer.answer_options.join(", ");
+              
+              // Soru tipine göre cevabı göster
+              if (question.question_type === "number" && answer.answer_rating !== null && answer.answer_rating !== undefined) {
+                // Sayı tipi - direkt sayısal değeri göster
+                displayAnswer = String(answer.answer_rating);
+              } else if (question.question_type === "rating" && answer.answer_rating !== null && answer.answer_rating !== undefined) {
+                // Rating tipi - yıldızlarla göster
+                const rating = Math.max(0, Math.min(5, Number(answer.answer_rating) || 0));
+                displayAnswer = `${"★".repeat(rating)}${"☆".repeat(5 - rating)}`;
+              } else if (answer.answer_text) {
+                displayAnswer = answer.answer_text;
+              } else if (answer.answer_boolean !== null && answer.answer_boolean !== undefined) {
+                displayAnswer = answer.answer_boolean ? "Evet ✓" : "Hayır ✕";
+              } else if (answer.answer_options) {
+                displayAnswer = answer.answer_options.join(", ");
+              } else if (answer.answer_rating !== null && answer.answer_rating !== undefined) {
+                // Fallback - bilinmeyen tip için sayısal değer göster
+                displayAnswer = String(answer.answer_rating);
+              }
               
               return (
                 <div key={idx} className="table-row">

@@ -3,6 +3,8 @@ enum RequestStatus {
   inProgress,
   resolved,
   cancelled,
+  rejected,
+  failed,
 }
 
 extension RequestStatusX on RequestStatus {
@@ -16,6 +18,10 @@ extension RequestStatusX on RequestStatus {
         return 'resolved';
       case RequestStatus.cancelled:
         return 'cancelled';
+      case RequestStatus.rejected:
+        return 'rejected';
+      case RequestStatus.failed:
+        return 'failed';
     }
   }
 
@@ -29,6 +35,10 @@ extension RequestStatusX on RequestStatus {
         return 'Tamamlandı';
       case RequestStatus.cancelled:
         return 'İptal Edildi';
+      case RequestStatus.rejected:
+        return 'Reddedildi';
+      case RequestStatus.failed:
+        return 'Tamamlanamadı';
     }
   }
 
@@ -42,6 +52,10 @@ extension RequestStatusX on RequestStatus {
         return RequestStatus.resolved;
       case 'cancelled':
         return RequestStatus.cancelled;
+      case 'rejected':
+        return RequestStatus.rejected;
+      case 'failed':
+        return RequestStatus.failed;
       default:
         return RequestStatus.pending;
     }

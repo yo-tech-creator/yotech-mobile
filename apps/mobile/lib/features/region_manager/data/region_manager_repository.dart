@@ -17,7 +17,7 @@ class RegionManagerRepository {
           .select(
               'id, name, city, code, manager_id, region:regions!inner(manager_id)')
           .eq('tenant_id', tenantId.trim())
-          .eq('active', true)
+          .eq('is_active', true)
           .eq('region.manager_id', managerId)
           .order('name');
 

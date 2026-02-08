@@ -295,7 +295,7 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
           children: [
             Icon(Icons.check_circle, color: Colors.green),
             SizedBox(width: 8),
-            Text('Görevi Onayla'),
+            Flexible(child: Text('Görevi Onayla')),
           ],
         ),
         content: const Text(
@@ -424,7 +424,7 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red),
             SizedBox(width: 8),
-            Text('Görevi Sil'),
+            Flexible(child: Text('Görevi Sil')),
           ],
         ),
         content: const Text(
@@ -1421,7 +1421,7 @@ class _AttachmentBottomSheet extends ConsumerStatefulWidget {
 
 class _AttachmentBottomSheetState
     extends ConsumerState<_AttachmentBottomSheet> {
-  // TODO: _isUploading aktif edilecek (image upload implement edildiğinde)
+  // FUTURE: _isUploading aktif edilecek (image upload implement edildiğinde)
   final bool _isUploading = false;
 
   @override
@@ -1487,7 +1487,7 @@ class _AttachmentBottomSheetState
   }
 
   Future<void> _pickImage(String source) async {
-    // TODO: Implement image picker
+    // FUTURE: Implement image picker
     // This would use image_picker package
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(

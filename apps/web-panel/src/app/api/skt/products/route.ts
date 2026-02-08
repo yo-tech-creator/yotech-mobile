@@ -50,7 +50,7 @@ export async function GET(request: Request) {
     .from("products")
     .select("id, name, barcode, alt_barcodes")
     .eq("tenant_id", profile.tenant_id)
-    .eq("active", true)
+    .eq("is_active", true)
     .or(`barcode.eq.${sanitized},barcode.ilike.${pattern},name.ilike.${pattern}`)
     .limit(20);
 

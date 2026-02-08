@@ -1538,3 +1538,164 @@
     max-width: 100%;
   }
 }
+
+/* ========================================
+   NAVIGATION BUTTONS (Prev/Next)
+   ======================================== */
+
+.va-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+  z-index: 1001;
+  color: var(--text-primary, #1e293b);
+}
+
+.va-nav-btn:hover {
+  background: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.va-nav-prev {
+  left: 20px;
+}
+
+.va-nav-next {
+  right: 20px;
+}
+
+.va-nav-counter {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  padding: 4px 10px;
+  background: var(--bg-secondary, #f1f5f9);
+  border-radius: 12px;
+  margin-right: 8px;
+}
+
+.va-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.va-loading-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-secondary, #64748b);
+  gap: 12px;
+}
+
+.va-loading-details svg {
+  color: var(--primary, #3b82f6);
+}
+
+/* ========================================
+   PHOTO ZOOM
+   ======================================== */
+
+.va-photo-clickable {
+  cursor: zoom-in;
+  position: relative;
+}
+
+.va-photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0;
+}
+
+.va-photo-clickable:hover .va-photo-overlay {
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 1;
+}
+
+.va-photo-overlay span {
+  font-size: 24px;
+}
+
+.va-zoom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: zoom-out;
+}
+
+.va-zoom-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s;
+}
+
+.va-zoom-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.va-zoomed-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  cursor: default;
+}
+
+/* Mobile adjustments for nav buttons */
+@media (max-width: 640px) {
+  .va-nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .va-nav-prev {
+    left: 10px;
+  }
+  
+  .va-nav-next {
+    right: 10px;
+  }
+  
+  .va-nav-counter {
+    display: none;
+  }
+}

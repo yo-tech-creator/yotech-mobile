@@ -12,7 +12,7 @@ const MODULES_SHEET_NAME = "Modules";
 const TENANT_HEADERS = [
   "tenant_code",
   "tenant_name",
-  "active",
+  "is_active",
   "logo_url",
   "sap_integration_active",
   "sap_api_url",
@@ -33,7 +33,7 @@ const MODULE_HEADERS = ["module_code", "is_enabled", "enabled_by_email"] as cons
 const TENANT_FIELD_HELP = [
   { key: "tenant_code", text: "Benzersiz firma kodu (zorunlu, büyük harf)." },
   { key: "tenant_name", text: "Firma adı (zorunlu)." },
-  { key: "active", text: "TRUE: firma aktif, FALSE: pasif." },
+  { key: "is_active", text: "TRUE: firma aktif, FALSE: pasif." },
   { key: "logo_url", text: "Opsiyonel logo görseli URL'si." },
   { key: "sap_integration_active", text: "TRUE: SAP entegrasyonu açık, FALSE: kapalı." },
   { key: "sap_api_url", text: "SAP entegrasyonu için base URL (opsiyonel)." },
@@ -53,7 +53,7 @@ const MODULE_FIELD_HELP = [
 type TenantRow = {
   tenant_code?: string;
   tenant_name?: string;
-  active?: boolean | string | number;
+  is_active?: boolean | string | number;
   logo_url?: string | null;
   sap_integration_active?: boolean | string | number | null;
   sap_api_url?: string | null;
@@ -79,7 +79,7 @@ type TenantImportPayload = {
   tenant: {
     code: string;
     name: string;
-    active: boolean;
+    is_active: boolean;
     currency: string;
     language: string;
     country: string | null;
@@ -130,9 +130,9 @@ async function parseWorkbook(file: File): Promise<TenantImportPayload> {
     throw new Error("Tenant sayfasında tenant_code ve tenant_name zorunlu alanlardır");
   }
 
-  const activeValue = normaliseBoolean(tenant.active ?? true);
+  const activeValue = normaliseBoolean(tenant.is_active ?? true);
   if (activeValue === null) {
-    throw new Error("Tenant sayfasındaki active sütunu evet/hayır veya true/false olmalıdır");
+    throw new Error("Tenant sayfasındaki is_active sütunu evet/hayır veya true/false olmalıdır");
   }
 
   const sapActiveValue = normaliseBoolean(tenant.sap_integration_active ?? false);
@@ -182,7 +182,7 @@ async function parseWorkbook(file: File): Promise<TenantImportPayload> {
     tenant: {
       code: String(tenant.tenant_code).trim().toUpperCase(),
       name: String(tenant.tenant_name).trim(),
-      active: activeValue,
+      is_active: activeValue,
       currency: "TRY",
       language: "tr",
       country: null,
@@ -224,7 +224,7 @@ function buildTemplateWorkbook(
     [
       tenantExample?.tenant_code ?? "",
       tenantExample?.tenant_name ?? "",
-      tenantExample?.active ? "TRUE" : "FALSE",
+      tenantExample?.is_active ? "TRUE" : "FALSE",
       tenantExample?.logo_url ?? "",
       tenantExample?.sap_integration_active ? "TRUE" : "FALSE",
       tenantExample?.sap_api_url ?? "",
@@ -463,7 +463,7 @@ export function TenantImportUploader({ showHeader = true, tenantHint }: Props) {
                 <strong>Firma</strong>
                 <p>Kod: {preview.tenant.code}</p>
                 <p>Ad: {preview.tenant.name}</p>
-                <p>Aktif: {preview.tenant.active ? "Evet" : "Hayır"}</p>
+                <p>Aktif: {preview.tenant.is_active ? "Evet" : "Hayır"}</p>
                 {preview.tenant.logo_url ? <p>Logo: {preview.tenant.logo_url}</p> : null}
                 <p>SAP Entegrasyonu: {preview.tenant.sap_integration_active ? "Açık" : "Kapalı"}</p>
                 {preview.tenant.sap_api_url ? <p>SAP API URL: {preview.tenant.sap_api_url}</p> : null}

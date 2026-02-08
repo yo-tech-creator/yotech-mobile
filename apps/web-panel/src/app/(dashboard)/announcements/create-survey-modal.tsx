@@ -63,6 +63,8 @@ export function CreateSurveyModal({ onClose, onSuccess, userRole }: Props) {
     type: "survey",
     target_scope: userRole === "sube_muduru" ? "my_branch" : "all_branches",
     target_branches: [],
+    target_regions: [],
+    target_users: [],
     target_roles: [],
     include_region_managers: false,
     managers_only: false,

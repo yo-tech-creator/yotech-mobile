@@ -7,6 +7,12 @@ import { toast } from "sonner";
 import { getPlans, getSections, getBranches, updatePlan, deletePlan, copyPlan, Plan } from "../actions";
 import "../visual-audit.css";
 
+// Helper function to get Turkey timezone date string (YYYY-MM-DD)
+function getTurkeyDateString(date?: Date): string {
+  const d = date || new Date();
+  return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' });
+}
+
 interface Section {
   id: string;
   name: string;
@@ -46,14 +52,14 @@ export default function PlansPage() {
     notes: "",
     recurrence: "daily" as "daily" | "weekly",
     recurrence_days: [] as number[],
-    start_date: new Date().toISOString().split("T")[0],
-    end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    start_date: getTurkeyDateString(),
+    end_date: getTurkeyDateString(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)),
   });
   
   // Copy form state
   const [copyForm, setCopyForm] = useState({
     name: "",
-    start_date: new Date().toISOString().split("T")[0],
+    start_date: getTurkeyDateString(),
     end_date: "",
   });
   
@@ -91,8 +97,8 @@ export default function PlansPage() {
       notes: "",
       recurrence: "daily",
       recurrence_days: [],
-      start_date: new Date().toISOString().split("T")[0],
-      end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      start_date: getTurkeyDateString(),
+      end_date: getTurkeyDateString(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)),
     });
     setEditingPlan(null);
     setShowForm(false);
@@ -118,8 +124,8 @@ export default function PlansPage() {
   
   const openCopyModal = (plan: Plan) => {
     const duration = new Date(plan.end_date).getTime() - new Date(plan.start_date).getTime();
-    const startDate = new Date().toISOString().split("T")[0];
-    const endDate = new Date(Date.now() + duration).toISOString().split("T")[0];
+    const startDate = getTurkeyDateString();
+    const endDate = getTurkeyDateString(new Date(Date.now() + duration));
     
     setCopyForm({
       name: plan.name + " (Kopya)",

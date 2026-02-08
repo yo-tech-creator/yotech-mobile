@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
         published_by: userData.id,
         published_at: new Date().toISOString(),
         expires_at: expires_at || null,
-        active: true,
+        is_active: true,
       })
       .select()
       .single();
@@ -216,7 +216,7 @@ export async function GET(request: NextRequest) {
         publisher:published_by(id, first_name, last_name)
       `)
       .eq("tenant_id", userData.tenant_id)
-      .eq("active", true)
+      .eq("is_active", true)
       .order("pinned", { ascending: false })
       .order("pinned_at", { ascending: false, nullsFirst: false })
       .order("priority", { ascending: false })

@@ -7,7 +7,7 @@ import type { Database } from "@/lib/types/database";
 
 type RpcRow = {
   email: string | null;
-  active: boolean | null;
+  is_active: boolean | null;
 };
 
 type RpcPayload = RpcRow | RpcRow[] | null;
@@ -50,7 +50,7 @@ export function LoginForm() {
         throw new Error("Kullanıcı bulunamadı");
       }
 
-      if (result.active === false) {
+      if (result.is_active === false) {
         throw new Error("Kullanıcı hesabı aktif değil");
       }
 

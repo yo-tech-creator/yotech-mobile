@@ -26,7 +26,7 @@ const createProductSchema = z.object({
   supplier: z.string().max(100).nullable().optional().transform(v => v ? xss(v.trim()) : v),
   unit: z.string().max(20).nullable().optional().transform(v => v ? xss(v.trim()) : v),
   price: z.number().min(0).max(9999999).nullable().optional(),
-  active: z.boolean().optional().default(true),
+  is_active: z.boolean().optional().default(true),
   alt_barcodes: z.array(barcodeSchema).max(20).optional().default([]),
 });
 
@@ -50,7 +50,7 @@ type ParsedProduct = {
   supplier?: string | null;
   unit?: string | null;
   price?: number | null;
-  active?: boolean | null;
+  is_active?: boolean | null;
   alt_barcodes?: string[] | null;
 };
 
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("products")
-      .select("id, tenant_id, barcode, name, brand, category, supplier, unit, price, active, alt_barcodes, created_at, updated_at")
+      .select("id, tenant_id, barcode, name, brand, category, supplier, unit, price, is_active, alt_barcodes, created_at, updated_at")
       .order("name", { ascending: true })
       .range(from, to);
 
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
   if (!validation.success) {
     return NextResponse.json({ 
       message: "Doğrulama hatası", 
-      errors: validation.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+      errors: validation.error.issues.map(e => ({ field: e.path.join('.'), message: e.message }))
     }, { status: 400 });
   }
 
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
     supplier: parsed.supplier ?? null,
     unit: parsed.unit ?? null,
     price: parsed.price ?? null,
-    active: parsed.active ?? true,
+    is_active: parsed.is_active ?? true,
     alt_barcodes: parsed.alt_barcodes ?? [],
   };
 
@@ -212,7 +212,7 @@ export async function PATCH(request: NextRequest) {
   if (!validation.success) {
     return NextResponse.json({ 
       message: "Doğrulama hatası", 
-      errors: validation.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+      errors: validation.error.issues.map(e => ({ field: e.path.join('.'), message: e.message }))
     }, { status: 400 });
   }
 
@@ -243,7 +243,7 @@ export async function PATCH(request: NextRequest) {
     supplier: parsed.supplier,
     unit: parsed.unit,
     price: parsed.price,
-    active: parsed.active,
+    is_active: parsed.is_active,
     alt_barcodes: parsed.alt_barcodes,
   };
 
@@ -275,7 +275,7 @@ export async function DELETE(request: NextRequest) {
   
   // Validate ID
   const idValidation = z.string().uuid("Geçersiz ürün ID").safeParse(id);
-  if (!idValidation.success) {
+  if (!idValidation.success || !id) {
     return NextResponse.json({ message: "Geçersiz ürün ID" }, { status: 400 });
   }
 

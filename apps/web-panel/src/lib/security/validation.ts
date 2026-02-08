@@ -147,7 +147,7 @@ export const createBranchSchema = z.object({
  */
 export const updateBranchSchema = createBranchSchema.partial().extend({
   id: uuidSchema,
-  active: z.boolean().optional(),
+  is_active: z.boolean().optional(),
 });
 
 // ==================== REGION SCHEMAS ====================

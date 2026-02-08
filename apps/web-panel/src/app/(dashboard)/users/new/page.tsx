@@ -12,7 +12,7 @@ const ROLES = [
   { value: "personel", label: "Personel" },
 ];
 
-type Tenant = Pick<Database["public"]["Tables"]["tenants"]["Row"], "id" | "code" | "name" | "active">;
+type Tenant = Pick<Database["public"]["Tables"]["tenants"]["Row"], "id" | "code" | "name" | "is_active">;
 type Branch = Pick<Database["public"]["Tables"]["branches"]["Row"], "id" | "name" | "code">;
 
 const CARD_STYLE = {
@@ -67,7 +67,7 @@ export default function NewUserPage() {
     phone: "",
     employee_code: "",
     position: "",
-    active: true,
+    is_active: true,
     password: "",
   });
 
@@ -202,8 +202,8 @@ export default function NewUserPage() {
               >
                 <input
                   type="checkbox"
-                  checked={form.active}
-                  onChange={(e) => setForm((p) => ({ ...p, active: e.target.checked }))}
+                  checked={form.is_active}
+                  onChange={(e) => setForm((p) => ({ ...p, is_active: e.target.checked }))}
                 />
                 Aktif
               </label>

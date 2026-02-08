@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
   if (!validation.success) {
     return NextResponse.json({ 
       message: "Doğrulama hatası", 
-      errors: validation.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+      errors: validation.error.issues.map(e => ({ field: e.path.join('.'), message: e.message }))
     }, { status: 400 });
   }
 
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
     email,
     phone: phone || null,
     position: position || null,
-    active: true,
+    is_active: true,
   };
 
   const { error: insertErr } = await supabaseAdmin.from("users").insert(insertPayload);
@@ -301,7 +301,7 @@ export async function PATCH(request: NextRequest) {
   if (!validation.success) {
     return NextResponse.json({ 
       message: "Doğrulama hatası", 
-      errors: validation.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+      errors: validation.error.issues.map(e => ({ field: e.path.join('.'), message: e.message }))
     }, { status: 400 });
   }
 
@@ -376,7 +376,7 @@ export async function DELETE(request: NextRequest) {
   
   // ID validation
   const idValidation = z.string().uuid("Geçersiz kullanıcı ID").safeParse(id);
-  if (!idValidation.success) {
+  if (!idValidation.success || !id) {
     return NextResponse.json({ message: "Geçersiz kullanıcı ID" }, { status: 400 });
   }
 

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yotech_mobile/features/auth/domain/providers/auth_provider.dart';
+import 'package:yotech_mobile/features/break_tracking/presentation/providers/break_tracking_providers.dart';
+import 'package:yotech_mobile/features/break_tracking/presentation/screens/shifts_and_breaks_page.dart';
+import 'package:yotech_mobile/features/break_tracking/presentation/widgets/break_quick_action_card.dart';
 import 'package:yotech_mobile/shared/shared.dart';
 
 class ShiftPattern {
@@ -193,33 +196,83 @@ class ShiftsHubPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncWeek = ref.watch(publishedShiftProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Yayınlanmış vardiya')),
+      appBar: AppBar(title: const Text('Vardiya & Mola')),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(publishedShiftProvider);
-          await ref.read(publishedShiftProvider.future);
+          ref.invalidate(breakSessionProvider);
+          await Future.wait([
+            ref.read(publishedShiftProvider.future),
+            ref.read(breakSessionProvider.future),
+          ]);
         },
-        child: asyncWeek.when(
-          data: (week) {
-            if (week == null) {
-              return const AppEmptyState(
-                  icon: Icons.event_busy,
-                  title: 'Yayınlanmış vardiya bulunamadı');
-            }
-            return _ShiftWeekView(week: week);
-          },
-          loading: () => const AppLoading(),
-          error: (e, _) => AppErrorState(message: 'Vardiya alınamadı: $e'),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            const SizedBox(height: 16),
+            // Mola Takip Bölümü
+            BreakQuickActionCard(
+              onViewHistory: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ShiftsAndBreaksPage(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            // Vardiya Bölümü Başlığı
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_month,
+                      color: theme.colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Yayınlanmış Vardiya',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Vardiya İçeriği
+            asyncWeek.when(
+              data: (week) {
+                if (week == null) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: AppEmptyState(
+                        icon: Icons.event_busy,
+                        title: 'Yayınlanmış vardiya bulunamadı'),
+                  );
+                }
+                return _ShiftWeekViewEmbedded(week: week);
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.all(16),
+                child: AppErrorState(message: 'Vardiya alınamadı: $e'),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ShiftWeekView extends StatelessWidget {
-  const _ShiftWeekView({required this.week});
+/// ListView içinde kullanılmak üzere tasarlanmış gömülü vardiya görünümü
+class _ShiftWeekViewEmbedded extends StatelessWidget {
+  const _ShiftWeekViewEmbedded({required this.week});
   final ShiftWeek week;
 
   List<DateTime> get days =>
@@ -229,82 +282,6 @@ class _ShiftWeekView extends StatelessWidget {
     String fmt(DateTime d) =>
         '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
     return '${fmt(start)} - ${fmt(end)}';
-  }
-
-  String dayLabel(DateTime d) {
-    final weekday = _weekday(d.weekday);
-    return '$weekday ${d.day.toString().padLeft(2, '0')}';
-  }
-
-  String _weekday(int w) {
-    switch (w) {
-      case DateTime.monday:
-        return 'Pzt';
-      case DateTime.tuesday:
-        return 'Sal';
-      case DateTime.wednesday:
-        return 'Çar';
-      case DateTime.thursday:
-        return 'Per';
-      case DateTime.friday:
-        return 'Cum';
-      case DateTime.saturday:
-        return 'Cmt';
-      case DateTime.sunday:
-        return 'Paz';
-      default:
-        return '';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final people = _groupByPerson();
-    final theme = Theme.of(context);
-    final bottomPadding = MediaQuery.of(context).padding.bottom + 72;
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPadding),
-      children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Hafta aralığı',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
-                Text(formatRange(week.weekStart, week.weekEnd),
-                    style: theme.textTheme.bodyLarge),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        ClipRect(
-          child: InteractiveViewer(
-            minScale: 0.7,
-            maxScale: 4,
-            boundaryMargin: const EdgeInsets.all(32),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: _ShiftTable(
-                  days: days,
-                  people: people,
-                  week: week,
-                  theme: theme,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-      ],
-    );
   }
 
   Map<String, Map<String, String>> _groupByPerson() {
@@ -317,6 +294,58 @@ class _ShiftWeekView extends StatelessWidget {
       map[personId]![iso] = patId;
     });
     return map;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final people = _groupByPerson();
+    final theme = Theme.of(context);
+    final bottomPadding = MediaQuery.of(context).padding.bottom + 72;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Hafta aralığı',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  Text(formatRange(week.weekStart, week.weekEnd),
+                      style: theme.textTheme.bodyLarge),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRect(
+            child: InteractiveViewer(
+              minScale: 0.7,
+              maxScale: 4,
+              boundaryMargin: const EdgeInsets.all(32),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: _ShiftTable(
+                    days: days,
+                    people: people,
+                    week: week,
+                    theme: theme,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
   }
 }
 

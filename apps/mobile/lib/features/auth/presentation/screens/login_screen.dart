@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yotech_mobile/core/auth/auth_navigation_helper.dart';
 import 'package:yotech_mobile/core/localization/localization_extensions.dart';
 import '../../domain/providers/auth_provider.dart';
 
@@ -18,6 +19,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    debugPrint('🚨 [LoginScreen] initState çağrıldı - key: ${widget.key}');
+    debugPrint('🚨 [LoginScreen] Stack trace: ${StackTrace.current}');
+  }
+
+  @override
   void dispose() {
     _sicilNoController.dispose();
     _passwordController.dispose();
@@ -34,6 +42,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             sicilNo: _sicilNoController.text.trim(),
             password: _passwordController.text,
           );
+      // Login başarılı - ana ekrana yönlendir
+      if (mounted) {
+        await AuthNavigationHelper.navigateToHome(context, ref);
+      }
     } catch (e) {
       if (mounted) {
         final errorMsg = e.toString().replaceFirst('Exception: ', '');
